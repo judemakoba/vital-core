@@ -1,0 +1,33 @@
+{
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "tsx": true,
+      "decorators": false,
+      "dynamicImport": true
+    },
+    "transform": {
+      "react": {
+        "runtime": "automatic"
+      }
+    },
+    "target": "es2017",
+    "loose": true,
+    "externalHelpers": false
+  },
+  "env": {
+    "targets": {
+      "chrome": "88",
+      "edge": "88",
+      "firefox": "78",
+      "safari": "14"
+    },
+    "mode": "entry/feature"
+  },
+  "minify": {
+    "compress": {
+      "drop_console": false,
+      "drop_debugger": true
+    }
+  }
+}

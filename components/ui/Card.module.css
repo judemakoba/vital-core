@@ -1,0 +1,71 @@
+.card {
+  background: white;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+/* Variants */
+.default {
+  border: 1px solid #e8eaed;
+}
+
+.outlined {
+  border: 1px solid #dadce0;
+}
+
+.elevated {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Padding */
+.none {
+  padding: 0;
+}
+
+.sm {
+  padding: 12px;
+}
+
+.md {
+  padding: 20px;
+}
+
+.lg {
+  padding: 28px;
+}
+
+/* Hoverable */
+.hoverable:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: #1a73e8;
+}
+
+/* Sub-components */
+.header {
+  padding: 20px 20px 0;
+  border-bottom: 1px solid #e8eaed;
+  margin-bottom: 16px;
+}
+
+.content {
+  padding: 0 20px 20px;
+}
+
+.footer {
+  padding: 16px 20px 20px;
+  border-top: 1px solid #e8eaed;
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Adjust padding when header/footer present */
+.card:has(.header) {
+  padding-top: 0;
+}
+
+.card:has(.content) {
+  padding-bottom: 0;
+}

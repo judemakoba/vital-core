@@ -1,0 +1,1296 @@
+/* ============================================================
+   Finance & Accounting Module
+   Uses the global design system (app/globals.css). All colors,
+   radii, shadows, and transitions come from CSS custom properties
+   so dark mode + theme tweaks propagate automatically.
+   ============================================================ */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    animation: fadeIn var(--transition-normal) forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------- Header ---------- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 4px 0 0;
+}
+
+.headerActions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* ---------- Buttons ---------- */
+.btnPrimary {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btnPrimary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.btnPrimary:active {
+    transform: translateY(0);
+}
+
+.btnSecondary {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btnSecondary:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* ---------- KPI Grid ---------- */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.kpiCard {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-normal);
+}
+
+.kpiCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.kpiRevenue {
+    border-left: 3px solid var(--success-color);
+}
+
+.kpiCash {
+    border-left: 3px solid var(--primary-color);
+}
+
+.kpiPending {
+    border-left: 3px solid var(--warning-color);
+}
+
+.kpiAccounts {
+    border-left: 3px solid var(--info-color);
+}
+
+.kpiIcon {
+    font-size: 1.75rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--primary-light);
+}
+
+.kpiContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+}
+
+.kpiLabel {
+    font-size: 0.6875rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.kpiValue {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+}
+
+.kpiSub {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+/* ---------- Tabs ---------- */
+.tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.tab {
+    padding: 0.75rem 1.25rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.tab:hover {
+    color: var(--text-primary);
+    background: var(--primary-light);
+}
+
+.tabActive {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tabContent {
+    animation: fadeIn var(--transition-normal) forwards;
+}
+
+/* ---------- Overview Grid ---------- */
+.overviewGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .overviewGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Card ---------- */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.cardHeader h3 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+}
+
+.badge {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-radius: var(--radius-full);
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* ---------- Journal List (Overview) ---------- */
+.journalList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.journalItem {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.journalItem:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+.journalMeta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.journalNumber {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-family: 'Courier New', monospace;
+}
+
+.journalDesc {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    margin: 0 0 0.375rem;
+}
+
+.journalAmounts {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.journalDate {
+    margin-left: auto;
+}
+
+/* ---------- Quick Actions ---------- */
+.quickActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quickAction {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.875rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all var(--transition-fast);
+    color: var(--text-primary);
+    width: 100%;
+    font-family: inherit;
+}
+
+.quickAction:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    transform: translateX(2px);
+}
+
+.qaIcon {
+    font-size: 1.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: var(--primary-light);
+    flex-shrink: 0;
+}
+
+.quickAction strong {
+    font-size: 0.875rem;
+    display: block;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.quickAction p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 0.125rem 0 0;
+}
+
+/* ---------- Status Pills (semantic colors, light theme) ---------- */
+.statusPill {
+    display: inline-block;
+    border-radius: var(--radius-full);
+    padding: 0.125rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.statusPOSTED {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.statusDRAFT {
+    background: rgba(100, 116, 139, 0.15);
+    color: var(--text-secondary);
+}
+
+.statusREVERSED {
+    background: rgba(244, 63, 94, 0.1);
+    color: var(--danger-color);
+}
+
+.statusAPPROVED {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+/* ---------- Toolbar ---------- */
+.toolbarRow {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.searchInput {
+    flex: 1;
+    min-width: 200px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.875rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.searchInput::placeholder {
+    color: var(--text-muted);
+}
+
+.filterSelect {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.875rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.totalBadge {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-right: auto;
+    font-weight: 500;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+/* ---------- Accounts Table ---------- */
+.accountsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+}
+
+.accountsTable th {
+    background: rgba(0, 0, 0, 0.02);
+    padding: 0.75rem 0.875rem;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    position: sticky;
+    top: 0;
+}
+
+.accountRow td,
+.accountsTable td {
+    padding: 0.625rem 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.accountRow:hover td {
+    background: var(--primary-light);
+}
+
+.controlRow td {
+    font-weight: 600;
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.01);
+}
+
+.accountName {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.expandBtn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--radius-sm);
+}
+
+.expandBtn:hover {
+    background: var(--primary-light);
+}
+
+.controlLabel {
+    font-weight: 600;
+}
+
+.accountCode {
+    font-family: 'Courier New', monospace;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.categoryCell {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.numCell {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+}
+
+/* ---------- Type Badges ---------- */
+.typeBadge {
+    display: inline-block;
+    border-radius: var(--radius-full);
+    padding: 0.125rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.typeAsset {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info-color);
+}
+
+.typeLiability {
+    background: rgba(244, 63, 94, 0.1);
+    color: var(--danger-color);
+}
+
+.typeEquity {
+    background: rgba(168, 85, 247, 0.1);
+    color: #8b5cf6;
+}
+
+.typeRevenue {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+}
+
+.typeExpense {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning-color);
+}
+
+.active {
+    color: var(--success-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.inactive {
+    color: var(--danger-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* ---------- Journal Entries Table ---------- */
+.journalsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+}
+
+.journalsTable th {
+    background: rgba(0, 0, 0, 0.02);
+    padding: 0.75rem 0.875rem;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    position: sticky;
+    top: 0;
+}
+
+.journalTableRow {
+    cursor: pointer;
+}
+
+.journalTableRow:hover td {
+    background: var(--primary-light);
+}
+
+.journalTableRow td {
+    padding: 0.75rem 0.875rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.expandCell {
+    color: var(--primary-color);
+    font-size: 0.6875rem;
+    width: 1.5rem;
+}
+
+.entryNum {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.refCell {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.debitCol {
+    color: var(--danger-color);
+}
+
+.creditCol {
+    color: var(--success-color);
+}
+
+.expenseCol {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.linesRow td {
+    padding: 0 !important;
+    background: var(--primary-light);
+}
+
+.linesTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    margin: 0;
+}
+
+.linesTable th {
+    padding: 0.5rem 0.875rem;
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.linesTable td {
+    padding: 0.5rem 0.875rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* ---------- Pagination ---------- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.pagination button {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* ---------- Loading / Empty states ---------- */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 5rem 0;
+    color: var(--text-muted);
+}
+
+.spinner {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 3px solid var(--primary-light);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.emptyState {
+    text-align: center;
+    padding: 3.75rem 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.comingSoon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 5rem 1.5rem;
+    text-align: center;
+}
+
+.comingSoon span {
+    font-size: 3rem;
+}
+
+.comingSoon h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+}
+
+.comingSoon p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ---------- Modal ---------- */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.25rem;
+    animation: fadeIn var(--transition-fast) forwards;
+}
+
+.modalContent {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.modalHeader {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modalHeader h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+}
+
+.btnClose {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.btnClose:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.modalForm {
+    padding: 1.5rem;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formGroup label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.formGroup input,
+.formGroup select {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 0.75rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.selectedItem {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--info-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.dropdown {
+    position: absolute;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    margin-top: 0.25rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.dropdown div {
+    padding: 0.625rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    transition: background var(--transition-fast);
+}
+
+.dropdown div:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.linesSection {
+    margin-top: 1.5rem;
+}
+
+.linesSection h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    font-family: 'Outfit', sans-serif;
+}
+
+.linesSection table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.linesSection th {
+    text-align: left;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.linesSection td {
+    padding: 0.5rem;
+}
+
+.linesSection input,
+.linesSection select {
+    width: 100%;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    font-family: inherit;
+}
+
+.modalFooter {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.errorMsg {
+    margin-top: 1rem;
+    padding: 0.625rem 0.875rem;
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: var(--danger-color);
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+}
+
+/* ============================================================
+   REPORTS (Income Statement, Trial Balance)
+   ============================================================ */
+.reportContainer {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.reportHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reportHeader h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+    font-family: 'Outfit', sans-serif;
+}
+
+.reportHeader p {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.reportSection {
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.reportSectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1.125rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reportSectionTitle {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.reportTotal {
+    font-size: 1.125rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+.revenueColor {
+    color: var(--success-color);
+}
+
+.expenseColor {
+    color: var(--danger-color);
+}
+
+.reportTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+}
+
+.reportTable tbody tr td {
+    padding: 0.625rem 1.125rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.reportTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.reportTable tbody tr:hover td {
+    background: var(--primary-light);
+}
+
+.reportTable thead tr th,
+.trHeader th {
+    background: rgba(0, 0, 0, 0.02);
+    padding: 0.625rem 1.125rem;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.reportAccCode {
+    font-family: 'Courier New', monospace;
+    color: var(--primary-color);
+    font-size: 0.75rem;
+    width: 5rem;
+}
+
+.reportAmt {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+.reportEmpty {
+    padding: 1.25rem 1.125rem;
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    font-style: italic;
+}
+
+.expenseGroup {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.expenseGroup:last-child {
+    border-bottom: none;
+}
+
+.expenseGroupHeader {
+    padding: 0.5rem 1.125rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: var(--primary-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.netIncomeBar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.125rem 1.5rem;
+    border-radius: var(--radius-md);
+    margin-top: 0.5rem;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.grossProfitBar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background: var(--primary-light);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.grossProfitValue {
+    font-size: 1.125rem;
+    font-family: 'Courier New', monospace;
+    margin-left: auto;
+    color: var(--primary-color);
+}
+
+.profitBar {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--success-color);
+}
+
+.lossBar {
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.3);
+    color: var(--danger-color);
+}
+
+.netIncomeValue {
+    font-size: 1.5rem;
+    font-family: 'Courier New', monospace;
+    margin-left: auto;
+}
+
+.marginLabel {
+    font-size: 0.8125rem;
+    opacity: 0.85;
+}
+
+/* ---------- Trial Balance ---------- */
+.reportGroupRow td {
+    padding: 0.5rem 1.125rem !important;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.tbTotals td {
+    padding: 0.875rem 1.125rem !important;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.04);
+    border-top: 2px solid var(--border-color);
+}
+
+/* ---------- Report Toolbar ---------- */
+.reportTypeTabs {
+    display: flex;
+    gap: 0.25rem;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: var(--radius-md);
+    padding: 0.25rem;
+}
+
+.reportTypeBtn {
+    padding: 0.5rem 0.875rem;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.reportTypeBtn:hover {
+    color: var(--text-primary);
+    background: var(--bg-card);
+}
+
+.reportTypeBtnActive {
+    color: var(--text-primary);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-sm);
+    font-weight: 500;
+}
+
+.dateRange {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.dateInput {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.375rem 0.625rem;
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    margin-left: 0.375rem;
+    font-family: inherit;
+}
+
+.datePlain {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-left: 0.375rem;
+}
+
+/* ---------- Invoice Detail Panel ---------- */
+.invoiceDetail {
+    padding: 1rem 1.25rem;
+}
+
+.invoiceMeta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.invoiceMeta strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.invoiceActions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    justify-content: flex-end;
+}
+
+.typeBadgeSmall {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}

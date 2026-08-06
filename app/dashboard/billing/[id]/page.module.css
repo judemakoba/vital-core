@@ -1,0 +1,134 @@
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    margin-bottom: 1rem;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.statusBox {
+    display: flex;
+    align-items: center;
+}
+
+.invoicePaperContainer {
+    width: 100%;
+}
+
+.adminSection {
+    margin-top: 1rem;
+}
+
+.card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+}
+
+.paymentForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.input,
+.select {
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.submitBtn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.875rem;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+.submitBtn:hover {
+    filter: brightness(1.1);
+}
+
+.historyList {
+    display: flex;
+    flex-direction: column;
+}
+
+.historyItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.historyItem:last-child {
+    border-bottom: none;
+}
+/* Print Logic moved to globals.css to avoid build errors with non-pure selectors */
+@media print {
+    .noPrint {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        gap: 0;
+    }
+
+    .invoicePaperContainer {
+        margin: 0;
+        padding: 0;
+    }
+}

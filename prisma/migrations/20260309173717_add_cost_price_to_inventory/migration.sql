@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "DispenseRecord" ADD COLUMN     "costPrice" DOUBLE PRECISION NOT NULL DEFAULT 0.0;
+
+-- AlterTable
+ALTER TABLE "DrugInventory" ADD COLUMN     "costPrice" DOUBLE PRECISION NOT NULL DEFAULT 0.0;

@@ -1,0 +1,705 @@
+/* ── Visit Detail Page ── */
+
+.backRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--glass-bg);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+}
+
+.backBtn:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+/* Visit header */
+.visitHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.visitIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(var(--primary-color-rgb, 99, 102, 241), 0.1);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.visitMeta {
+    flex: 1;
+    min-width: 0;
+}
+
+.visitNumber {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: monospace;
+    letter-spacing: 0.02em;
+}
+
+.visitType {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 2px;
+}
+
+.visitSub {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.visitBadges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.badgeGreen { background: rgba(34,197,94,0.1); color: #22c55e; border-color: rgba(34,197,94,0.2); }
+.badgeAmber { background: rgba(245,158,11,0.1); color: #fbbf24; border-color: rgba(245,158,11,0.2); }
+.badgeBlue  { background: rgba(59,130,246,0.1); color: #60a5fa; border-color: rgba(59,130,246,0.2); }
+.badgePurple{ background: rgba(139,92,246,0.1); color: #a78bfa; border-color: rgba(139,92,246,0.2); }
+.badgeRed   { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.2); }
+
+/* SOAP notes block */
+.soapGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.soapCard {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+}
+
+.soapLabel {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.soapSubjective { color: #60a5fa; }
+.soapObjective  { color: #34d399; }
+.soapAssessment { color: #a78bfa; }
+.soapPlan       { color: #fbbf24; }
+
+.soapText {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    min-height: 2.5rem;
+}
+
+.soapEmpty {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Section */
+.section {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(0,0,0,0.02);
+}
+
+.sectionTitle {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.sectionCount {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 99px;
+    background: rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+/* Data rows */
+.dataRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.8125rem;
+}
+
+.dataRow:last-child { border-bottom: none; }
+
+.dataRow:hover { background: rgba(255,255,255,0.02); }
+
+.dataRow label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    width: 110px;
+    flex-shrink: 0;
+    padding-top: 1px;
+}
+
+.dataRow span {
+    color: var(--text-primary);
+    flex: 1;
+    line-height: 1.5;
+}
+
+/* Drug line */
+.drugLine {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.8125rem;
+}
+
+.drugLine:last-child { border-bottom: none; }
+
+.drugName {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.drugMeta {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.drugStatus {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.statusPending  { background: rgba(245,158,11,0.1); color: #fbbf24; }
+.statusDispensed{ background: rgba(34,197,94,0.1); color: #22c55e; }
+.statusCancelled{ background: rgba(239,68,68,0.1); color: #f87171; }
+
+/* Lab / Radiology line */
+.testLine {
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.8125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.testLine:last-child { border-bottom: none; }
+
+.testName {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.testMeta {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.testStatus {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 99px;
+    flex-shrink: 0;
+}
+
+/* Invoice + Payment */
+.invoiceBlock {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.invoiceBlock:last-child { border-bottom: none; }
+
+.invoiceHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.invoiceNum {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: monospace;
+}
+
+.invoiceAmount {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-left: auto;
+}
+
+.invoiceItems {
+    margin-left: 1rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid rgba(255,255,255,0.05);
+    margin-bottom: 0.5rem;
+}
+
+.invoiceItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.invoiceItemDesc { flex: 1; }
+.invoiceItemQty   { color: var(--text-muted); font-size: 0.75rem; }
+.invoiceItemPrice{ font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+
+.paymentsSection {
+    background: rgba(34,197,94,0.05);
+    border: 1px solid rgba(34,197,94,0.1);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.paymentRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+    font-size: 0.8125rem;
+}
+
+.paymentRow label {
+    color: #22c55e;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    width: 70px;
+    flex-shrink: 0;
+}
+
+.paymentRow span {
+    color: var(--text-primary);
+}
+
+.balanceBadge {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 99px;
+}
+
+.balanceClear  { background: rgba(34,197,94,0.15); color: #22c55e; }
+.balancePartial{ background: rgba(245,158,11,0.15); color: #fbbf24; }
+.balanceUnpaid { background: rgba(239,68,68,0.15); color: #f87171; }
+
+/* Vitals grid */
+.vitalsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+}
+
+.vitalItem {
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+}
+
+.vitalLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.vitalValue {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 2px;
+}
+
+/* Empty state */
+.emptySection {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* Diagnosis chips */
+.diagChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.diagChip {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    font-size: 0.8125rem;
+}
+
+.diagChipCode {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: monospace;
+}
+
+/* ── Visit Progress Checklist (R45) ── */
+.checklist {
+    list-style: none;
+    padding: 0.5rem 0.75rem 0.75rem 0.75rem;
+    margin: 0;
+    counter-reset: step;
+}
+
+.checklistItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    border-left: 2px solid var(--border-color);
+    padding-left: 0.75rem;
+    margin-left: 6px;
+    position: relative;
+}
+
+.checklistItem svg {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.checklistReached {
+    color: var(--text-primary);
+    border-left-color: var(--primary-color);
+}
+
+.checklistReached svg {
+    color: var(--primary-color);
+}
+
+.checklistCurrent {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.checklistCurrent::after {
+    content: "  ← current";
+    color: var(--primary-color);
+    font-size: 0.7rem;
+    font-weight: 500;
+    opacity: 0.7;
+}
+
+.orderSubList {
+    margin-top: 0.5rem;
+    padding: 0 0.75rem 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.orderSubRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.orderSubRow:last-child {
+    border-bottom: none;
+}
+
+.orderSubName {
+    color: var(--text-primary);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.subStatusBadge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.subStatusAwaiting {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.subStatusInProgress {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.subStatusFulfilled {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.subStatusUnfulfilled {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.discontinueBanner {
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.insuranceBanner {
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+/* R47 — Insurance validation card */
+.validateInsuranceBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--primary-color, #6366f1);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.validateInsuranceBtn:hover {
+    background: var(--primary-color-hover, #4f46e5);
+}
+
+.validateInsuranceBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.reverifyInsuranceBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--glass-bg, rgba(0,0,0,0.02));
+    color: var(--text-secondary, #4b5563);
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 4px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.reverifyInsuranceBtn:hover {
+    background: rgba(99, 102, 241, 0.05);
+    color: var(--primary-color, #6366f1);
+    border-color: var(--primary-color, #6366f1);
+}
+
+.reverifyInsuranceBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.adminTools {
+    padding: 0.625rem 0.75rem;
+    background: rgba(99, 102, 241, 0.04);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 6px;
+}
+
+.adminBtn {
+    padding: 5px 10px;
+    background: white;
+    color: var(--text-secondary, #4b5563);
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.adminBtn:hover {
+    background: rgba(99, 102, 241, 0.05);
+    color: var(--primary-color, #6366f1);
+}
+
+.adminBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.verificationHistory {
+    margin-top: 8px;
+    padding: 0.5rem 0.75rem;
+    background: var(--glass-bg, rgba(0,0,0,0.02));
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 6px;
+}
+
+.verificationHistoryItem {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.verificationHistoryItem:last-child {
+    border-bottom: none;
+}
+
+.discontinueBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger-color, #dc2626);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.discontinueBtn:hover {
+    background: rgba(239, 68, 68, 0.18);
+}
+
+.discontinueForm {
+    background: var(--glass-bg, rgba(0,0,0,0.02));
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.discontinueBtnConfirm {
+    padding: 6px 12px;
+    background: var(--danger-color, #dc2626);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.discontinueBtnConfirm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.discontinueBtnCancel {
+    padding: 6px 12px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .soapGrid { grid-template-columns: 1fr 1fr; }
+    .vitalsGrid { grid-template-columns: repeat(2, 1fr); }
+}

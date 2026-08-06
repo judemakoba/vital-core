@@ -1,0 +1,232 @@
+# ─── Vital Core HMS — production stack (Tailscale edition) ────────────────
+# Four services:
+#   postgres  : Postgres 16 (no host port — only the app and backups touch it)
+#   app       : Next.js standalone (loopback-only port 3000)
+#   caddy     : reverse proxy + TLS using Tailscale-issued certs (host network)
+#   tailscale : sidecar that joins the tailnet, generates certs, shares them
+#               with Caddy via a volume (host network — required by Tailscale)
+#
+# Access model:
+#   - Primary:    https://vitalcore.<your-tailnet>.ts.net   (Tailscale clients)
+#                  Cert is issued by Tailscale's CA, auto-trusted on all
+#                  devices that have Tailscale installed.
+#   - LAN fallback: https://<lxc-lan-ip>                    (LAN clients)
+#                  Caddy serves with a self-signed cert (Caddy's internal CA).
+#                  Browsers will warn once; you can install Caddy's root CA
+#                  on the LAN device to silence the warning, or just install
+#                  Tailscale on the device and use the .ts.net URL.
+#
+# Usage (on the Proxmox LXC, see deploy/DEPLOY.md):
+#   cp deploy/env.production.example .env.production
+#   $EDITOR .env.production                    # set NEXTAUTH_SECRET, TS_AUTHKEY
+#   docker compose --env-file .env.production up -d --build
+
+name: vitalcore
+
+services:
+  # ---------------------------------------------------------------------------
+  # Postgres — single point of truth for all data
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: vitalcore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vitalcore}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-vitalcore}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vitalcore} -d ${POSTGRES_DB:-vitalcore}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    networks:
+      - vitalcore_net
+    # No `ports:` — Postgres is NOT exposed to the host. Only the app
+    # container (via the internal network) can talk to it.
+
+  # ---------------------------------------------------------------------------
+  # App — Next.js standalone server
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vitalcore-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vitalcore}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-vitalcore}?schema=public&connection_limit=10&pool_timeout=15
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?NEXTAUTH_URL must be set (e.g. https://vitalcore.tailnet-name.ts.net)}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set}
+      NEXTCLOUD_URL: ${NEXTCLOUD_URL:-}
+      NEXTCLOUD_USERNAME: ${NEXTCLOUD_USERNAME:-}
+      NEXTCLOUD_PASSWORD: ${NEXTCLOUD_PASSWORD:-}
+      NEXTCLOUD_BASE_FOLDER: ${NEXTCLOUD_BASE_FOLDER:-VitalCore/Radiology}
+      NEXTCLOUD_PUBLIC_SHARE: ${NEXTCLOUD_PUBLIC_SHARE:-true}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      TZ: ${TZ:-Africa/Kampala}
+    volumes:
+      - app_uploads:/app/uploads
+    # Published on the LXC's loopback only (127.0.0.1:3000). Caddy (which runs
+      # on the host network) talks to it via 127.0.0.1:3000. Nothing outside
+      # the LXC can reach the app directly — must go through Caddy.
+    ports:
+      - "127.0.0.1:3000:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 512M
+    networks:
+      - vitalcore_net
+
+  # ---------------------------------------------------------------------------
+  # Tailscale — sidecar that joins the tailnet, generates certs
+  # ---------------------------------------------------------------------------
+  # Why host network: Tailscale's wireguard tunnel needs to bind a TUN device
+  # and acquire a 100.x.x.x IP that's reachable by other tailnet nodes. The
+  # standard Tailscale Docker pattern is `network_mode: host` for this.
+  # The sidecar's only "output" is:
+  #   1. Cert files written to the tailscale_state volume
+  #   2. The Tailscale daemon's state (so it survives container restarts)
+  # Caddy reads the cert files via the same volume.
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: vitalcore-tailscale
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      # Auth key from your Tailscale account (https://login.tailscale.com/admin/settings/keys)
+      # Generate a reusable, pre-approved key with tag `tag:container`.
+      TS_AUTHKEY: ${TS_AUTHKEY:?TS_AUTHKEY must be set — generate at https://login.tailscale.com/admin/settings/keys}
+      # The hostname on the tailnet. Clients will reach the app at
+      # https://<TS_HOSTNAME>.<tailnet>.ts.net — auto-resolved by MagicDNS.
+      TS_HOSTNAME: ${TS_HOSTNAME:-vitalcore}
+      TS_STATE_DIR: /var/lib/tailscale
+    volumes:
+      - tailscale_state:/var/lib/tailscale
+    # Healthcheck — only goes green once BOTH the Tailscale daemon is up
+    # AND the cert file is on disk. Caddy's depends_on uses this to know
+    # it's safe to start serving HTTPS.
+    healthcheck:
+      test: ["CMD-SHELL", "tailscale status --json >/dev/null && test -s /var/lib/tailscale/cert.pem"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    # Entrypoint: bring up tailscaled, authenticate, generate the cert, stay alive.
+    # The cert is at /var/lib/tailscale/cert.pem (with the matching key.pem).
+    # Tailscale certs are valid for 90 days but are auto-renewed — re-running
+    # `tailscale cert <hostname>` is safe and idempotent.
+    command: >
+      sh -c "
+        echo '[tailscale] Starting tailscaled...'
+        tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock &
+        sleep 5
+        echo '[tailscale] Authenticating with TS_AUTHKEY...'
+        until tailscale up --authkey=$$TS_AUTHKEY --hostname=$$TS_HOSTNAME; do
+          echo '[tailscale] Auth failed, retrying in 10s...'
+          sleep 10
+        done
+        echo '[tailscale] Joined tailnet as $$TS_HOSTNAME'
+        echo '[tailscale] Generating cert for $$TS_HOSTNAME...'
+        until tailscale cert $$TS_HOSTNAME; do
+          echo '[tailscale] Cert generation failed (MagicDNS may not be ready), retrying in 10s...'
+          sleep 10
+        done
+        echo '[tailscale] Cert ready at /var/lib/tailscale/cert.pem'
+        # Renew the cert every 30 days (it's valid for 90; renewal is cheap).
+        while true; do
+          sleep 30d
+          tailscale cert $$TS_HOSTNAME && echo '[tailscale] Cert renewed'
+        done
+      "
+
+  # ---------------------------------------------------------------------------
+  # Caddy — reverse proxy with HTTPS using the Tailscale-issued cert
+  # ---------------------------------------------------------------------------
+  # Also on host network so it can listen on the Tailscale IP that the sidecar
+  # advertises. Talks to the app via 127.0.0.1:3000 (the published port).
+  caddy:
+    image: caddy:2-alpine
+    container_name: vitalcore-caddy
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_started
+      tailscale:
+        condition: service_healthy
+    network_mode: host
+    environment:
+      # Read by the Caddyfile — used in the LAN self-signed cert.
+      VITALCORE_HOSTNAME: ${TS_HOSTNAME:-vitalcore}
+    volumes:
+      # Caddyfile for the Tailscale / LAN setup.
+      - ./caddy/Caddyfile.intranet:/etc/caddy/Caddyfile:ro
+      # Tailscale-issued cert + key (read-only).
+      - tailscale_state:/var/lib/tailscale:ro
+      # Caddy state — internal CA (for LAN fallback) and logs.
+      - caddy_data:/data
+      - caddy_config:/config
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 32M
+    # No `networks:` — host network means we can't be in a bridge too.
+
+# =============================================================================
+# Persistent volumes
+# =============================================================================
+volumes:
+  postgres_data:
+    name: vitalcore_postgres_data
+    driver: local
+  app_uploads:
+    name: vitalcore_app_uploads
+    driver: local
+  caddy_data:
+    name: vitalcore_caddy_data
+    driver: local
+  caddy_config:
+    name: vitalcore_caddy_config
+    driver: local
+  tailscale_state:
+    # Holds tailscaled state, MagicDNS certs, and the Tailscale node key.
+    # Backing up this volume is essentially backing up the Tailscale identity.
+    name: vitalcore_tailscale_state
+    driver: local
+
+# =============================================================================
+# Network
+# =============================================================================
+# Only postgres and app use this. Tailscale and Caddy use host network.
+networks:
+  vitalcore_net:
+    name: vitalcore_net
+    driver: bridge

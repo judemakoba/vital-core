@@ -1,0 +1,1023 @@
+.container {
+    padding: 20px 28px;
+    max-width: 2200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 60%, #0ea5e9 100%);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.18);
+    color: white;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.01em;
+}
+
+.subtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    margin: 0;
+    font-weight: 400;
+}
+
+.headerActions {
+    display: flex;
+    gap: 10px;
+}
+
+.btnPrimary,
+.btnSecondary {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.btnPrimary {
+    background: white;
+    color: #0369a1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.btnPrimary:hover {
+    background: #f0f9ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.btnSecondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(6px);
+}
+
+.btnSecondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* KPI Cards */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.kpiCard {
+    background: white;
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e5e7eb;
+    transition: all 0.18s;
+}
+
+.kpiCard:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(14, 165, 233, 0.1);
+    transform: translateY(-1px);
+}
+
+.kpiIcon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.kpiContent {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.kpiLabel {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.kpiValue {
+    color: #111827;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 1px;
+    line-height: 1.1;
+}
+
+.kpiSub {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.kpiInventory .kpiIcon {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.kpiValue .kpiIcon {
+    background: #f0fdf4;
+    color: #22c55e;
+}
+
+.kpiAlerts .kpiIcon {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.kpiDispensed .kpiIcon {
+    background: #fdf4ff;
+    color: #d946ef;
+}
+
+.kpiPending .kpiIcon {
+    background: #fff7ed;
+    color: #f97316;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 4px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 18px;
+    overflow-x: auto;
+    width: fit-content;
+}
+
+.tab {
+    padding: 9px 18px;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    color: #475569;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: #0c4a6e;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.tabActive {
+    color: #0369a1;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tabContent {
+    background: white;
+    border-radius: 12px;
+    min-height: 500px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e5e7eb;
+    padding: 22px;
+}
+
+/* Overview Layout */
+.overviewGrid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cardHeader {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cardHeader h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.badge {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.emptyState {
+    padding: 48px 24px;
+    text-align: center;
+    color: #6b7280;
+}
+
+/* Quick Actions */
+.quickActions {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.quickAction {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.quickAction:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+
+.qaIcon {
+    font-size: 24px;
+}
+
+.quickAction strong {
+    display: block;
+    color: #1e293b;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.quickAction p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    gap: 16px;
+    color: #6b7280;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f4f6;
+    border-top-color: #0ea5e9;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Journal Styles for Overview */
+.journalList {
+    display: flex;
+    flex-direction: column;
+}
+
+.journalItem {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.2s;
+}
+
+.journalItem:hover {
+    background: #f9fafb;
+}
+
+.journalItem:last-child {
+    border-bottom: none;
+}
+
+.journalMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.journalNumber {
+    font-weight: 700;
+    font-size: 11px;
+    color: #0ea5e9;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.journalDesc {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.journalAmounts {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.journalDate {
+    color: #9ca3af;
+}
+
+/* Dispensing Layout */
+.dispenseGrid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 20px;
+    height: calc(100vh - 320px);
+    min-height: 540px;
+}
+
+.queueSidebar {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebarHeader {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+}
+
+.sidebarHeader h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.countBadge {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.queueList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.queueItem {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.queueItem:hover {
+    border-color: #0ea5e9;
+    background: #f0f9ff;
+}
+
+.queueItemActive {
+    border-color: #0ea5e9;
+    background: #f0f9ff;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
+}
+
+.queueItemPriority {
+    border-left: 3px solid #f97316 !important;
+    background: #fff7ed !important;
+}
+
+.queueItemPriority:hover {
+    border-color: #ea580c !important;
+    background: #ffedd5 !important;
+}
+
+.priorityBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #c2410c;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+}
+
+.patientAvatarSmall {
+    width: 40px;
+    height: 40px;
+    background: #f3f4f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+}
+
+.queueInfo {
+    flex: 1;
+}
+
+.queuePatientName {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+    margin-bottom: 2px;
+}
+
+.queueVisitMeta {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.prescriptionCount {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0ea5e9;
+    text-transform: uppercase;
+}
+
+.dispenseMain {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow-y: auto;
+    padding: 22px 24px;
+}
+
+.detailsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.detailsHeader h3 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+}
+
+.visitBadge {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.prescriptionList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.prescriptionCard {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color 0.2s;
+}
+
+.prescriptionCard:hover {
+    border-color: #cbd5e1;
+}
+
+.prescHead {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.drugTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.drugMeta {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.drugInstructions {
+    font-style: italic;
+    color: #0ea5e9;
+    font-size: 13px;
+    background: #f0f9ff;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.prescQty {
+    text-align: center;
+    min-width: 60px;
+}
+
+.qtyVal {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0ea5e9;
+}
+
+.qtyLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.prescFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.prescDoctor {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.btnDispense {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.btnDispense:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+}
+
+.noSelection {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.noSelectionInner {
+    max-width: 320px;
+}
+
+.noSelectionInner h3 {
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.noSelectionInner p {
+    font-size: 14px;
+}
+
+/* Common Components */
+.statusBadge {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.statusBadgeSuccess { background: #dcfce7; color: #166534; }
+.statusBadgeWarning { background: #fef9c3; color: #854d0e; }
+.statusBadgeDanger { background: #fee2e2; color: #991b1b; }
+
+.searchContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    color: #9ca3af;
+}
+
+.searchInput {
+    padding: 10px 12px 10px 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.tabActions {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.loadingSmall {
+    padding: 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.emptyQueue {
+    padding: 40px 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.textMuted {
+    color: #6b7280;
+    margin: 0;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    padding: 12px 20px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.iconBtn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    transition: all 0.2s;
+}
+
+.iconBtn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* ── Inline Confirm UI (same pattern as Cancel Prescription) ── */
+.confirmGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btnChange {
+    background: transparent;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.btnChange:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+/* ── Inline Status Banners (replace alert/confirm) ── */
+.successBanner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    animation: fadeIn 0.2s ease;
+}
+
+.errorBanner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Manual Override Panel ── */
+.prescriptionCardOverride {
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.12);
+}
+
+.selectionOverride {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+    margin-top: 4px;
+}
+
+.overrideHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.overrideHeader h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0ea5e9;
+}
+
+.searchArea {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.drugResultList {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.drugResultItem {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.drugResultItem:last-child { border-bottom: none; }
+
+.drugResultItem:hover { background: #f0f9ff; }
+
+.drName {
+    font-weight: 600;
+    font-size: 14px;
+    color: #111827;
+}
+
+.drMeta {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* ── Comparison view (Prescribed vs Selected) ── */
+.selectionComparison {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.comparisonGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.compCol {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.compCol:first-child {
+    border-right: 1px solid #e5e7eb;
+    background: #fafafa;
+}
+
+.compLabel {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.compValue {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.substituteBadge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* ── Batch Selection area ── */
+.batchArea {
+    padding: 12px 16px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.batchSelect {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+    cursor: pointer;
+}
+
+.batchSelect:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px rgba(14,165,233,0.1);
+}
+
+.modalFooter {
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── Empty state for prescription list ── */
+.emptyTable {
+    padding: 32px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+/* ── Forms ── */
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.input {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    transition: all 0.2s;
+    background: white;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
+}

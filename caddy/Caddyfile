@@ -1,0 +1,80 @@
+# ─── Vital Core HMS — production Caddyfile (with domain) ─────────────────
+#
+# Use this when you have a real domain (e.g. hms.geminimedical.ug) pointing
+# at the LXC's public IP. Caddy will:
+#   - Auto-request a Let's Encrypt cert on first boot
+#   - Auto-renew the cert before expiry
+#   - Enforce HTTPS (HTTP requests get 301'd to HTTPS)
+#   - Forward real client IP + proto to the app (so rate limits and audit
+#     logs see the real source, not Caddy's internal IP)
+#
+# Switch from the bare-IP variant:
+#   1. docker compose stop caddy
+#   2. Edit docker-compose.yml: change the mount from ./caddy/Caddyfile.ip
+#      to ./caddy/Caddyfile
+#   3. Set VITALCORE_DOMAIN in .env.production
+#   4. docker compose up -d caddy
+
+# {$VITALCORE_DOMAIN} comes from the caddy container's environment.
+# Caddy substitutes it at config-load time. If empty, the listener won't start.
+{$VITALCORE_DOMAIN:localhost} {
+	# ── Reverse proxy to the Next.js app ─────────────────────────────────
+	# Caddy's reverse_proxy automatically passes X-Real-IP, X-Forwarded-For,
+	# X-Forwarded-Proto and X-Forwarded-Host to the upstream. We don't need
+	# to repeat them.
+	reverse_proxy app:3000 {
+		# Healthcheck — Caddy will mark the upstream down if /api/auth/csrf
+		# returns non-2xx. /api/auth/csrf is a public endpoint, no auth.
+		health_uri /api/auth/csrf
+		health_interval 30s
+		health_timeout 5s
+		health_status 2xx
+	}
+
+	# ── Compression ──────────────────────────────────────────────────────
+	encode zstd gzip
+
+	# ── Security headers ─────────────────────────────────────────────────
+	# These are ALSO set in next.config.mjs but Caddy adds them earlier
+	# in the response (browsers see them before the body).
+	header {
+		# Force HTTPS for 1 year — also covers subdomains.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# Defence in depth against MIME sniffing.
+		X-Content-Type-Options "nosniff"
+		# Block clickjacking.
+		X-Frame-Options "DENY"
+		# Modern referrer policy.
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Restrict powerful APIs.
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		# Don't tell the world what we run.
+		-Server
+		-X-Powered-By
+	}
+
+	# NOTE: rate-limiting the auth endpoint is left to the application
+	# (Next.js middleware). The `rate_limit` directive requires a custom
+	# Caddy build with the caddy-ratelimit plugin. If you need L7 rate
+	# limiting at the proxy, switch the Caddy image to:
+	#   caddy:2-builder (custom build with rate limit)
+	# and add the plugin in your Dockerfile.
+
+	# ── Long cache for static assets (Next.js emits content-hashed URLs) ─
+	@static path /_next/static/* /favicon.ico /uploads/*
+	header @static Cache-Control "public, max-age=31536000, immutable"
+
+	# ── Access log ───────────────────────────────────────────────────────
+	log {
+		output file /data/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
+
+# Optional: redirect the bare IP to the canonical domain. Catches people
+# who type the IP into the address bar. Comment out if you don't want this.
+# :80 {
+#     redir https://{$VITALCORE_DOMAIN}{uri} permanent
+# }

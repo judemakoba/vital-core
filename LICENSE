@@ -1,0 +1,51 @@
+Vital Core HMS — Proprietary License
+
+Copyright (c) 2026 Jude M. All rights reserved.
+
+This software and associated documentation files (the "Software") are
+the proprietary and confidential property of the copyright holder.
+
+GRANT OF LICENSE
+The copyright holder grants the customer a non-exclusive, non-transferable,
+revocable license to use, deploy, and modify the Software for the
+customer's own hospital operations, subject to the following restrictions:
+
+PERMITTED
+  ✓ Deploy and run the Software on infrastructure owned or controlled
+    by the licensee (on-premise, cloud, or hybrid)
+  ✓ Modify the Software for the licensee's own operational needs
+  ✓ Make backup copies as needed
+  ✓ Grant access to the Software to the licensee's employees and
+    contractors on a need-to-know basis
+
+PROHIBITED
+  ✗ Redistribute the Software or any derivative works to third parties
+  ✗ Sell, rent, lease, sublicense, or otherwise commercially exploit
+    the Software or any derivative works
+  ✗ Reverse engineer, decompile, or disassemble the Software except
+    to the extent expressly permitted by applicable law
+  ✗ Remove or alter any proprietary notices, labels, or marks
+  ✗ Use the Software to provide commercial services to third parties
+    (e.g. as a managed-service offering)
+
+DATA OWNERSHIP
+  All data created, stored, or processed by the Software (patient
+  records, billing data, audit logs, etc.) remains the exclusive
+  property of the licensee. The copyright holder claims no rights
+  over licensee data.
+
+NO WARRANTY
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+  DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT,
+  OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE
+  OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+TERMINATION
+  This license terminates automatically if the licensee breaches any
+  of its terms. Upon termination, the licensee must cease use of the
+  Software and destroy all copies in their possession.
+
+For licensing inquiries, contact: judemakoba@gmail.com

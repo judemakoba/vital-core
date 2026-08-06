@@ -1,0 +1,140 @@
+.welcomeSection {
+    margin-bottom: 2rem;
+}
+
+.greeting {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.date {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.statCard {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.statCardLink {
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    /* Push the arrow all the way to the right */
+    overflow: hidden;
+}
+
+.statCardLink:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary-color) !important;
+}
+
+.statCardLink:hover .statArrow {
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+.statCardLink:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.statCardLink:active {
+    transform: translateY(0);
+}
+
+.statIconWrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.statInfo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.statSublabel {
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.statArrow {
+    opacity: 0.45;
+    transform: translate(-4px, 4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 0.25rem;
+}
+
+.statName {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.widgetsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .widgetsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.widget {
+    padding: 1.5rem;
+    min-height: 300px;
+}
+
+.widgetTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}

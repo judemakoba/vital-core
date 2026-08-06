@@ -1,0 +1,33 @@
+// =============================================================================
+// DEPRECATED — DO NOT USE
+// =============================================================================
+// This file is a STUB left over from the original `create-next-app`
+// scaffolding. It contains ONE enum (ClaimStatus) and no models.
+//
+// The REAL Prisma schema lives at:
+//
+//   lib/generated-prisma/schema.prisma
+//
+// That's the source of truth. All `prisma generate`, `prisma db push`,
+// `prisma migrate`, and the Docker build all use that path:
+//
+//   npx prisma generate --schema=lib/generated-prisma/schema.prisma
+//   npx prisma db push --schema=lib/generated-prisma/schema.prisma
+//
+// This stub is kept only so that legacy `npx prisma` invocations
+// (without --schema) don't fail outright — they pick up this file,
+// find a valid Prisma file, and exit. They don't actually generate
+// anything useful because the models are in the other file.
+//
+// TODO: remove this file once we're sure no tooling depends on it.
+// =============================================================================
+
+enum ClaimStatus {
+  DRAFT
+  SUBMITTED
+  ACKNOWLEDGED
+  APPROVED
+  PAID
+  REJECTED
+  PENDING_REPROCESSING  // For claims that need to be resubmitted after successful appeal
+}

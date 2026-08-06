@@ -1,0 +1,105 @@
+# ─── Vital Core HMS — Tailscale + Caddyfile (intranet edition) ───────────
+#
+# Use this Caddyfile when the app is reached via Tailscale. Caddy uses
+# Tailscale-issued certs for the .ts.net hostname (auto-trusted on all
+# devices that have Tailscale installed), and falls back to a self-signed
+# cert for LAN clients hitting the LXC's local IP.
+#
+# Setup expectations (handled by docker-compose):
+#   - Tailscale sidecar joins the tailnet and writes cert files to the
+#     tailscale_state volume at /var/lib/tailscale/cert.pem + key.pem
+#   - The TS_HOSTNAME env var (e.g. "vitalcore") is passed to Caddy as
+#     VITALCORE_HOSTNAME. The Tailscale cert is valid for this bare hostname
+#     AND for <TS_HOSTNAME>.<tailnet>.ts.net.
+#
+# How the cert routing works (Caddy SNI):
+#   - Request to https://vitalcore               → Tailscale cert (valid)
+#   - Request to https://<lxc-lan-ip>            → internal CA (self-signed)
+#   - Request to http://* (port 80)              → 301 redirect to https://
+#
+# To export Caddy's root CA for LAN clients that don't have Tailscale:
+#   docker exec vitalcore-caddy cat /data/caddy/pki/authorities/local/root.crt > caddy-root-ca.crt
+#   # Then install caddy-root-ca.crt on the LAN client as a Trusted Root.
+
+# ─── Site block: Tailscale hostname (primary access) ─────────────────────
+# The placeholder {$VITALCORE_HOSTNAME:vitalcore} reads from the env var
+# (set by docker-compose from TS_HOSTNAME), defaulting to "vitalcore".
+# Use https://<that-name> in your browser — Tailscale MagicDNS resolves
+# it automatically on any device with Tailscale installed.
+{$VITALCORE_HOSTNAME:vitalcore} {
+	tls /var/lib/tailscale/cert.pem /var/lib/tailscale/key.pem
+
+	reverse_proxy 127.0.0.1:3000 {
+		# Caddy's reverse_proxy already passes X-Real-IP, X-Forwarded-For,
+		# X-Forwarded-Proto and X-Forwarded-Host to the upstream.
+		health_uri /api/auth/csrf
+		health_interval 30s
+		health_timeout 5s
+		health_status 2xx
+	}
+
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+		-X-Powered-By
+	}
+
+	@static path /_next/static/* /favicon.ico /uploads/*
+	header @static Cache-Control "public, max-age=31536000, immutable"
+
+	log {
+		output file /data/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
+
+# ─── Site block: LAN fallback (self-signed cert) ────────────────────────
+# Anything that doesn't match the Tailscale hostname above. Typically the
+# LXC's local IP (e.g. 192.168.1.50) hit by a laptop on the same WiFi.
+# The cert is Caddy's internal CA — browsers will warn once. To silence
+# the warning, install the root CA from /data/caddy/pki/authorities/local/root.crt
+# on the LAN device (one-time setup).
+:443 {
+	tls internal
+
+	reverse_proxy 127.0.0.1:3000 {
+		health_uri /api/auth/csrf
+		health_interval 30s
+		health_timeout 5s
+		health_status 2xx
+	}
+
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+		-X-Powered-By
+	}
+
+	@static path /_next/static/* /favicon.ico /uploads/*
+	header @static Cache-Control "public, max-age=31536000, immutable"
+
+	log {
+		output file /data/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
+
+# ─── HTTP → HTTPS redirect ──────────────────────────────────────────────
+# Sends any plain-HTTP request to HTTPS. Bound to 0.0.0.0:80.
+:80 {
+	redir https://{host}{uri} permanent
+}

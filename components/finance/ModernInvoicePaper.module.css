@@ -1,0 +1,209 @@
+.paper {
+    background: #ffffff;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.5;
+}
+
+/* Background Waves using SVG clipping or absolute positioning */
+.headerBackground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 180px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.content {
+    position: relative;
+    z-index: 1;
+    padding: 3rem;
+}
+
+.logoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+}
+
+.logo {
+    max-width: 150px;
+    height: auto;
+}
+
+.titleSection {
+    text-align: right;
+}
+
+.invoiceTitle {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0047AB;
+    margin: 0;
+    letter-spacing: -1px;
+}
+
+.meta {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+.infoLabel {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.infoValue {
+    font-size: 0.95rem;
+    color: #334155;
+    white-space: pre-line;
+}
+
+.billingTo {
+    text-align: right;
+}
+
+.itemsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.itemsTable th {
+    background: #f8fafc;
+    color: #0047AB;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid #0047AB;
+}
+
+.itemsTable td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+}
+
+.colDesc { width: 50%; }
+.colQty { width: 10%; text-align: center; }
+.colPrice { width: 20%; text-align: right; }
+.colTotal { width: 20%; text-align: right; font-weight: 700; }
+
+.summarySection {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.summaryBox {
+    width: 250px;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.summaryLabel {
+    color: #64748b;
+}
+
+.summaryValue {
+    font-weight: 600;
+}
+
+.totalRow {
+    border-top: 2px solid #0047AB;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.totalValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0047AB;
+}
+
+.footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.footerBrand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #0047AB;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.termsTitle {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.termsText {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Print Overrides */
+@media print {
+    /* Fill the page edge-to-edge with the invoice paper. The paper
+     * already has internal padding via the .paper rule below. */
+    @page {
+        margin: 0;
+        size: A4;
+    }
+
+    .paper {
+        box-shadow: none;
+        max-width: none;
+        width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 15mm;
+        border-radius: 0;
+        page-break-inside: avoid;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .headerBackground svg {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}

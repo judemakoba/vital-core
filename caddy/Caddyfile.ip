@@ -1,0 +1,71 @@
+# ─── Vital Core HMS — bare-IP Caddyfile (HTTP only) ──────────────────────
+#
+# Use this when you DON'T have a domain yet — just a public IP. Caddy
+# listens on :80 and forwards to the app. No TLS, no ACME, no certs.
+#
+# IMPORTANT: HTTP means the admin password travels in cleartext. Acceptable
+# for a temporary setup behind a VPN, NOT for any real PHI on the public
+# internet. As soon as you get a domain, switch to Caddyfile (see below).
+#
+# Upgrade path (when you get a domain):
+#   1. Point DNS A record for your domain at the LXC's public IP
+#   2. Make sure ports 80 + 443 are open on the LXC's firewall
+#   3. On the LXC:
+#        docker compose stop caddy
+#        # edit docker-compose.yml — change the caddy volume mount from
+#        # ./caddy/Caddyfile.ip  →  ./caddy/Caddyfile
+#        # set VITALCORE_DOMAIN=hms.yourdomain.com in .env.production
+#        docker compose up -d caddy
+#   4. Caddy auto-requests a Let's Encrypt cert. Done.
+
+:80 {
+	# ── Reverse proxy to the Next.js app ─────────────────────────────────
+	# Caddy's reverse_proxy automatically passes X-Real-IP, X-Forwarded-For,
+	# X-Forwarded-Proto and X-Forwarded-Host to the upstream. We don't need
+	# to repeat them.
+	reverse_proxy app:3000 {
+		# Healthcheck — Caddy will mark the upstream down if /api/auth/csrf
+		# returns non-2xx. /api/auth/csrf is a public endpoint, no auth.
+		health_uri /api/auth/csrf
+		health_interval 30s
+		health_timeout 5s
+		health_status 2xx
+	}
+
+	# ── Compression ──────────────────────────────────────────────────────
+	encode zstd gzip
+
+	# ── Security headers (no HSTS — we're on HTTP) ───────────────────────
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+		-X-Powered-By
+	}
+
+	# NOTE: rate-limiting the auth endpoint is left to the application
+	# (Next.js middleware). The `rate_limit` directive requires a custom
+	# Caddy build with the caddy-ratelimit plugin. If you need L7 rate
+	# limiting at the proxy, switch the Caddy image to:
+	#   caddy:2-builder (custom build with rate limit)
+	# and add the plugin in your Dockerfile.
+
+	# ── Long cache for static assets ─────────────────────────────────────
+	@static path /_next/static/* /favicon.ico /uploads/*
+	header @static Cache-Control "public, max-age=31536000, immutable"
+
+	# ── Access log ───────────────────────────────────────────────────────
+	log {
+		output file /data/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}
+
+# ────────────────────────────────────────────────────────────────────────────
+# Replace this ENTIRE FILE with the contents of caddy/Caddyfile (the
+# production variant) when you have a domain. The {:80} listener will be
+# replaced by a {yourdomain} listener that auto-issues a Let's Encrypt cert.
+# ────────────────────────────────────────────────────────────────────────────
