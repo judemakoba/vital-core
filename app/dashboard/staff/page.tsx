@@ -129,7 +129,7 @@ export default function StaffPage() {
                                             <Edit2 size={16} />
                                         </button>
                                         <button className={styles.actionBtn} title="Permissions">
-                                            <ShieldAlert size={16} />
+                                            
                                         </button>
                                     </td>
                                 </tr>

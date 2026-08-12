@@ -27,7 +27,15 @@ COPY lib/generated-prisma/schema.prisma ./lib/generated-prisma/schema.prisma
 
 # Install ALL deps (including devDeps — we need them for `next build`).
 # `npm ci` is reproducible and fast given a lockfile.
-RUN npm ci --no-audit --no-fund --prefer-offline
+#
+# `--legacy-peer-deps` is required because next-auth@4.24.11 declares
+# nodemailer@^6.6.5 as peerOptional, but the project uses nodemailer@9.x
+# for the email-client module. Harmless mismatch (next-auth only uses
+# nodemailer if you wire up its email features), but npm's strict
+# peer-dep resolution refuses to install. The project also has an
+# .npmrc that sets legacy-peer-deps=true for local dev; we pass the
+# flag here too so the build doesn't depend on .npmrc being present.
+RUN npm ci --no-audit --no-fund --prefer-offline --legacy-peer-deps
 
 # =============================================================================
 # Stage 2 — build

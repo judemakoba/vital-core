@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Users as UsersIcon, Plus, Shield, Search } from "lucide-react";
 import styles from "../page.module.css";
 
 export default function UsersTab() {
@@ -176,7 +175,7 @@ export default function UsersTab() {
                                         </td>
                                         <td>
                                             <span className={`${styles.badge} ${user.role?.name === 'SUPER_ADMIN' ? styles.badgeWarning : styles.badgeSuccess}`}>
-                                                <Shield size={10} style={{ marginRight: "4px" }} />
+                                                
                                                 {user.role?.name || "Unassigned"}
                                             </span>
                                         </td>

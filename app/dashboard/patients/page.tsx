@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Plus, Eye, CalendarPlus, Trash2, X, Edit, Sparkles, AlertCircle, Shield, CheckCircle2, XCircle, AlertTriangle, Loader2 } from "lucide-react";
 import styles from "./page.module.css";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -39,9 +38,7 @@ interface Patient {
     hasInsurance: boolean;
     isActive: boolean;
     createdAt: string;
-    // R48: include the most-recent active enrollment (if any) so the
     // visit creation modal can show the "Validate Insurance" button.
-    insuranceEnrollments?: PatientEnrollment[];
 }
 
 interface Doctor {
@@ -89,14 +86,10 @@ export default function PatientsPage() {
     // Smart default for visit type (e.g. "patient was here 5 days ago → probably FOLLOW_UP")
     const [visitSuggestion, setVisitSuggestion] = useState<{ suggestedType: string; reason: string } | null>(null);
     const [loadingSuggestion, setLoadingSuggestion] = useState(false);
-
-    // R48: per-visit insurance validation state on the create-visit form.
     // The cashier runs the third-party check here, the result drives the
     // visit status. The verification is included in the POST /visit
     // payload so the visit is created with the right initial status
     // (no separate "Validate" button on the visit page needed).
-    const [validationState, setValidationState] = useState<'idle' | 'validating' | 'done'>('idle');
-    const [validationResult, setValidationResult] = useState<VerificationResult | null>(null);
     // The visit must be created first before verify-insurance can write
     // the InsuranceVerification row, so we run a temporary validation
     // here using a synthetic placeholder visit. Actually, we use a
@@ -105,11 +98,7 @@ export default function PatientsPage() {
     // row linked to the visit id, so we can't call it before the visit
     // exists. Instead, the create-visit API accepts a `verification`
     // payload and records the row itself (single source of truth).
-    const [validationError, setValidationError] = useState<string | null>(null);
-    // R49: feature flag — when OFF, the entire insurance validation
     // panel is hidden and visits are created as cash by default.
-    const [insuranceEnabled, setInsuranceEnabled] = useState(true);
-
     useEffect(() => {
         const fetchPatients = async () => {
             setLoading(true);
@@ -150,11 +139,6 @@ export default function PatientsPage() {
                 .then(res => res.json())
                 .then(data => setDoctors(data))
                 .catch(err => console.error("Failed to fetch doctors", err));
-            // R49: load insurance feature flag
-            fetch("/api/insurance/enabled", { credentials: "include" })
-                .then(res => res.json())
-                .then(data => setInsuranceEnabled(data.enabled !== false))
-                .catch(() => setInsuranceEnabled(true));
         }
     }, [showVisitModal]);
 
@@ -212,7 +196,6 @@ export default function PatientsPage() {
             if (visitData.type === "FOLLOW_UP" && visitData.linkedPriorVisitId) {
                 payload.linkedPriorVisitId = visitData.linkedPriorVisitId;
             }
-            // R48: include the validation result (if any) so the visit
             // is created with the right initial status. The
             // create-visit API records the InsuranceVerification row
             // based on this payload — we don't need a separate
@@ -233,7 +216,6 @@ export default function PatientsPage() {
                 if (data.isDirectService) {
                     statusMsg = `direct service (${data.initialStatus})`;
                 } else if (data.insuranceDeferConsult) {
-                    // R48: insurance validated APPROVED on the create
                     // form → deferred billing. Fee is added to the
                     // FINAL- invoice at first order placement, then
                     // submitted as a single claim.
@@ -241,7 +223,6 @@ export default function PatientsPage() {
                         `consultation fee UGX ${(data.consultationFee || 0).toLocaleString()} ` +
                         `deferred to claim. Status: ${data.initialStatus}.`;
                 } else if (data.insuranceDenied) {
-                    // R48: insurance validated DENIED on the create
                     // form → cash fallback. Consult fee invoice issued
                     // at this point at the negotiated rate.
                     const reason = validationResult?.reason || 'no reason given';
@@ -249,7 +230,6 @@ export default function PatientsPage() {
                         `Falling back to cash. Consultation fee UGX ${(data.consultationFee || 0).toLocaleString()} ` +
                         `(${data.insuranceName} rate), status: ${data.initialStatus}.`;
                 } else if (data.insuranceOnFile) {
-                    // R48: insurance on file but cashier didn't
                     // validate (or got ERROR and chose to proceed).
                     // Visit is parked at PendingInsuranceValidation;
                     // cashier can validate on the visit page later.
@@ -266,9 +246,8 @@ export default function PatientsPage() {
                 alert(`Visit ${data.visitNumber} created — ${statusMsg}.`);
                 setShowVisitModal(false);
                 setSelectedPatient(null);
-                setValidationState('idle');
-                setValidationResult(null);
-                setValidationError(null);
+
+
             } else {
                 const error = await res.json();
                 alert(error.error || "Failed to create visit");
@@ -276,9 +255,8 @@ export default function PatientsPage() {
                 if (res.status === 400) {
                     setShowVisitModal(false);
                     setSelectedPatient(null);
-                    setValidationState('idle');
-                    setValidationResult(null);
-                    setValidationError(null);
+
+
                 }
             }
         } catch (err) {
@@ -303,39 +281,6 @@ export default function PatientsPage() {
      * The "force" param (admin tools) is NOT exposed here — only AUTO
      * mode is allowed. This is the cashier's standard flow.
      */
-    const handleValidateInsurance = async () => {
-        if (!selectedPatient) return;
-        const enrollment = selectedPatient.insuranceEnrollments?.[0];
-        if (!enrollment) return;
-
-        setValidationState('validating');
-        setValidationError(null);
-        setValidationResult(null);
-
-        try {
-            const res = await fetch('/api/insurance/verify-preview', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    patientId: selectedPatient.id,
-                    enrollmentId: enrollment.id,
-                }),
-            });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || 'Validation failed');
-            }
-            const data = await res.json();
-            // data.result is the ThirdPartyVerificationResult
-            setValidationResult(data.result);
-            setValidationState('done');
-        } catch (err: any) {
-            setValidationError(err.message || 'Failed to validate insurance');
-            setValidationState('done');
-        }
-    };
-
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -420,12 +365,10 @@ export default function PatientsPage() {
                                                 setShowVisitModal(true);
                                                 setVisitData({ type: 'OPD', doctorId: '', chiefComplaint: '', linkedPriorVisitId: '' });
                                                 setVisitSuggestion(null);
-                                                // R48: reset per-visit validation state when the
                                                 // modal opens. The cashier runs the third-party
                                                 // check on the form.
-                                                setValidationState('idle');
-                                                setValidationResult(null);
-                                                setValidationError(null);
+
+
                                                 // Fetch smart default based on patient's recent visit history
                                                 setLoadingSuggestion(true);
                                                 fetch(`/api/patients/${patient.id}/visit-suggestion`, { credentials: 'include' })
@@ -621,10 +564,6 @@ export default function PatientsPage() {
                                             </select>
                                         </div>
                                     )}
-
-                                    {/* R49: insurance validation panel — only when the
-                                        feature is enabled AND the patient has an active
-                                        enrollment AND the visit is billable. */}
                                     {insuranceEnabled && selectedPatient.insuranceEnrollments && selectedPatient.insuranceEnrollments.length > 0 && (() => {
                                         const enrollment = selectedPatient.insuranceEnrollments![0];
                                         const isBillable = !['FOLLOW_UP', 'LAB_REVIEW', 'VACCINATION', 'ANTENATAL', 'LAB_ONLY', 'RADIOLOGY_ONLY', 'PRESCRIPTION_ONLY']
@@ -646,7 +585,7 @@ export default function PatientsPage() {
                                                 >
                                                     <div className={styles.insuranceValidationHeader}>
                                                         <div className={styles.insuranceValidationProvider}>
-                                                            <Shield size={18} />
+                                                            
                                                             <div>
                                                                 <div className={styles.insuranceValidationProviderName}>
                                                                     {enrollment.insurance.name}

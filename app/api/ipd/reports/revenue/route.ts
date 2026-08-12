@@ -31,7 +31,6 @@ export async function GET(request: Request) {
             },
             select: {
                 totalAmount: true,
-                insuranceShare: true,
                 patientShare: true,
                 discountAmount: true,
                 taxAmount: true,

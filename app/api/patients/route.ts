@@ -49,28 +49,6 @@ export const GET = withAuth(async (request) => {
         phone: true,
         isActive: true,
         createdAt: true,
-        // R48: include the most-recent active enrollment so the visit
-        // creation modal can show the "Validate Insurance" button only
-        // for patients with insurance on file. The full enrollment list
-        // is available via the patient detail API.
-        // The legacy `hasInsurance` / `insuranceId` / `insuranceNo` /
-        // `insurance` fields are intentionally NOT selected — insurance
-        // is now managed exclusively via the `insuranceEnrollments`
-        // table.
-        insuranceEnrollments: {
-          where: { isActive: true },
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: {
-            id: true,
-            policyNumber: true,
-            memberNumber: true,
-            coverageStart: true,
-            coverageEnd: true,
-            status: true,
-            insurance: { select: { id: true, name: true, code: true, consultationFee: true } },
-          },
-        },
       },
       skip,
       take: limit,
@@ -88,7 +66,7 @@ export const GET = withAuth(async (request) => {
   });
 });
 
-// POST /api/patients - Create new patient (+ optional insurance enrollment, R48)
+// POST /api/patients - Create new patient
 export const POST = withAuth(async (request) => {
   const body = await request.json();
   const data = validateRequest(createPatientSchema, body);
@@ -103,32 +81,13 @@ export const POST = withAuth(async (request) => {
   
   // Generate patient number if not provided
   const patientNumber = data.patientNumber || await generatePatientNumber();
-  
-  // R48: extract the optional enrollment. Insurance fields are no longer
-  // first-class patient fields — the visit is what triggers validation,
-  // not the patient profile. The enrollment is just a "hint" that the
-  // patient has insurance on file.
-  const { insuranceEnrollment, ...patientFields } = data as any;
-  
-  // Verify the insurance company exists before attempting to create
-  // the enrollment. We don't FK-validate it in the schema because
-  // the patient is created first and the enrollment is optional.
-  if (insuranceEnrollment?.insuranceId) {
-    const company = await prisma.insuranceCompany.findUnique({
-      where: { id: insuranceEnrollment.insuranceId },
-      select: { id: true, isActive: true },
-    });
-    if (!company) {
-      throw ApiError.badRequest(`Insurance company ${insuranceEnrollment.insuranceId} not found.`);
-    }
-  }
+  const patientFields = data;
   
   // Create patient + (optional) enrollment in a single transaction.
   // Either both succeed or neither does. The enrollment is "VERIFIED"
   // by default at creation time so the third-party verification can
   // run on demand per visit (the user can re-enroll with a different
-  // status if needed). We use a unique constraint on (patientId, insuranceId)
-  // to prevent duplicate enrollments.
+  // status if needed).
   const patient = await prisma.$transaction(async (tx) => {
     const p = await tx.patient.create({
       data: {
@@ -137,43 +96,6 @@ export const POST = withAuth(async (request) => {
         dateOfBirth: new Date(patientFields.dateOfBirth),
       },
     });
-    
-    if (insuranceEnrollment?.insuranceId) {
-      // Check for an existing enrollment (any state — re-activating a
-      // prior enrollment is fine if the patient was previously enrolled
-      // and then deactivated).
-      const existing = await tx.patientInsurance.findFirst({
-        where: { patientId: p.id, insuranceId: insuranceEnrollment.insuranceId },
-      });
-      if (existing) {
-        // Reactivate + update policy numbers / dates
-        await tx.patientInsurance.update({
-          where: { id: existing.id },
-          data: {
-            policyNumber: insuranceEnrollment.policyNumber,
-            memberNumber: insuranceEnrollment.memberNumber || null,
-            coverageStart: new Date(insuranceEnrollment.coverageStart),
-            coverageEnd: insuranceEnrollment.coverageEnd ? new Date(insuranceEnrollment.coverageEnd) : null,
-            isActive: true,
-            status: 'VERIFIED',
-          },
-        });
-      } else {
-        await tx.patientInsurance.create({
-          data: {
-            patientId: p.id,
-            insuranceId: insuranceEnrollment.insuranceId,
-            policyNumber: insuranceEnrollment.policyNumber,
-            memberNumber: insuranceEnrollment.memberNumber || null,
-            coverageStart: new Date(insuranceEnrollment.coverageStart),
-            coverageEnd: insuranceEnrollment.coverageEnd ? new Date(insuranceEnrollment.coverageEnd) : null,
-            status: 'VERIFIED',
-            isActive: true,
-          },
-        });
-      }
-    }
-    
     return p;
   });
   

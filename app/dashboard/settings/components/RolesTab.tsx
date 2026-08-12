@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Shield, ShieldCheck, Info } from "lucide-react";
 import styles from "../page.module.css";
 
 export default function RolesTab() {
@@ -29,7 +28,7 @@ export default function RolesTab() {
     return (
         <div>
             <div className={styles.section}>
-                <h2 className={styles.title}><Shield size={24} color="var(--primary-color)" /> Roles & Permissions</h2>
+                <h2 className={styles.title}> Roles & Permissions</h2>
                 <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
                     Manage access control levels for staff members. Currently, roles are managed by system administrators directly.
                 </p>
@@ -41,7 +40,7 @@ export default function RolesTab() {
                         {roles.map(role => (
                             <div key={role.id} style={{ padding: "1.5rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", background: "white" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
-                                    <ShieldCheck size={20} color={role.name === 'SUPER_ADMIN' ? "var(--warning-color)" : "var(--success-color)"} />
+                                    
                                     <h3 style={{ fontSize: "1.1rem", margin: 0 }}>{role.name}</h3>
                                 </div>
                                 <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "1rem", minHeight: "40px" }}>

@@ -12,8 +12,6 @@ import {
 import styles from "../../../page.module.css";
 import visitStyles from "./visit.module.css";
 import VisitProgressChecklist from "./VisitProgressChecklist";
-import InsuranceValidationCard from "./InsuranceValidationCard";
-
 interface Drug { name: string; genericName: string; strength: string }
 interface Prescription {
     id: string; medicationName: string; dosage: string; frequency: string;
@@ -45,8 +43,6 @@ interface Doctor { name: string; department?: string }
 interface Patient {
     id: string; patientNumber: string; firstName: string; lastName: string;
     phone: string; dateOfBirth: string; gender: string;
-    insuranceEnrollments?: Array<{
-        id: string;
         insuranceId: string;
         memberNumber: string;
         policyNumber: string;
@@ -72,8 +68,6 @@ interface Visit {
     labOrders: LabOrder[];
     radiologyOrders: RadiologyOrder[];
     invoices: Invoice[];
-    insuranceVerifications?: Array<{
-        id: string;
         status: 'PENDING' | 'APPROVED' | 'DENIED' | 'ERROR';
         verificationNumber: string | null;
         reason: string | null;
@@ -113,24 +107,13 @@ export default function VisitDetailPage() {
     const router = useRouter();
     const [visit, setVisit] = useState<Visit | null>(null);
     const [loading, setLoading] = useState(true);
-    // R49c: insurance feature flag. When OFF, the
-    // InsuranceValidationCard is hidden entirely (cash flow always) and
     // the insurance-deferred banner is suppressed.
-    const [insuranceEnabled, setInsuranceEnabled] = useState(true);
-
     useEffect(() => {
         fetch(`/api/visits/${params.visitId}`, { credentials: "include" })
             .then(r => r.ok ? r.json() : null)
             .then(data => { setVisit(data); setLoading(false); })
             .catch(() => setLoading(false));
-        // R49c: load insurance feature flag in parallel
-        fetch("/api/insurance/enabled", { credentials: "include" })
-            .then(r => r.ok ? r.json() : { enabled: true })
-            .then(d => setInsuranceEnabled(d.enabled !== false))
-            .catch(() => setInsuranceEnabled(true));
     }, [params.visitId]);
-
-    // R46: insurance-deferred consultation fee detection. We don't store
     // this flag on the visit directly — we infer it from "the visit has a
     // consultation line item marked as deferred to claim" (or, if no
     // orders have been placed yet, the visit was created with
@@ -139,7 +122,6 @@ export default function VisitDetailPage() {
     // signal: any invoice has a consultation line item with the
     // "(deferred to claim)" suffix in its description.
     //
-    // R49c: suppress this banner when insurance is disabled. Even
     // if a visit has a leftover "(deferred to claim — AAR Insurance)"
     // line item (from a time when insurance was ON), we don't want to
     // show the "insurance-verified visit" banner when the clinic has
@@ -243,18 +225,7 @@ export default function VisitDetailPage() {
                 onDiscontinued={(newStatus) => setVisit({ ...visit, status: newStatus })}
             />
 
-            {/* R47: Insurance validation card (only renders if patient has
-                an active enrollment). When the visit is in
-                PendingInsuranceValidation, the card shows a big
-                "Validate Insurance" button that calls the third-party
-                verifier. The card also shows the verification history
-                for already-validated visits.
-                R49c: when the insurance feature is OFF, hide this card
-                entirely. The clinic has opted out of insurance — even
-                if a patient still has an active enrollment on file
-                (e.g. enrolled when insurance was ON, and the toggle
-                was flipped later), the visit cycle treats them as
-                cash and there's nothing to verify. */}
+            
             {insuranceEnabled && (
                 <InsuranceValidationCard
                     visitId={visit.id}

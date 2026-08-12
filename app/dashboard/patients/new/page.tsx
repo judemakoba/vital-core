@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Shield, CheckCircle2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,7 +45,6 @@ const patientSchema = z.object({
     bloodGroup: z.string().max(10).optional().or(z.literal('')).default(""),
     maritalStatus: z.string().max(50).optional().or(z.literal('')).default(""),
     occupation: z.string().max(100).optional().or(z.literal('')).default(""),
-    // R48: optional insurance enrollment — captured in a separate
     // section below. If the user toggles "Enroll in insurance", these
     // fields become required.
     enrollInInsurance: z.boolean().default(false),
@@ -73,11 +71,8 @@ export default function NewPatientPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [serverError, setServerError] = useState("");
     const [insuranceCompanies, setInsuranceCompanies] = useState<any[]>([]);
-    // R49: feature flag — when OFF, hide the Insurance Enrollment
     // section entirely. Default true so the form works for clinics
     // that haven't touched the toggle.
-    const [insuranceEnabled, setInsuranceEnabled] = useState(true);
-
     const {
         register,
         handleSubmit,
@@ -122,16 +117,6 @@ export default function NewPatientPage() {
     const enrollInInsurance = watch("enrollInInsurance");
 
     useEffect(() => {
-        // R49: feature flag + insurance companies list (only when enabled)
-        fetch("/api/insurance/enabled", { credentials: "include" })
-            .then(res => res.json())
-            .then(data => setInsuranceEnabled(data.enabled !== false))
-            .catch(() => setInsuranceEnabled(true));
-        fetch("/api/admin/insurance", { credentials: "include" })
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) {
-                    setInsuranceCompanies(data.filter((c: any) => c.isActive !== false));
                 } else {
                     console.error("Received non-array insurance data:", data);
                     setInsuranceCompanies([]);
@@ -174,8 +159,6 @@ export default function NewPatientPage() {
                 maritalStatus: data.maritalStatus || undefined,
                 occupation: data.occupation || undefined,
             };
-
-            // R48: nest the optional insurance enrollment
             if (data.enrollInInsurance && data.enrollmentInsuranceId) {
                 submitData.insuranceEnrollment = {
                     insuranceId: data.enrollmentInsuranceId,
@@ -228,122 +211,7 @@ export default function NewPatientPage() {
                 <Link href="/dashboard/patients" className={styles.backLink}>
                     <ArrowLeft size={16} /> Back to Directory
                 </Link>
-                <h1 className={styles.title}>Register New Patient</h1>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className={`glass-card ${styles.formCard}`}>
-                {serverError && (
-                    <div style={{ padding: "1rem", background: "rgba(239, 68, 68, 0.1)", color: "var(--danger-color)", borderRadius: "var(--radius-md)", marginBottom: "1.5rem" }}>
-                        {serverError}
-                    </div>
-                )}
-
-                {/* Personal Information */}
-                <h2 className={styles.sectionTitle}>Personal Information</h2>
-                <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>First Name *</label>
-                        <input {...register("firstName")} className={styles.input} placeholder="Jane" />
-                        {errors.firstName && <span className={styles.errorText}>{errors.firstName.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Last Name *</label>
-                        <input {...register("lastName")} className={styles.input} placeholder="Doe" />
-                        {errors.lastName && <span className={styles.errorText}>{errors.lastName.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Date of Birth *</label>
-                        <input {...register("dateOfBirth")} type="date" className={styles.input} />
-                        {errors.dateOfBirth && <span className={styles.errorText}>{errors.dateOfBirth.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Gender *</label>
-                        <select {...register("gender")} className={styles.select}>
-                            <option value="">Select Gender</option>
-                            <option value="MALE">Male</option>
-                            <option value="FEMALE">Female</option>
-                            <option value="OTHER">Other</option>
-                        </select>
-                        {errors.gender && <span className={styles.errorText}>{errors.gender.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Blood Group</label>
-                        <select {...register("bloodGroup")} className={styles.select}>
-                            <option value="">Unknown</option>
-                            <option value="A+">A+</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B-">B-</option>
-                            <option value="AB+">AB+</option>
-                            <option value="AB-">AB-</option>
-                            <option value="O+">O+</option>
-                            <option value="O-">O-</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Contact Information */}
-                <h2 className={styles.sectionTitle}>Contact Information</h2>
-                <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Phone Number *</label>
-                        <input {...register("phone")} className={styles.input} placeholder="+256 700 000000" />
-                        {errors.phone && <span className={styles.errorText}>{errors.phone.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Emergency Contact Name</label>
-                        <input {...register("emergencyContactName")} className={styles.input} placeholder="Guardian Name" />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Emergency Contact Phone</label>
-                        <input {...register("emergencyContactPhone")} className={styles.input} placeholder="+256..." />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Emergency Relation</label>
-                        <input {...register("emergencyContactRel")} className={styles.input} placeholder="Father, Mother, etc." />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Email Address (Optional)</label>
-                        <input {...register("email")} type="email" className={styles.input} placeholder="jane@example.com" />
-                    </div>
-
-                    <div className={styles.formGroupFull}>
-                        <label className={styles.label}>Physical Address</label>
-                        <input {...register("address")} className={styles.input} placeholder="Street name, Neighborhood" />
-                    </div>
-                </div>
-
-                {/* Medical Information */}
-                <h2 className={styles.sectionTitle}>Medical</h2>
-                <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Allergies</label>
-                        <textarea {...register("allergies")} className={styles.textarea} placeholder="List any known allergies..." />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Chronic Conditions</label>
-                        <textarea {...register("chronicConditions")} className={styles.textarea} placeholder="Asthma, Diabetes, etc..." />
-                    </div>
-                </div>
-
-                {/* R48: Insurance Enrollment (optional, captured at patient generation) */}
-                {insuranceEnabled && (
-                    <>
-                <h2 className={styles.sectionTitle}>
-                    <Shield size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                    Insurance Enrollment
-                </h2>
-
-                <div className={styles.formGrid}>
+                                <div className={styles.formGrid}>
                     <div className={styles.formGroupFull}>
                         <label className={styles.checkboxContainer}>
                             <input type="checkbox" {...register("enrollInInsurance")} style={{ width: "16px", height: "16px" }} />

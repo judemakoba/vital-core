@@ -105,7 +105,6 @@ export async function POST(request: Request) {
                 // The invoice line item always carries the catalog price (what
                 // the service actually costs). The patient's copay is NOT
                 // subtracted from the line — it's tracked separately on the
-                // InsuranceClaim and applied at settlement time. (Previously
                 // the route did `price - standardPatientCopay` and clamped to
                 // 0, which made the invoice show 0 whenever the copay exceeded
                 // the exam price — e.g. AAR Insurance with a 100000 copay on

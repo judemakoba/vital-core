@@ -11,8 +11,8 @@
  *     `/api/email/inbound/postmark` and `/api/email/inbound/sendgrid`.
  *
  * Both write to the same `EmailMessage` table, with thread detection
- * (In-Reply-To / References headers), patient/claim routing (From address
- * match against Patient.email / InsuranceCompany.email).
+ * (In-Reply-To / References headers) and patient routing (From address
+ * match against Patient.email).
  */
 import { ImapFlow } from "imapflow";
 import { simpleParser, ParsedMail, Attachment } from "mailparser";
@@ -96,7 +96,7 @@ export async function syncAccountInbox(accountId: string, opts: { sinceDays?: nu
                     if (!fullMsg?.source) continue;
                     const parsed: ParsedMail = await simpleParser(fullMsg.source);
 
-                    // Patient / claim routing: look up the from-address
+                    // Patient routing: look up the from-address
                     const routing = await routeInbound(account.tenantId, parsed);
 
                     // Save attachments as a JSON manifest (we don't store blobs by default)
@@ -127,7 +127,6 @@ export async function syncAccountInbox(accountId: string, opts: { sinceDays?: nu
                             receivedAt: new Date(),
                             attachments: attachmentManifest as any,
                             patientId: routing.patientId,
-                            claimId: routing.claimId,
                             provider: "imap",
                             externalId,
                             toUserId: routing.toUserId,
@@ -254,7 +253,6 @@ export async function receiveFromPostmark(tenantId: string, payload: PostmarkInb
             sentAt: parsed.date,
             receivedAt: new Date(),
             patientId: routing.patientId,
-            claimId: routing.claimId,
             toUserId: routing.toUserId,
             provider: "postmark",
             externalId,
@@ -340,7 +338,6 @@ export async function receiveFromSendGrid(tenantId: string, payload: Record<stri
             status: "DELIVERED",
             receivedAt: new Date(),
             patientId: routing.patientId,
-            claimId: routing.claimId,
             toUserId: routing.toUserId,
             provider: "sendgrid",
             externalId,
@@ -351,7 +348,7 @@ export async function receiveFromSendGrid(tenantId: string, payload: Record<stri
 
 // ───── Routing ─────────────────────────────────────────────────────────────
 
-async function routeInbound(tenantId: string, parsed: ParsedMail): Promise<{ patientId?: string; claimId?: string; toUserId?: string }> {
+async function routeInbound(tenantId: string, parsed: ParsedMail): Promise<{ patientId?: string; toUserId?: string }> {
     const fromEmail = parsed.from?.value[0]?.address?.toLowerCase();
     if (!fromEmail) return {};
     // Match against User email (internal staff reply)
@@ -360,16 +357,6 @@ async function routeInbound(tenantId: string, parsed: ParsedMail): Promise<{ pat
     // Match against Patient email
     const patient = await prisma.patient.findFirst({ where: { email: { equals: fromEmail, mode: "insensitive" } } });
     if (patient) return { patientId: patient.id };
-    // Match against Insurance company email
-    const ins = await prisma.insuranceCompany.findFirst({ where: { email: { equals: fromEmail, mode: "insensitive" } } });
-    if (ins) {
-        // Find a recent claim for this insurer (heuristic)
-        const recentClaim = await prisma.insuranceClaim.findFirst({
-            where: { insuranceCompanyId: ins.id },
-            orderBy: { createdAt: "desc" },
-        });
-        return { claimId: recentClaim?.id };
-    }
     return {};
 }
 

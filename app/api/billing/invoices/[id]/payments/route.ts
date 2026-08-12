@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { AccountingService } from "@/lib/finance/accounting-service";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getInsuranceEligibility } from "@/lib/insurance/eligibility";
 import { transitionInvoiceItemsToInProgress } from "@/lib/visits/substatus";
 
 /**
@@ -64,7 +63,6 @@ export async function POST(
         const body = await request.json();
         const {
             amount, paymentMethod, notes, transactionId,
-            // Insurance waiver (when insured patient pays cash/MoMo instead of routing to insurer)
             waivedInsurance, insuranceId, waiverReason, insuranceSavedAmount,
         } = body;
 
@@ -137,129 +135,6 @@ export async function POST(
             }
             newStatus = "Paid";
         }
-        // If payment method is Insurance, auto-remit to claims
-        if (paymentMethod === "Insurance") {
-            // Use the shared eligibility helper to get a specific reason if the
-            // patient isn't properly enrolled (expired, pending verification, etc.)
-            const eligibility = await getInsuranceEligibility(invoice.patientId);
-            if (!eligibility.eligible) {
-                return NextResponse.json(
-                    {
-                        error: eligibility.reason,
-                        code: 'INELIGIBLE_FOR_INSURANCE',
-                        reason: eligibility.reason,
-                    },
-                    { status: 400 }
-                );
-            }
-            const enrollment = await prisma.patientInsurance.findUnique({
-                where: { id: eligibility.enrollment.id },
-            });
-            if (!enrollment) {
-                return NextResponse.json({ error: "Enrollment record disappeared — try again" }, { status: 500 });
-            }
-
-            // Create claim and mark invoice Paid.
-            // Use a random suffix in the claim number to avoid collisions on concurrent
-            // submissions (the previous count+1 approach was racy).
-            const today = new Date();
-            const todayStart = new Date(today); todayStart.setHours(0, 0, 0, 0);
-            const todayCount = await prisma.insuranceClaim.count({ where: { createdAt: { gte: todayStart } } });
-            const randomSuffix = Math.random().toString(36).slice(2, 6).toUpperCase();
-            // Generate the prefix from settings, append random suffix to guarantee uniqueness
-            const { getSetting } = await import("@/lib/settings/store");
-            const prefix = await getSetting<string>("numbering.claim.prefix", "CLM");
-            const yyyymmdd = today.toISOString().slice(0, 10).replace(/-/g, "");
-            const claimNumber = `${prefix}-${yyyymmdd}-${randomSuffix}`;
-
-            await prisma.$transaction(async (tx) => {
-                // The insurance payment is the insurer's share of the invoice.
-                // The patient copay is whatever they paid before (or zero if this is
-                // the only payment). Snapshot both for audit/reporting.
-                const patientCopayAmount = Math.max(0, Number(invoice.totalAmount) - paymentAmount);
-
-                await tx.insuranceClaim.create({
-                    data: {
-                        claimNumber,
-                        insuranceId: enrollment.insuranceId,
-                        patientId: invoice.patientId,
-                        invoiceId: invoice.id,
-                        visitId: invoice.visitId,
-                        totalAmount: invoice.totalAmount,
-                        eligibleAmount: paymentAmount,
-                        patientCopayAmount,
-                        insuranceNetAmount: paymentAmount,
-                        status: "SUBMITTED"
-                    }
-                });
-
-                await tx.invoice.update({
-                    where: { id: params.id },
-                    data: {
-                        amountPaid: paymentAmount,
-                        balanceDue: 0,
-                        status: "Paid" // Treated as 'paid' from clinic perspective since claim is logged
-                    }
-                });
-
-                // Consolidated spec (R45): when the invoice is fully paid, every
-                // order item on it transitions AwaitingPayment → InProgress.
-                // This is what makes them visible to the lab/rad/pharmacy
-                // dashboards. If the invoice was a per-order invoice (legacy
-                // pattern), this is still correct.
-                const itemTransitions = await transitionInvoiceItemsToInProgress(tx, params.id);
-                if (itemTransitions.labs + itemTransitions.rads + itemTransitions.rxs > 0) {
-                    console.log(
-                        `[Payments] Invoice ${params.id} (insurance) closed — ` +
-                        `transitioned ${itemTransitions.labs} lab, ${itemTransitions.rads} rad, ` +
-                        `${itemTransitions.rxs} rx orders to InProgress`
-                    );
-                }
-
-                // Advance the visit state. Same rule as the cash path below:
-                //   ConsultationBilling → Triage
-                //   FinalBilling        → Completed  (only when ALL visit invoices are paid)
-                // The insurance path always marks the invoice Paid (claim is
-                // logged), so the visit transition is unconditional here. Each
-                // insurance partner's differential consultation fee (set on
-                // InsuranceCompany.consultationFee and applied at visit creation)
-                // is already on the invoice at this point — this is purely the
-                // state-machine advancement.
-                //
-                // BUGFIX 2026-08-04: a visit has multiple invoices (Consultation +
-                // Lab + Radiology + Pharmacy), so paying any ONE of them must NOT
-                // close the visit. We only flip FinalBilling → Completed when
-                // every other invoice linked to this visit is also Paid.
-                if (invoice.visitId && invoice.visit) {
-                    const visitStatus = invoice.visit.status;
-                    if (visitStatus === "ConsultationBilling") {
-                        await tx.visit.update({
-                            where: { id: invoice.visitId },
-                            data: { status: "Triage" }
-                        });
-                    } else if (visitStatus === "FinalBilling") {
-                        const allPaid = await areAllVisitInvoicesPaid(
-                            invoice.visitId,
-                            invoice.id // exclude the invoice we just paid
-                        );
-                        if (allPaid.paid) {
-                            await tx.visit.update({
-                                where: { id: invoice.visitId },
-                                data: { status: "Completed" }
-                            });
-                        } else {
-                            console.log(
-                                `[Payments] Visit ${invoice.visitId} still has ${allPaid.unpaidCount} unpaid invoice(s) ` +
-                                `(UGX ${allPaid.remaining.toFixed(2)} remaining) — staying in FinalBilling`
-                            );
-                        }
-                    }
-                }
-            });
-
-            return NextResponse.json({ message: "Claim submitted successfully", claimNumber });
-        }
-
         // --- Standard Cash / Mobile Money Logic ---
         if (newAmountPaid === 0) newStatus = "Unpaid";
 
@@ -273,13 +148,6 @@ export async function POST(
                     transactionId,
                     notes,
                     receivedById: session.user.id,
-                    // Insurance waiver tracking
-                    ...(waivedInsurance && {
-                        waivedInsurance: true,
-                        insuranceId: insuranceId ?? null,
-                        waiverReason: waiverReason ?? null,
-                        insuranceSavedAmount: insuranceSavedAmount ?? null,
-                    }),
                 }
             });
 

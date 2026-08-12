@@ -169,7 +169,6 @@ export async function GET(request: Request) {
             quantity: number;
             revenue: number;
             patientPay: number;
-            insurancePay: number;
             count: number; // number of dispense events
         }>();
         for (const d of dispenses) {
@@ -183,7 +182,6 @@ export async function GET(request: Request) {
                 quantity: 0,
                 revenue: 0,
                 patientPay: 0,
-                insurancePay: 0,
                 count: 0,
             };
             cur.quantity += d.quantityDispensed;
@@ -255,7 +253,6 @@ export async function GET(request: Request) {
             dispensing: {
                 total: dispenseSummary.totalRevenue,
                 patientPay: dispenseSummary.patientPay,
-                insurancePay: dispenseSummary.insurancePay,
             },
             // any other income sources would go here (e.g. service fees, deposits)
         };

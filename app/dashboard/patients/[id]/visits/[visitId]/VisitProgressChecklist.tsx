@@ -196,17 +196,10 @@ export default function VisitProgressChecklist({
                     )}
                 </div>
             )}
-
-            {/* R46 — insurance-deferred consultation fee banner. The visit
-                was created with insurance validation passing, so the
-                patient doesn't pay anything at the front desk. The
-                consultation fee is added to the FINAL- invoice at first
-                order placement, and the cashier submits the whole invoice
-                as a claim at end of visit. */}
             {!isDiscontinued && insuranceDeferConsult && (
                 <div className={visitStyles.insuranceBanner}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <ShieldCheck size={16} color="var(--primary-color)" />
+                        
                         <strong>Insurance-verified visit</strong>
                     </div>
                     <div style={{ marginTop: 6, fontSize: "0.8rem", color: "var(--text-muted)" }}>
@@ -256,7 +249,6 @@ export default function VisitProgressChecklist({
                     {orderCount > 0 && (
                         <div className={visitStyles.orderSubList}>
                             {allOrders.map(o => {
-                                // R50 (Option D): prescriptions use a different
                                 // lifecycle than lab/rad. The doctor places
                                 // the order (subStatus=AwaitingPayment), but
                                 // there's no line item for the cashier to pay

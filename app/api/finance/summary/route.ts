@@ -93,12 +93,6 @@ export async function GET() {
             // Standalone TaxInvoices (counted in totals)
             prisma.taxInvoice.groupBy({ where: { parentInvoiceId: null }, by: ['paymentStatus'], _count: true }),
             prisma.invoice.groupBy({ by: ['status'], _count: true }),
-            prisma.insuranceClaim.groupBy({
-                by: ['status'],
-                _count: true,
-                _sum: { totalAmount: true, eligibleAmount: true },
-            }),
-            prisma.insuranceClaim.aggregate({
                 where: { status: { in: ['DRAFT', 'SUBMITTED', 'ACKNOWLEDGED', 'APPROVED'] } },
                 _count: true,
                 _sum: { eligibleAmount: true },
@@ -124,7 +118,6 @@ export async function GET() {
                 totalRevenue: Math.max(0, totalCollected),
                 totalCollected: Math.max(0, totalCollected),
                 totalOutstanding: Math.max(0, totalOutstanding),
-                // Insurance claims at a glance
                 claims: {
                     byStatus: claimsByStatus.map(c => ({ status: c.status, count: c._count, totalAmount: c._sum.totalAmount ?? 0, eligibleAmount: c._sum.eligibleAmount ?? 0 })),
                     pendingCount: claimsTotalPending._count,

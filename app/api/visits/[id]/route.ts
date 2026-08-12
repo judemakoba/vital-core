@@ -19,21 +19,7 @@ export async function GET(
         const visit = await prisma.visit.findUnique({
             where: { id: params.id },
             include: {
-                patient: {
-                    include: {
-                        // R47: include insurance enrollments so the visit
-                        // page can render the validation card and the
-                        // "insurance on file" badge without a second
-                        // round-trip.
-                        insuranceEnrollments: {
-                            where: { isActive: true },
-                            orderBy: { createdAt: 'desc' },
-                            include: {
-                                insurance: { select: { id: true, name: true, code: true, consultationFee: true, isActive: true } },
-                            },
-                        },
-                    },
-                },
+                patient: true,
                 doctor: {
                     select: {
                         name: true,
@@ -42,9 +28,6 @@ export async function GET(
                     }
                 },
                 diagnoses: true,
-                // Consolidated spec (R45): include subStatus on every order
-                // so the visit detail page can render the per-item lifecycle
-                // badges. Also include discontinuation fields + who did it.
                 prescriptions: {
                     include: {
                         drug: { select: { name: true, genericName: true, strength: true } }
@@ -55,14 +38,6 @@ export async function GET(
                 discontinuationBy: { select: { name: true } },
                 linkedPriorVisit: { select: { id: true, visitNumber: true, type: true } },
                 followUpVisits: { select: { id: true, visitNumber: true, type: true } },
-                // R47: include insurance verification history
-                insuranceVerifications: {
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        verifiedBy: { select: { name: true } },
-                        insurance: { select: { name: true, code: true } },
-                    },
-                },
                 invoices: {
                     include: {
                         items: true,
@@ -122,11 +97,9 @@ export async function DELETE(
             // Invoice children
             prisma.invoiceItem.deleteMany({ where: { invoiceId: { in: invoiceIds } } }),
             prisma.payment.deleteMany({ where: { invoiceId: { in: invoiceIds } } }),
-            prisma.insuranceClaim.deleteMany({ where: { invoiceId: { in: invoiceIds } } }),
             // Invoices
             prisma.invoice.deleteMany({ where: { id: { in: invoiceIds } } }),
             // Visit-level insurance claims
-            prisma.insuranceClaim.deleteMany({ where: { visitId } }),
             // Prescription children
             prisma.dispensingLog.deleteMany({ where: { prescriptionId: { in: prescriptionIds } } }),
             // Visit children

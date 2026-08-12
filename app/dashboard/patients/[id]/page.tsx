@@ -2,11 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-    User, Phone, Mail, MapPin, ArrowLeft,
-    Activity, HeartPulse, Pill, AlertCircle,
-    Clock, Users, Edit2, CalendarCheck, FileText, Shield
-} from "lucide-react";
 import Link from "next/link";
 import styles from "../page.module.css";
 import stylesProfile from "./profile.module.css";
@@ -58,9 +53,7 @@ interface Patient {
     allergies: string;
     chronicConditions: string;
     currentMedications: string;
-    // R48c: the most-recent active enrollment is shown in the
     // profile (informational). Edit via the patient edit form.
-    insuranceEnrollments?: InsuranceEnrollment[];
 }
 
 interface Visit {
@@ -82,23 +75,17 @@ export default function PatientProfilePage() {
     const [visits, setVisits] = useState<Visit[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>("overview");
-    // R49: feature flag — when OFF, hide the Insurance Enrollment
     // card on the profile.
-    const [insuranceEnabled, setInsuranceEnabled] = useState(true);
-
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const [patientRes, visitsRes, flagRes] = await Promise.all([
                     fetch(`/api/patients/${params.id}`),
                     fetch(`/api/patients/${params.id}/visits`),
-                    fetch("/api/insurance/enabled"),
-                ]);
                 if (patientRes.ok) setPatient(await patientRes.json());
                 if (visitsRes.ok) setVisits(await visitsRes.json());
                 if (flagRes.ok) {
                     const data = await flagRes.json();
-                    setInsuranceEnabled(data.enabled !== false);
                 }
             } catch (err) {
                 console.error("Failed to fetch patient data", err);
@@ -275,11 +262,9 @@ export default function PatientProfilePage() {
                     </div>
 
                     <div>
-                        {/* Insurance Enrollment (informational) — R49: hidden
-                            when the insurance feature is OFF for this clinic. */}
                         {insuranceEnabled && (
                         <div className={stylesProfile.cardRow}>
-                            <div className={stylesProfile.sectionTitle}><Shield size={14} />Insurance Enrollment</div>
+                            <div className={stylesProfile.sectionTitle}>Insurance Enrollment</div>
                             {(() => {
                                 const enrollment = (patient.insuranceEnrollments || []).find(e => e.isActive)
                                     || (patient.insuranceEnrollments || [])[0]

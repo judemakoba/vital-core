@@ -34,9 +34,8 @@ export async function findOrCreateInvoiceForTransaction(input: FindOrCreateInvoi
     //    Strategy: any Unpaid/Partial invoice whose items are ALL the same itemType
     //    as the incoming line is eligible. If items are mixed (e.g. one Lab + one Drug),
     //    skip — don't bundle, that invoice is owned by a different category.
-    //
-    //    Edge case: a brand-new invoice with zero items is eligible for any category
-    //    (the first item to land claims it).
+    // Edge case: a brand-new invoice with zero items is eligible for any category
+    // (the first item to land claims it).
     const candidates = await prisma.invoice.findMany({
         where: { visitId, status: { in: ['Unpaid', 'Partial'] } },
         include: { items: true },
@@ -46,7 +45,7 @@ export async function findOrCreateInvoiceForTransaction(input: FindOrCreateInvoi
     const reusable = candidates.find((inv) => {
         // Empty invoice: only reuse if its number prefix matches the category of
         // the incoming line. This prevents a fresh-empty Lab invoice from getting
-        // "claimed" by the first Drug line that comes along (which would mix
+        // captured by the first Drug line that comes along (which would mix
         // categories on the same invoice).
         if (inv.items.length === 0) {
             return inv.invoiceNumber.toUpperCase().startsWith(numberPrefix.toUpperCase());
@@ -109,10 +108,8 @@ export async function findOrCreateInvoiceForTransaction(input: FindOrCreateInvoi
  *     in the payments route still accounts for them so the visit won't
  *     close until every outstanding invoice is paid.
  *
- * The auto-split logic in `/api/billing/invoices/[id]/route.ts` GET still
- * applies: if the patient is insured, the FINAL- invoice is split into
- * (FINAL- insurance portion) + (INV- cash portion) at first fetch. Both
- * must be paid before the visit transitions to Completed.
+ * Used by the dispense and lab/radiology render flows to find the open
+ * FINAL- invoice for a visit, creating one if none exists.
  */
 export async function findOrCreateFinalBillInvoice(opts: {
     visitId: string;

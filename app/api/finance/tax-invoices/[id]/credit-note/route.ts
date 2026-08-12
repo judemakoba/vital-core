@@ -75,7 +75,6 @@ export async function POST(
                 taxAmount: -(l.taxAmount ?? 0) * refundRatio,
                 lineTotal: -l.lineTotal * refundRatio,
                 isCovered: l.isCovered,
-                insurancePrice: l.insurancePrice,
                 ...(l.taxRateId ? { taxRateId: l.taxRateId } : {}),
             }));
 
@@ -95,7 +94,6 @@ export async function POST(
                     invoiceNumber,
                     invoiceType: 'CREDIT_NOTE',
                     patientId: original.patientId,
-                    insuranceId: original.insuranceId,
                     customerName: original.customerName,
                     customerTin: original.customerTin,
                     customerAddress: original.customerAddress,

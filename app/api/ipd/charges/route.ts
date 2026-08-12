@@ -105,8 +105,6 @@ export async function POST(request: Request) {
                 
                 nurseId,
                 notes,
-                
-                insuranceId: admission?.patient?.insuranceId,
                 insuranceShare,
                 patientShare,
                 

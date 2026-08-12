@@ -24,7 +24,7 @@ export async function getBadDebtAccountCode(): Promise<string> {
     return getSetting<string>("billing.badDebtAccountCode", "5430");
 }
 
-/** Auto-write-off threshold (denied claims below this are written off immediately). */
+/** Auto-write-off threshold (outstanding balances below this are written off immediately). */
 export async function getAutoWriteoffThreshold(): Promise<number> {
     return getSetting<number>("billing.autoWriteoffThreshold", 5000);
 }
@@ -76,6 +76,6 @@ export async function assertNotBackdated(date: Date | string): Promise<void> {
 
 /** Allowed payment methods (comma-separated PaymentMethod values). */
 export async function getAllowedPaymentMethods(): Promise<string[]> {
-    const raw = await getSetting<string>("billing.allowedPaymentMethods", "CASH,MOBILE_MONEY,CARD,BANK_TRANSFER,INSURANCE,CHEQUE");
+    const raw = await getSetting<string>("billing.allowedPaymentMethods", "CASH,MOBILE_MONEY,CARD,BANK_TRANSFER,CHEQUE");
     return raw.split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
 }

@@ -124,14 +124,6 @@ export async function generateJournalNumber(sequence: number, date: Date = new D
     return renderNumber({ format: journalFormat, prefix: result["numbering.journal.prefix"], sequence, date });
 }
 
-export async function generateClaimNumber(sequence: number, date: Date = new Date()): Promise<string> {
-    const result = await getMany([
-        "numbering.claim.prefix",
-        "numbering.claim.format",
-    ]);
-    return renderNumber({ format: result["numbering.claim.format"], prefix: result["numbering.claim.prefix"], sequence, date });
-}
-
 export async function generateSettlementNumber(sequence: number, date: Date = new Date()): Promise<string> {
     const result = await getMany([
         "numbering.settlement.prefix",

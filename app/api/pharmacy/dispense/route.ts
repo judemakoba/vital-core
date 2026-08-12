@@ -384,9 +384,7 @@ export async function POST(request: Request) {
                         unitPrice:          unitPrice,
                         totalAmount:        unitPrice * take,
                         priceType:          priceType,
-                        insuranceId:        insuranceId,
                         patientPayAmount:   (unitPrice - insurancePayAmount) * take,
-                        insurancePayAmount:  insurancePayAmount * take,
                         paymentStatus:      'PENDING',
                         dispensedById:      session.user.id,
                         dosageInstructions: prescription.instructions,
@@ -437,7 +435,6 @@ export async function POST(request: Request) {
                         invoiceNumber: `INV-${new Date().getFullYear()}-${String(count + 1).padStart(6, '0')}`,
                         invoiceType:   'TAX_INVOICE',
                         patientId:     patient.id,
-                        insuranceId:   insuranceId,
                         customerName:  `${patient.firstName} ${patient.lastName}`,
                         invoiceDate:   new Date(),
                         dueDate:       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -464,7 +461,6 @@ export async function POST(request: Request) {
                     unitPrice:        unitPrice,
                     lineTotal:        lineSubtotal,
                     isCovered:        insurancePayAmount > 0,
-                    insurancePrice:   insurancePayAmount > 0 ? unitPrice : null
                 }
             });
 

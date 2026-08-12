@@ -142,7 +142,6 @@ export async function POST(request: Request) {
                             patientShare: chargeData.totalAmount, // Adjust for insurance logic later
                             taxAmount: 0,
                             discountAmount: 0,
-                            insuranceShare: 0
                         }
                     });
                     newChargesGenerated++;

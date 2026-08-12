@@ -11,7 +11,7 @@ export class AccountingService {
         // Try TaxInvoice first (newer URA-compliant model)
         const taxInvoice = await prisma.taxInvoice.findUnique({
             where: { id: invoiceId },
-            include: { lines: true, patient: true, insurance: true },
+            include: { lines: true, patient: true },
         });
         if (taxInvoice) {
             return this.postTaxInvoiceToLedger(taxInvoice, userId);
@@ -20,7 +20,7 @@ export class AccountingService {
         // Fall back to legacy Invoice (visit-based billing)
         const legacyInvoice = await prisma.invoice.findUnique({
             where: { id: invoiceId },
-            include: { items: true, patient: true, claim: true },
+            include: { items: true, patient: true },
         });
         if (legacyInvoice) {
             return this.postLegacyInvoiceToLedger(legacyInvoice, userId);
@@ -119,14 +119,13 @@ export class AccountingService {
         if (t.includes('PHARM') || t === 'DRUG' || t === 'MEDICATION') return '4130';         // Pharmacy Revenue
         if (t.includes('PROC') || t === 'PROCEDURE') return '4140';                            // Procedure Revenue
         if (t.includes('RAD') || t === 'IMAGING') return '4150';                               // Radiology Revenue
-        if (t.includes('INSUR')) return '4210';                                                // Insurance Claims Revenue
         if (t === 'OTHER') return '4900';                                                     // Other Revenue
         return null;
     }
 
     private static async postTaxInvoiceToLedger(invoice: any, userId: string) {
         // 1. Determine accounts
-        const arAccountCode = invoice.insuranceId ? '1132' : '1131';
+        const arAccountCode = '1131';
         const arAccount = await prisma.chartOfAccount.findUnique({ where: { accountCode: arAccountCode } });
         if (!arAccount) throw new Error(`Accounts Receivable account (${arAccountCode}) not found`);
 
@@ -180,8 +179,7 @@ export class AccountingService {
     private static async postLegacyInvoiceToLedger(invoice: any, userId: string) {
         // Legacy Invoice: simpler model, no per-line GL mapping.
         // DR Accounts Receivable, CR General Revenue.
-        const isInsurance = !!invoice.claim || !!invoice.isInsurance;
-        const arAccountCode = isInsurance ? '1132' : '1131';
+        const arAccountCode = '1131';
         const arAccount = await prisma.chartOfAccount.findUnique({ where: { accountCode: arAccountCode } });
         if (!arAccount) throw new Error(`Accounts Receivable account (${arAccountCode}) not found`);
 
@@ -255,7 +253,7 @@ export class AccountingService {
         const payment = await prisma.payment.findUnique({
             where: { id: paymentId },
             include: {
-                invoice: { include: { claim: true, items: true } },
+                invoice: { include: { items: true } },
                 taxInvoice: { include: { lines: true } }
             }
         });
@@ -289,8 +287,7 @@ export class AccountingService {
 
         if (invoiceJournal) {
             // Path A: Dr Cash / Cr AR
-            const isInsurance = !!payment.taxInvoice?.insuranceId || !!payment.invoice?.isInsurance || !!payment.invoice?.claim;
-            const arAccountCode = isInsurance ? '1132' : '1131';
+            const arAccountCode = '1131';
             const arAccount = await prisma.chartOfAccount.findUnique({ where: { accountCode: arAccountCode } });
             if (!arAccount) throw new Error(`AR account (${arAccountCode}) not found`);
             creditLines = [{
@@ -633,60 +630,6 @@ export class AccountingService {
         });
     }
 
-    /**
-     * Posts an insurance claim payment to the ledger.
-     * Debit: Bank (1120)
-     * Credit: Accounts Receivable - Insurance (1132)
-     */
-    static async postClaimPaymentToLedger(claimId: string, userId: string) {
-        const claim = await prisma.insuranceClaim.findUnique({
-            where: { id: claimId },
-            include: { insurance: true }
-        });
-
-        if (!claim) throw new Error('Claim not found');
-        if (claim.status !== 'PAID') throw new Error('Cannot post unpaid claim to ledger');
-
-        const bankAccount = await prisma.chartOfAccount.findUnique({ where: { accountCode: '1120' } });
-        const arInsuranceAccount = await prisma.chartOfAccount.findUnique({ where: { accountCode: '1132' } });
-
-        if (!bankAccount || !arInsuranceAccount) {
-            throw new Error('Finance accounts (Bank/AR-Insurance) not configured');
-        }
-
-        return await prisma.$transaction(async (tx) => {
-            const journal = await tx.journalEntry.create({
-                data: {
-                    entryNumber: `JNL-CLM-PAY-${claim.claimNumber}`,
-                    entryDate: claim.paymentDate || new Date(),
-                    postingDate: new Date(),
-                    description: `Insurance Payment Received: ${claim.insurance.name} - Claim ${claim.claimNumber}`,
-                    reference: claim.id,
-                    referenceType: 'PAYMENT',
-                    totalDebit: claim.eligibleAmount,
-                    totalCredit: claim.eligibleAmount,
-                    status: 'POSTED',
-                    createdById: userId,
-                    lines: {
-                        create: [
-                            {
-                                accountId: bankAccount.id,
-                                debitAmount: claim.eligibleAmount,
-                                creditAmount: 0,
-                                description: `Insurance remittance - ${claim.insurance.name}`
-                            },
-                            {
-                                accountId: arInsuranceAccount.id,
-                                debitAmount: 0,
-                                creditAmount: claim.eligibleAmount,
-                                description: `Clearing AR for Claim ${claim.claimNumber}`
-                            }
-                        ]
-                    }
-                }
-            });
-
-            return journal;
         });
     }
 }

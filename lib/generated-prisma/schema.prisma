@@ -60,15 +60,12 @@ model User {
   visits                    Visit[]
   accountsClearedVisits     Visit[]                   @relation("VisitAccountsCleared")
   discontinuedVisits        Visit[]                   @relation("VisitDiscontinuation")
-  insuranceVerifications    PatientInsurance[]        @relation("InsuranceVerifier")
-  triggeredVerifications    InsuranceVerification[]   @relation("InsuranceVerificationTrigger")
   priceChanges              DrugPriceAudit[]          @relation("PriceChanges")
   uploadedImages            DrugImage[]               @relation("UploadedImages")
   createdLabTemplates       LabResultTemplate[]       @relation("LabTemplateCreator")
   updatedLabTemplates       LabResultTemplate[]       @relation("LabTemplateUpdater")
   createdRadiologyTemplates RadiologyResultTemplate[] @relation("RadiologyTemplateCreator")
   updatedRadiologyTemplates RadiologyResultTemplate[] @relation("RadiologyTemplateUpdater")
-  adjudicationActions       ClaimAdjudicationLog[]    @relation("AdjudicationActions")
 }
 
 model Account {
@@ -124,53 +121,46 @@ model Permission {
 }
 
 model Patient {
-  id                     String                  @id @default(cuid())
-  patientNumber          String                  @unique
-  firstName              String
-  lastName               String
-  dateOfBirth            DateTime
-  gender                 String
-  bloodGroup             String?
-  maritalStatus          String?
-  occupation             String?
-  phone                  String
-  alternativePhone       String?
-  email                  String?
-  address                String?
-  city                   String?
-  district               String?
-  emergencyContactName   String?
-  emergencyContactPhone  String?
-  emergencyContactRel    String?
-  nextOfKinName          String?
-  nextOfKinPhone         String?
-  nextOfKinEmail         String?
-  nextOfKinAddress       String?
-  nextOfKinRel           String?
-  allergies              String?
-  chronicConditions      String?
-  currentMedications     String?
-  hasInsurance           Boolean                 @default(false)
-  insuranceId            String?
-  insuranceNo            String?
-  isActive               Boolean                 @default(true)
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  admissions             Admission[]
-  appointments           Appointment[]
-  diagnoses              Diagnosis[]
-  dispensingLogs         DispensingLog[]
-  claims                 InsuranceClaim[]
-  invoices               Invoice[]
-  labOrders              LabOrder[]
-  notifications          Notification[]
-  insurance              InsuranceCompany?       @relation(fields: [insuranceId], references: [id])
-  insuranceEnrollments   PatientInsurance[]
-  radiologyOrders        RadiologyOrder[]
-  prescriptions          Prescription[]
-  taxInvoices            TaxInvoice[]
-  visits                 Visit[]
-  insuranceVerifications InsuranceVerification[]
+  id                    String           @id @default(cuid())
+  patientNumber         String           @unique
+  firstName             String
+  lastName              String
+  dateOfBirth           DateTime
+  gender                String
+  bloodGroup            String?
+  maritalStatus         String?
+  occupation            String?
+  phone                 String
+  alternativePhone      String?
+  email                 String?
+  address               String?
+  city                  String?
+  district              String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  emergencyContactRel   String?
+  nextOfKinName         String?
+  nextOfKinPhone        String?
+  nextOfKinEmail        String?
+  nextOfKinAddress      String?
+  nextOfKinRel          String?
+  allergies             String?
+  chronicConditions     String?
+  currentMedications    String?
+  isActive              Boolean          @default(true)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  admissions            Admission[]
+  appointments          Appointment[]
+  diagnoses             Diagnosis[]
+  dispensingLogs        DispensingLog[]
+  invoices              Invoice[]
+  labOrders             LabOrder[]
+  notifications         Notification[]
+  radiologyOrders       RadiologyOrder[]
+  prescriptions         Prescription[]
+  taxInvoices           TaxInvoice[]
+  visits                Visit[]
 }
 
 model Visit {
@@ -218,24 +208,22 @@ model Visit {
   linkedPriorVisitId String?
 
   // Relations
-  admission              Admission?
-  diagnoses              Diagnosis[]
-  dispensingLogs         DispensingLog[]
-  claim                  InsuranceClaim?
-  invoices               Invoice[]
-  labOrders              LabOrder[]
-  prescriptions          Prescription[]
-  radiologyOrders        RadiologyOrder[]
-  orderWriteOffs         OrderWriteOff[]
-  insuranceVerifications InsuranceVerification[]
-  followUpVisits         Visit[]                 @relation("VisitFollowUp")
-  doctor                 User?                   @relation(fields: [assignedDoctorId], references: [id])
-  patient                Patient                 @relation(fields: [patientId], references: [id])
-  consultationInvoice    Invoice?                @relation("VisitConsultationInvoice", fields: [consultationInvoiceId], references: [id])
-  labInvoice             Invoice?                @relation("VisitLabInvoice", fields: [labInvoiceId], references: [id])
-  accountsClearedBy      User?                   @relation("VisitAccountsCleared", fields: [accountsClearedById], references: [id])
-  discontinuationBy      User?                   @relation("VisitDiscontinuation", fields: [discontinuationById], references: [id])
-  linkedPriorVisit       Visit?                  @relation("VisitFollowUp", fields: [linkedPriorVisitId], references: [id])
+  admission           Admission?
+  diagnoses           Diagnosis[]
+  dispensingLogs      DispensingLog[]
+  invoices            Invoice[]
+  labOrders           LabOrder[]
+  prescriptions       Prescription[]
+  radiologyOrders     RadiologyOrder[]
+  orderWriteOffs      OrderWriteOff[]
+  followUpVisits      Visit[]          @relation("VisitFollowUp")
+  doctor              User?            @relation(fields: [assignedDoctorId], references: [id])
+  patient             Patient          @relation(fields: [patientId], references: [id])
+  consultationInvoice Invoice?         @relation("VisitConsultationInvoice", fields: [consultationInvoiceId], references: [id])
+  labInvoice          Invoice?         @relation("VisitLabInvoice", fields: [labInvoiceId], references: [id])
+  accountsClearedBy   User?            @relation("VisitAccountsCleared", fields: [accountsClearedById], references: [id])
+  discontinuationBy   User?            @relation("VisitDiscontinuation", fields: [discontinuationById], references: [id])
+  linkedPriorVisit    Visit?           @relation("VisitFollowUp", fields: [linkedPriorVisitId], references: [id])
 
   @@index([patientId])
   @@index([assignedDoctorId])
@@ -334,26 +322,25 @@ model Prescription {
 }
 
 model LabOrder {
-  id                  String          @id @default(cuid())
+  id                  String   @id @default(cuid())
   visitId             String
   patientId           String
   doctorId            String
   testName            String
   testCategory        String
-  priority            String          @default("Routine")
+  priority            String   @default("Routine")
   specialInstructions String?
-  status              String          @default("Ordered")
+  status              String   @default("Ordered")
   // Consolidated visit cycle: per-order sub-status (AwaitingPayment | InProgress | Fulfilled | Unfulfilled)
-  subStatus           String          @default("AwaitingPayment")
+  subStatus           String   @default("AwaitingPayment")
   result              String?
   resultFlags         String?
   resultRows          String? // JSON-stringified array of investigation rows (for table-mode reports)
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  claim               InsuranceClaim?
-  doctor              User            @relation(fields: [doctorId], references: [id])
-  patient             Patient         @relation(fields: [patientId], references: [id])
-  visit               Visit           @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  doctor              User     @relation(fields: [doctorId], references: [id])
+  patient             Patient  @relation(fields: [patientId], references: [id])
+  visit               Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   // Payment Clearance
   feesPaid   Boolean   @default(false)
@@ -847,10 +834,7 @@ model DispensingLog {
   taxAmount          Float             @default(0)
   totalAmount        Float
   priceType          DispensePriceType
-  insuranceId        String?
-  insuranceApproval  String?
   patientPayAmount   Float
-  insurancePayAmount Float
   paymentStatus      PaymentStatus     @default(PENDING)
   paymentId          String?
   dispensedById      String
@@ -864,7 +848,6 @@ model DispensingLog {
   dispensedBy        User              @relation("UserDispensingLogs", fields: [dispensedById], references: [id])
   drugBatch          DrugBatch         @relation(fields: [drugBatchId], references: [id])
   drug               Drug              @relation(fields: [drugId], references: [id])
-  insurance          InsuranceCompany? @relation(fields: [insuranceId], references: [id])
   patient            Patient           @relation(fields: [patientId], references: [id])
   payment            Payment?          @relation(fields: [paymentId], references: [id])
   prescription       Prescription?     @relation(fields: [prescriptionId], references: [id])
@@ -1006,10 +989,8 @@ model Invoice {
   issuedById          String
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  isInsurance         Boolean              @default(false)
   depositApplications DepositApplication[]
   inpatientCharges    InpatientCharge[]
-  claim               InsuranceClaim[]
   issuedBy            User                 @relation("IssuedInvoices", fields: [issuedById], references: [id])
   patient             Patient              @relation(fields: [patientId], references: [id])
   visit               Visit?               @relation(fields: [visitId], references: [id])
@@ -1044,31 +1025,22 @@ model InvoiceItem {
 }
 
 model Payment {
-  id                   String              @id @default(cuid())
-  invoiceId            String?
-  taxInvoiceId         String?
-  amount               Float
-  paymentMethod        String
-  transactionId        String?             @unique
-  receivedById         String
-  notes                String?
-  // ─── Insurance waiver tracking ───────────────────────────────
-  // Set when a patient with active insurance pays via cash/card/MoMo
-  // instead of routing the bill to the insurer. Captures the reason
-  // for reporting (e.g. "deductible not met", "patient chose cash").
-  waivedInsurance      Boolean             @default(false)
-  insuranceId          String? // which insurer was on file when waived
-  waiverReason         String? // free-text why
-  insuranceSavedAmount Float? // the UGX that would have been claimed, for reporting
-  // ─────────────────────────────────────────────────────────────
-  createdAt            DateTime            @default(now())
-  journalEntryId       String?
-  dispensingLogs       DispensingLog[]
-  invoice              Invoice?            @relation(fields: [invoiceId], references: [id])
-  journalEntry         JournalEntry?       @relation(fields: [journalEntryId], references: [id])
-  receivedBy           User                @relation("ReceivedPayments", fields: [receivedById], references: [id])
-  taxInvoice           TaxInvoice?         @relation(fields: [taxInvoiceId], references: [id])
-  allocations          PaymentAllocation[]
+  id             String              @id @default(cuid())
+  invoiceId      String?
+  taxInvoiceId   String?
+  amount         Float
+  paymentMethod  String
+  transactionId  String?             @unique
+  receivedById   String
+  notes          String?
+  createdAt      DateTime            @default(now())
+  journalEntryId String?
+  dispensingLogs DispensingLog[]
+  invoice        Invoice?            @relation(fields: [invoiceId], references: [id])
+  journalEntry   JournalEntry?       @relation(fields: [journalEntryId], references: [id])
+  receivedBy     User                @relation("ReceivedPayments", fields: [receivedById], references: [id])
+  taxInvoice     TaxInvoice?         @relation(fields: [taxInvoiceId], references: [id])
+  allocations    PaymentAllocation[]
 
   @@index([invoiceId])
   @@index([taxInvoiceId])
@@ -1090,193 +1062,6 @@ model Expense {
   recordedBy    User     @relation("RecordedExpenses", fields: [recordedById], references: [id])
 }
 
-model InsuranceCompany {
-  id                     String                   @id @default(cuid())
-  name                   String                   @unique
-  code                   String                   @unique
-  contactPerson          String?
-  phone                  String?
-  email                  String?
-  address                String?
-  paymentTerms           String?                  @default("Net 30")
-  // Copay configuration — flexible enough to model real-world insurance plans.
-  // - FLAT:               patient pays `standardPatientCopay` (flat per service) — legacy behavior
-  // - PERCENTAGE:         patient pays `copayPercentage`% of the negotiated price
-  // - COPAY_PLUS_PERCENT: patient pays `standardPatientCopay` + `copayPercentage`% of the remainder
-  // - NO_COPAY:           insurance covers 100% (patient pays 0)
-  // - FULL:               patient pays 100% (no insurance coverage — list price still applies)
-  copayType              CopayType                @default(FLAT)
-  standardPatientCopay   Float                    @default(0)
-  copayPercentage        Float                    @default(0)
-  copayDeductible        Float                    @default(0)
-  // Per-insurance consultation fee (overrides the global `visit.consultationFee` setting
-  // for visits whose patient is enrolled with this partner). NULL = fall back to the
-  // global default. Lets each insurance partner negotiate its own visit fee.
-  consultationFee        Float?
-  isActive               Boolean                  @default(true)
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
-  dispensingLogs         DispensingLog[]
-  insuranceBillableRates InsuranceBillableRate[]
-  claims                 InsuranceClaim[]
-  priceList              InsurancePriceListItem[]
-  patients               Patient[]
-  enrollments            PatientInsurance[]
-  taxInvoices            TaxInvoice[]
-  verifications          InsuranceVerification[]
-}
-
-model InsurancePriceListItem {
-  id              String           @id @default(cuid())
-  insuranceId     String
-  serviceType     ServiceType?
-  // serviceId is intentionally un-typed: the same row can refer to a
-  // BillableItem, a Drug, a LabTestCatalog row, or a RadiologyCatalog row.
-  // The `serviceType` field discriminates which table to look up in.
-  // (The original FK to BillableItem blocked seeding drugs/labs/radiology.)
-  serviceId       String?
-  negotiatedPrice Float
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  insurance       InsuranceCompany @relation(fields: [insuranceId], references: [id])
-
-  @@unique([insuranceId, serviceId])
-}
-
-model PatientInsurance {
-  id             String                   @id @default(cuid())
-  patientId      String
-  insuranceId    String
-  policyNumber   String
-  memberNumber   String?
-  coverageStart  DateTime
-  coverageEnd    DateTime?
-  status         VerificationStatus       @default(PENDING)
-  verifiedAt     DateTime?
-  verifiedById   String?
-  isActive       Boolean                  @default(true)
-  createdAt      DateTime                 @default(now())
-  updatedAt      DateTime                 @updatedAt
-  authorizations InsuranceAuthorization[]
-  insurance      InsuranceCompany         @relation(fields: [insuranceId], references: [id])
-  patient        Patient                  @relation(fields: [patientId], references: [id])
-  verifiedBy     User?                    @relation("InsuranceVerifier", fields: [verifiedById], references: [id])
-
-  @@unique([patientId, insuranceId, policyNumber])
-}
-
-model InsuranceAuthorization {
-  id                 String           @id @default(cuid())
-  patientInsuranceId String
-  requestNumber      String           @unique
-  requestDate        DateTime         @default(now())
-  serviceType        ServiceType
-  serviceName        String
-  estimatedCost      Float
-  status             AuthStatus       @default(PENDING)
-  authorizedAmount   Float?
-  authorizationCode  String?
-  validFrom          DateTime?
-  validTo            DateTime?
-  notes              String?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  patientInsurance   PatientInsurance @relation(fields: [patientInsuranceId], references: [id])
-}
-
-model InsuranceClaim {
-  id          String   @id @default(cuid())
-  claimNumber String   @unique
-  insuranceId String
-  patientId   String
-  visitId     String?  @unique
-  invoiceId   String? // multiple claims allowed per invoice for resubmissions
-  labOrderId  String?  @unique
-  claimDate   DateTime @default(now())
-
-  // ─────────────────────────────────────────────
-  // EOB/835 amounts (mirrors standard 835 segments)
-  // ─────────────────────────────────────────────
-  totalAmount          Float
-  allowedAmount        Float? // what the insurer says it allows (Allowed Amount)
-  approvedAmount       Float? // what the insurer will pay (Provider Paid Amount)
-  contractualAdjAmount Float? // (Billed - Allowed) — written off as Contractual Allowance
-  patientCopayAmount   Float? // patient's share from pricing engine
-  insuranceNetAmount   Float? // insurer's share from pricing engine (= approvedAmount usually)
-  paymentVariance      Float? // (approvedAmount - actualPaid) — underpayment tracking
-  eligibleAmount       Float // legacy: same as approvedAmount (kept for backward compat)
-
-  // ─────────────────────────────────────────────
-  // Lifecycle + state machine
-  // DRAFT → SUBMITTED → ACKNOWLEDGED → APPROVED/REJECTED → PAID
-  // REJECTED can be appealed → PENDING_REPROCESSING → re-SUBMITTED
-  // ─────────────────────────────────────────────
-  status             String    @default("DRAFT")
-  submissionDate     DateTime?
-  acknowledgmentDate DateTime?
-  approvalDate       DateTime?
-  paymentDate        DateTime?
-  paymentReference   String? // cheque #, EFT ref, ERA trace #
-  paidAmount         Float? // actual cash received (may differ from approvedAmount)
-
-  // ─────────────────────────────────────────────
-  // Denial info
-  // ─────────────────────────────────────────────
-  denialReasonCode        DenialReasonCode?
-  denialCategory          DenialCategory?
-  denialRarcCode          String? // RARC codes (free text for now)
-  denialReason            String? // free-text detail
-  denialDate              DateTime? // when the claim was first denied (before write-off)
-  denialWriteOffAmount    Float? // amount written off to bad debt when denied
-  denialWriteOffDate      DateTime?
-  denialWriteOffJournalId String? // FK to the journal entry that wrote off the AR
-
-  // ─────────────────────────────────────────────
-  // Resubmission chain
-  // ─────────────────────────────────────────────
-  originalClaimId    String? // points to the original if this is a resubmission
-  resubmissionCount  Int       @default(0)
-  isResubmission     Boolean   @default(false)
-  appealStatus       String? // NOT_APPEALED, APPEALED, WON, LOST
-  appealReason       String?
-  appealDecisionDate DateTime?
-  notes              String?
-
-  postedToLedger         Boolean @default(false) // has the AR settlement been journalized?
-  writeOffPostedToLedger Boolean @default(false) // has the denial write-off been journalized?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  insurance        InsuranceCompany       @relation(fields: [insuranceId], references: [id])
-  invoice          Invoice?               @relation(fields: [invoiceId], references: [id])
-  labOrder         LabOrder?              @relation(fields: [labOrderId], references: [id])
-  patient          Patient                @relation(fields: [patientId], references: [id])
-  visit            Visit?                 @relation(fields: [visitId], references: [id])
-  originalClaim    InsuranceClaim?        @relation("ClaimResubmission", fields: [originalClaimId], references: [id])
-  resubmissions    InsuranceClaim[]       @relation("ClaimResubmission")
-  adjudicationLogs ClaimAdjudicationLog[]
-}
-
-// Per-action log of the claim's adjudication lifecycle
-model ClaimAdjudicationLog {
-  id            String            @id @default(cuid())
-  claimId       String
-  action        String // STATUS_CHANGE | NOTE | SUBMISSION | DENIAL | APPEAL | APPROVAL | PAYMENT | WRITE_OFF
-  fromStatus    String?
-  toStatus      String?
-  reasonCode    DenialReasonCode?
-  amount        Float? // any amount involved (approved, paid, written off)
-  notes         String?
-  performedById String? // user who took the action (null for system)
-  performedAt   DateTime          @default(now())
-  claim         InsuranceClaim    @relation(fields: [claimId], references: [id], onDelete: Cascade)
-  performedBy   User?             @relation("AdjudicationActions", fields: [performedById], references: [id])
-
-  @@index([claimId])
-  @@index([performedAt])
-}
-
 model Notification {
   id        String   @id @default(cuid())
   patientId String
@@ -1288,69 +1073,6 @@ model Notification {
   error     String?
   createdAt DateTime @default(now())
   patient   Patient  @relation(fields: [patientId], references: [id])
-}
-
-// =============================================================================
-// R47: Per-visit insurance verification audit log
-// =============================================================================
-//
-// Per the R47 spec, insurance eligibility is no longer auto-validated when
-// the patient profile is viewed or when a visit is created. Instead, the
-// cashier triggers a fresh verification per visit by pressing the
-// "Validate Insurance" button, which calls a third-party system (e.g. the
-// insurer's eligibility API). Every attempt is logged here for audit + for
-// re-trying on failure.
-// =============================================================================
-
-model InsuranceVerification {
-  id                  String                      @id @default(cuid())
-  visitId             String
-  patientId           String
-  insuranceId         String?
-  memberNumber        String?
-  policyNumber        String?
-  // The third-party provider that was queried. e.g. "AAR Health Gateway",
-  // "Sanlam Verifier". This is a free string because in real-world
-  // deployments we'd have one provider per insurance company.
-  provider            String?
-  // Request and response payloads (JSON). We store both for full audit.
-  requestPayload      Json?
-  responsePayload     Json?
-  // Outcome
-  status              InsuranceVerificationStatus
-  // Authorization number / approval code from the insurer. Null on
-  // denial / error.
-  verificationNumber  String?
-  // Insurer-reported coverage limit / deductible for this patient, if the
-  // third-party returned them. Useful for showing the patient their
-  // remaining benefit.
-  coverageLimit       Float?
-  deductibleRemaining Float?
-  // When coverage is valid (from the insurer's response)
-  coverageValidFrom   DateTime?
-  coverageValidTo     DateTime?
-  // Denial reason / error message when status is DENIED / ERROR
-  reason              String?
-  // Audit: who triggered the verification (cashier user id)
-  verifiedById        String?
-  createdAt           DateTime                    @default(now())
-
-  visit      Visit             @relation(fields: [visitId], references: [id], onDelete: Cascade)
-  patient    Patient           @relation(fields: [patientId], references: [id])
-  insurance  InsuranceCompany? @relation(fields: [insuranceId], references: [id])
-  verifiedBy User?             @relation("InsuranceVerificationTrigger", fields: [verifiedById], references: [id])
-
-  @@index([visitId])
-  @@index([patientId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-enum InsuranceVerificationStatus {
-  PENDING // The third-party system is still processing
-  APPROVED // Third-party confirmed the patient is covered for this visit
-  DENIED // Third-party rejected (expired, policy cancelled, etc.)
-  ERROR // Could not reach the third-party system / invalid response
 }
 
 // =============================================================================
@@ -1422,8 +1144,6 @@ model Tenant {
   poFormat                   String?   @default("{PREFIX}-{YYYY}{MM}{DD}-{SEQ:4}")
   journalPrefix              String?   @default("JNL")
   journalFormat              String?   @default("{PREFIX}-{YYYY}{MM}-{SEQ:4}")
-  claimPrefix                String?   @default("CLM")
-  claimFormat                String?   @default("{PREFIX}-{YYYY}{MM}{DD}-{SEQ:4}")
   // Aging buckets (days) — comma-separated
   agingBuckets               String?   @default("0,30,60,90")
   // Visit
@@ -1530,19 +1250,18 @@ model SystemSetting {
 // =============================================================================
 //
 // Per-tenant email accounts (a clinic can have multiple, e.g.
-// notifications@vitalcore.ug for patients, claims@vitalcore.ug for insurers,
+// notifications@vitalcore.ug for patients,
 // staff@vitalcore.ug for internal). Each account has its own SMTP
 // (outbound) and optional IMAP (inbound) credentials.
 //
 // EmailMessage stores every email — inbound and outbound — with full
 // threading (inReplyToId + threadId), attachments, and FK links back to
-// the domain entity that triggered/relates to the message (patient, claim,
+// the domain entity that triggered/relates to the message (patient,
 // visit, appointment, lab order).
 // =============================================================================
 
 enum EmailAccountPurpose {
   NOTIFICATIONS // patient-facing (appointment reminders, results, statements)
-  CLAIMS // insurance partners (EOBs, 835s, submissions)
   STAFF // internal staff mailing list
   INBOX // generic inbox (web contact form, info@)
   SUPPORT // support / helpdesk
@@ -1635,7 +1354,6 @@ model EmailMessage {
   attachments        Json?
   // FK links to domain entities
   patientId          String?
-  claimId            String?
   visitId            String?
   appointmentId      String?
   labOrderId         String?
@@ -1658,7 +1376,6 @@ model EmailMessage {
   @@index([tenantId, createdAt])
   @@index([threadId])
   @@index([patientId])
-  @@index([claimId])
   @@index([accountId, direction])
 }
 
@@ -1791,7 +1508,6 @@ model TaxInvoice {
   invoiceNumber      String              @unique
   invoiceType        InvoiceType
   patientId          String?
-  insuranceId        String?
   customerName       String?
   customerTin        String?
   customerAddress    String?
@@ -1829,7 +1545,6 @@ model TaxInvoice {
   payments           Payment[]
   allocations        PaymentAllocation[]
   createdBy          User                @relation("CreatedTaxInvoices", fields: [createdById], references: [id])
-  insurance          InsuranceCompany?   @relation(fields: [insuranceId], references: [id])
   journalEntry       JournalEntry?       @relation(fields: [journalEntryId], references: [id])
   originalInvoice    TaxInvoice?         @relation("CreditNotes", fields: [originalInvoiceId], references: [id])
   creditNotes        TaxInvoice[]        @relation("CreditNotes")
@@ -1853,8 +1568,6 @@ model InvoiceLine {
   taxRateId        String?
   taxAmount        Float           @default(0)
   lineTotal        Float
-  insurancePrice   Float?
-  isCovered        Boolean         @default(false)
   revenueAccountId String?
   createdAt        DateTime        @default(now())
   invoice          TaxInvoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -1966,47 +1679,31 @@ model Admission {
 }
 
 model BillableItem {
-  id               String                  @id @default(cuid())
-  itemCode         String                  @unique
+  id               String               @id @default(cuid())
+  itemCode         String               @unique
   itemName         String
   description      String?
   category         BillableItemCategory
   subCategory      String?
   frequency        ChargeFrequency
   application      ChargeApplication
-  defaultQuantity  Float                   @default(1)
+  defaultQuantity  Float                @default(1)
   unitOfMeasure    String?
   standardRate     Float
-  insuranceRate    Float?
   memberRate       Float?
   staffRate        Float?
   taxRateId        String?
-  isTaxable        Boolean                 @default(true)
+  isTaxable        Boolean              @default(true)
   revenueAccountId String?
   autoApplyRules   Json?
-  isActive         Boolean                 @default(true)
-  requiresAuth     Boolean                 @default(false)
-  requiresApproval Boolean                 @default(false)
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
-  revenueAccount   ChartOfAccount?         @relation(fields: [revenueAccountId], references: [id])
-  taxRate          TaxRate?                @relation(fields: [taxRateId], references: [id])
+  isActive         Boolean              @default(true)
+  requiresAuth     Boolean              @default(false)
+  requiresApproval Boolean              @default(false)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  revenueAccount   ChartOfAccount?      @relation(fields: [revenueAccountId], references: [id])
+  taxRate          TaxRate?             @relation(fields: [taxRateId], references: [id])
   charges          InpatientCharge[]
-  insuranceRates   InsuranceBillableRate[]
-}
-
-model InsuranceBillableRate {
-  id             String           @id @default(cuid())
-  insuranceId    String
-  billableItemId String
-  rate           Float
-  isActive       Boolean          @default(true)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  billableItem   BillableItem     @relation(fields: [billableItemId], references: [id])
-  insurance      InsuranceCompany @relation(fields: [insuranceId], references: [id])
-
-  @@unique([insuranceId, billableItemId])
 }
 
 model InpatientCharge {
@@ -2029,9 +1726,6 @@ model InpatientCharge {
   nursingLevel         NursingCareLevel?
   sundryType           String?
   dispensingId         String?
-  insuranceId          String?
-  insuranceShare       Float?
-  patientShare         Float?
   isBilled             Boolean              @default(false)
   invoiceId            String?
   notes                String?
@@ -2066,7 +1760,6 @@ model DailyChargeSummary {
   subtotal        Float
   taxTotal        Float             @default(0)
   grandTotal      Float
-  insuranceTotal  Float             @default(0)
   patientTotal    Float             @default(0)
   isFinalized     Boolean           @default(false)
   finalizedAt     DateTime?
@@ -2171,7 +1864,6 @@ enum VisitPaymentStatus {
   PARTIAL
   PAID
   WAIVED
-  INSURANCE_COVERED
 }
 
 enum LabPaymentStatus {
@@ -2179,7 +1871,6 @@ enum LabPaymentStatus {
   PARTIAL
   PAID
   WAIVED
-  INSURANCE_COVERED
 }
 
 enum PharmacyPaymentStatus {
@@ -2187,7 +1878,6 @@ enum PharmacyPaymentStatus {
   PARTIAL
   PAID
   WAIVED
-  INSURANCE_COVERED
 }
 
 enum CostingMethod {
@@ -2241,7 +1931,6 @@ enum PharmacyPriceType {
 
 enum DispensePriceType {
   CASH
-  INSURANCE
   MEMBER
   STAFF
   COMPLIMENTARY
@@ -2338,115 +2027,6 @@ enum VisitType {
   LAB_ONLY // Visit is for a lab test only
   RADIOLOGY_ONLY // Visit is for an imaging exam only
   PRESCRIPTION_ONLY // Visit is to pick up a prescription only
-}
-
-enum VerificationStatus {
-  PENDING
-  VERIFIED
-  EXPIRED
-  INVALID
-}
-
-enum AuthStatus {
-  NOT_REQUIRED
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum ClaimStatus {
-  DRAFT
-  SUBMITTED
-  ACKNOWLEDGED
-  APPROVED
-  PAID
-  REJECTED
-}
-
-enum CopayType {
-  FLAT
-  PERCENTAGE
-  COPAY_PLUS_PERCENT
-  NO_COPAY
-  FULL
-}
-
-// ─────────────────────────────────────────────────────────────────
-// Claim Adjustment Reason Codes (CARC) — standardized X12 codes
-// commonly used in US healthcare, but the codes are generic enough
-// for any payer. Reference: https://x12.org/codes/claim-adjustment-reason-codes
-// Top 30 most common codes in sub-Saharan Africa insurance billing.
-// ─────────────────────────────────────────────────────────────────
-enum DenialReasonCode {
-  // Patient responsibility
-  DEDUCTIBLE // 1  - Deductible amount
-  COPAY // 2  - Co-payment amount
-  COINSURANCE // 3  - Coinsurance amount
-  NONCOVERED // 4  - The procedure code is inconsistent with the modifier used
-  NONCOVERED_SERVICE // 6  - The procedure/revenue code is inconsistent with the patient's gender
-  PRE_EXISTING // 10 - The diagnosis is inconsistent with the patient's gender
-  OUTPATIENT // 12 - The diagnosis is inconsistent with the provider type
-  PATIENT_INELIGIBLE // 27 - Expenses incurred after coverage terminated
-
-  // Coding / technical issues
-  MISSING_INFO // 16 - Claim/service lacks information
-  INVALID_CODE // 18 - Exact duplicate claim/service
-  BUNDLED // 97 - The benefit for this service is included in another service
-  UNBUNDLED // 109- Not covered by this payer/contractor
-  MODIFIER_MISSING // 4  - The procedure code is inconsistent with the modifier used (same code, different reason)
-  TIMELY_FILING // 29 - The time limit for filing has expired
-
-  // Authorization
-  NO_PREAUTH // 197 - Pre-authorization absent
-  PREAUTH_EXPIRED // 198 - Pre-authorization expired
-  PREAUTH_DENIED // 199 - Pre-authorization denied
-
-  // Coverage / policy
-  NOT_COVERED_PLAN // 50 - These are non-covered services
-  BENEFIT_EXHAUSTED // 119 - Benefit maximum for this time period has been reached
-  OUT_OF_NETWORK // 109 - Not covered by this payer (also used for OON)
-  POLICY_INACTIVE // 27  - Expenses incurred after coverage terminated
-  DUPLICATE_CLAIM // 18  - Exact duplicate claim/service (same as INVALID_CODE)
-
-  // Generic
-  OTHER // 22  - This care may be covered by another payer per coordination of benefits
-  PATIENT_RESP // 23  - The impact of prior payer(s) adjudication including payments and/or adjustments
-  PENDING_INFO // 133 - The disposition of the related Property and Casualty claim has not yet been received
-  MISSING_DOCS // 252 - Missing/incomplete/invalid provider billing number/identifier
-  CONTRACT_LIMIT // 38  - Services not provided or emergencies not covered
-
-  // Custom
-  INSUFFICIENT_FUNDS // 9   - The diagnosis is inconsistent with the provider type
-  FRAUD_SUSPECTED // 140 - Patient/insured health identification number not found
-  DUPLICATE_DAILY // 151 - Frequency of service exceeds the industry standard
-  RETRO_ELIGIBILITY // 177 - Patient has not met the required eligibility requirements
-  COORDINATION_OF_BENEFITS // 22  - This care may be covered by another payer
-  MEDICAL_NECESSITY // 50  - These are non-covered services because the primary reason for the service was not medical necessity
-  INVALID_REFERRAL // 162 - Entity not eligible for benefits for dates of service
-  OUTPATIENT_FREQUENCY // 151 - Frequency exceeds industry standard
-  NOT_LICENSED_PROVIDER // 185 - The provider is not eligible to render this service
-  PRIOR_AUTH_INCORRECT // 27  - Prior authorization not obtained
-  BUNDLE_EDIT // 97  - The benefit is included in another service
-  TIMELY_FILING_EXPIRED // 29  - Filing deadline passed
-  DUPLICATE_HISTORY // 18  - Exact duplicate claim
-  EXPERIMENTAL // 122  - This service is experimental/investigational
-  COSMETIC // 52  - Service is cosmetic
-}
-
-// RARC (Remittance Advice Remark Codes) — supplemental info to CARC
-// For now we just have a free-text field; this enum can grow later
-// (e.g. M127 for "Missing patient medical record number")
-
-// Claim adjudication categories (used for analytics)
-enum DenialCategory {
-  TECHNICAL // coding, missing info, format issues
-  AUTHORIZATION // no pre-auth, expired pre-auth
-  COVERAGE // non-covered, plan limit, OON
-  CLINICAL // medical necessity, experimental
-  ADMINISTRATIVE // timely filing, coordination of benefits
-  PATIENT // patient responsibility (deductible, copay)
-  FRAUD // duplicate, ineligible patient
-  OTHER
 }
 
 enum AccountType {

@@ -117,7 +117,6 @@ export async function POST(req: Request) {
                 taxAmount: taxAmt,
                 lineTotal,
                 isCovered: l.isCovered ?? false,
-                insurancePrice: l.insurancePrice ?? null,
                 ...(l.taxRateId ? { taxRateId: l.taxRateId } : {}),
             };
         }));
@@ -155,7 +154,6 @@ export async function POST(req: Request) {
                     invoiceNumber,
                     invoiceType,
                     patientId: patientId ?? null,
-                    insuranceId: insuranceId ?? null,
                     customerName: customerName ?? null,
                     customerTin: customerTin ?? null,
                     customerAddress: customerAddress ?? null,

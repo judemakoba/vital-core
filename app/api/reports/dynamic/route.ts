@@ -46,8 +46,6 @@ export async function GET(request: Request) {
                 // Payment metrics
                 avgDaysToPay,
                 collectionRate,
-
-                // Insurance metrics
                 insuranceClaimApprovalRate,
                 avgClaimProcessingTime
             ] = await Promise.all([
@@ -167,16 +165,6 @@ export async function GET(request: Request) {
                     LEFT JOIN Payment p ON p.invoiceId = i.id
                     WHERE ${dateFilter.createdAt ? `i.createdAt BETWEEN '${new Date(startDate).toISOString()}' AND '${new Date(endDate).toISOString()}'` : '1=1'}
                 `,
-
-                // Insurance claim approval rate
-                prisma.insuranceClaim.aggregate({
-                    where: {
-                        ...dateFilter,
-                        status: { in: ['APPROVED', 'PAID'] }
-                    },
-                    _count: {}
-                }),
-
                 // Average claim processing time (would need submission and payment dates)
                 // Placeholder for now
             ]);
@@ -229,7 +217,6 @@ export async function GET(request: Request) {
                         revenueGrowth: parseFloat(revenueGrowth.toFixed(2)),
                         expenseGrowth: parseFloat(expenseGrowth.toFixed(2)),
                         collectionRate: parseFloat(collectionRateValue.toFixed(2)),
-                        insuranceApprovalRate: parseFloat(approvalRate.toFixed(2))
                     },
                     trends: {
                         revenueTrend: [

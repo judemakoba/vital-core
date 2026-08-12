@@ -29,7 +29,6 @@ export async function PUT(
                 defaultQuantity: body.defaultQuantity,
                 unitOfMeasure: body.unitOfMeasure,
                 standardRate: body.standardRate,
-                insuranceRate: body.insuranceRate,
                 memberRate: body.memberRate,
                 staffRate: body.staffRate,
                 taxRateId: body.taxRateId,

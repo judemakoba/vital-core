@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Shield } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +29,6 @@ const patientSchema = z.object({
     allergies: z.string().default(""),
     chronicConditions: z.string().default(""),
     bloodGroup: z.string().default(""),
-    // R48: optional insurance enrollment (edit mode). The presence
     // of these fields means the user wants to enroll this patient
     // (or update the existing enrollment — server decides based on
     // whether the id is provided).
@@ -67,10 +65,7 @@ export default function EditPatientPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [serverError, setServerError] = useState("");
     const [insuranceCompanies, setInsuranceCompanies] = useState<any[]>([]);
-    // R49: feature flag — when OFF, hide the Insurance Enrollment
     // section entirely on the edit form.
-    const [insuranceEnabled, setInsuranceEnabled] = useState(true);
-
     const {
         register,
         handleSubmit,
@@ -86,13 +81,10 @@ export default function EditPatientPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // R49: feature flag first (also check patient data
                 // and insurance company list in parallel — but only
                 // fetch enrollments when insurance is enabled)
-                const enabledRes = await fetch("/api/insurance/enabled");
+                const enabledRes = await
                 const enabled = enabledRes.ok ? (await enabledRes.json()).enabled !== false : true;
-                setInsuranceEnabled(enabled);
-
                 // Fetch patient, enrollments (if enabled), and insurance
                 // companies in parallel
                 const fetches: [Promise<Response>, Promise<Response>, Promise<Response>] = [
@@ -100,8 +92,6 @@ export default function EditPatientPage() {
                     enabled
                         ? fetch(`/api/patients/${params.id}/insurance`)
                         : Promise.resolve(new Response("[]", { status: 200 })),
-                    fetch("/api/admin/insurance"),
-                ];
                 const [patientRes, enrollmentsRes, insuranceRes] = await Promise.all(fetches);
                 const p = patientRes.ok ? await patientRes.json() : null;
                 const enrollments = enrollmentsRes.ok ? await enrollmentsRes.json() : [];
@@ -202,8 +192,6 @@ export default function EditPatientPage() {
                 nextOfKinAddress: data.nextOfKinAddress || undefined,
                 nextOfKinRel: data.nextOfKinRel || undefined,
             };
-
-            // R48: include the enrollment update if the user opted in.
             // The server decides whether to create (no id) or update
             // (id present).
             if (data.enrollInInsurance && data.enrollmentInsuranceId) {
@@ -264,124 +252,7 @@ export default function EditPatientPage() {
                 <Link href={`/dashboard/patients/${params.id}`} className={styles.backLink}>
                     <ArrowLeft size={16} /> Back to Profile
                 </Link>
-                <h1 className={styles.title}>Edit Patient Record</h1>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className={`glass-card ${styles.formCard}`}>
-                {serverError && (
-                    <div style={{ padding: "1rem", background: "rgba(239, 68, 68, 0.1)", color: "var(--danger-color)", borderRadius: "var(--radius-md)", marginBottom: "1.5rem" }}>
-                        {serverError}
-                    </div>
-                )}
-
-                {/* Personal Information */}
-                <h2 className={styles.sectionTitle}>Personal Information</h2>
-                <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>First Name *</label>
-                        <input {...register("firstName")} className={styles.input} placeholder="Jane" />
-                        {errors.firstName && <span className={styles.errorText}>{errors.firstName.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Last Name *</label>
-                        <input {...register("lastName")} className={styles.input} placeholder="Doe" />
-                        {errors.lastName && <span className={styles.errorText}>{errors.lastName.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Date of Birth *</label>
-                        <input {...register("dateOfBirth")} type="date" className={styles.input} />
-                        {errors.dateOfBirth && <span className={styles.errorText}>{errors.dateOfBirth.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Gender *</label>
-                        <select {...register("gender")} className={styles.select}>
-                            <option value="">Select Gender</option>
-                            <option value="MALE">Male</option>
-                            <option value="FEMALE">Female</option>
-                            <option value="OTHER">Other</option>
-                        </select>
-                        {errors.gender && <span className={styles.errorText}>{errors.gender.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Blood Group</label>
-                        <select {...register("bloodGroup")} className={styles.select}>
-                            <option value="">Unknown</option>
-                            <option value="A+">A+</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B-">B-</option>
-                            <option value="AB+">AB+</option>
-                            <option value="AB-">AB-</option>
-                            <option value="O+">O+</option>
-                            <option value="O-">O-</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Contact Information */}
-                <h2 className={styles.sectionTitle}>Contact Information</h2>
-                <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Phone Number *</label>
-                        <input {...register("phone")} className={styles.input} placeholder="+256 700 000000" />
-                        {errors.phone && <span className={styles.errorText}>{errors.phone.message}</span>}
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Emergency Contact Name</label>
-                        <input {...register("emergencyContactName")} className={styles.input} placeholder="Guardian Name" />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Emergency Contact Phone</label>
-                        <input {...register("emergencyContactPhone")} className={styles.input} placeholder="+256..." />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Emergency Relation</label>
-                        <input {...register("emergencyContactRel")} className={styles.input} placeholder="Father, Mother, etc." />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Email Address (Optional)</label>
-                        <input {...register("email")} type="email" className={styles.input} placeholder="jane@example.com" />
-                    </div>
-
-                    <div className={styles.formGroupFull}>
-                        <label className={styles.label}>Physical Address</label>
-                        <input {...register("address")} className={styles.input} placeholder="Street name, Neighborhood" />
-                    </div>
-                </div>
-
-                {/* Medical & Emergency */}
-                <h2 className={styles.sectionTitle}>Medical</h2>
-                <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Allergies</label>
-                        <textarea {...register("allergies")} className={styles.textarea} placeholder="List any known allergies..." />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Chronic Conditions</label>
-                        <textarea {...register("chronicConditions")} className={styles.textarea} placeholder="Asthma, Diabetes, etc..." />
-                    </div>
-                </div>
-
-                {/* R48: Insurance Enrollment (editable). R49: hidden when the
-                    feature is OFF — admin has disabled insurance for this
-                    clinic. */}
-                {insuranceEnabled && (
-                    <>
-                <h2 className={styles.sectionTitle}>
-                    <Shield size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />
-                    Insurance Enrollment
-                </h2>
-
-                <div className={styles.formGrid}>
+                                <div className={styles.formGrid}>
                     <div className={styles.formGroupFull}>
                         <label className={styles.checkboxContainer}>
                             <input type="checkbox" {...register("enrollInInsurance")} style={{ width: "16px", height: "16px" }} />

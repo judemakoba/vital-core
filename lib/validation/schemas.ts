@@ -21,31 +21,6 @@ export const idParamSchema = z.object({
   id: idString(),
 })
 
-/**
- * R48: Insurance enrollment is no longer auto-validated from the patient
- * profile, and is no longer a "first-class" set of patient fields. Instead,
- * the patient is created with just personal info, and an optional nested
- * `insuranceEnrollment` object is accepted to also create or update a
- * `PatientInsurance` row in the same transaction.
- *
- * Behavior:
- *  - `id` present → update existing enrollment
- *  - `id` absent → create new enrollment (deactivating any existing
- *    same-insurer enrollment)
- *
- * Validation is now per-visit (handled in the visit creation form, not
- * here). The enrollment row is just a "hint" that the patient has
- * insurance on file — the cashier runs the third-party check per visit.
- */
-export const insuranceEnrollmentInputSchema = z.object({
-  id: z.string().optional().or(z.literal('')), // present = update, absent = create
-  insuranceId: z.string().min(1, 'Insurance provider is required'),
-  memberNumber: z.string().max(50).optional().or(z.literal('')),
-  policyNumber: z.string().min(1, 'Policy number is required').max(50),
-  coverageStart: z.string().min(1, 'Coverage start date is required'),
-  coverageEnd: z.string().optional().or(z.literal('')),
-}).strict()
-
 export const createPatientSchema = z.object({
   firstName: z.string().min(1).max(100),
   lastName: z.string().min(1).max(100),
@@ -71,13 +46,6 @@ export const createPatientSchema = z.object({
   allergies: z.string().max(1000).optional(),
   chronicConditions: z.string().max(1000).optional(),
   currentMedications: z.string().max(1000).optional(),
-  // R48: nested enrollment (optional). When present, the route creates
-  // a PatientInsurance row in the same transaction. When absent, no
-  // enrollment is created and the patient is treated as cash.
-  // The legacy `hasInsurance` / `insuranceId` / `insuranceNo` fields
-  // on the Patient model are no longer accepted here — insurance
-  // enrollment is exclusively through `insuranceEnrollment`.
-  insuranceEnrollment: insuranceEnrollmentInputSchema.optional(),
 })
 
 export const updatePatientSchema = createPatientSchema.partial()
@@ -142,17 +110,6 @@ export const createDrugSchema = z.object({
   storage: z.enum(['ROOM_TEMP', 'REFRIGERATED', 'FROZEN', 'CONTROLLED']),
   shelfLifeMonths: z.number().int().positive().optional(),
   isRestricted: z.boolean().default(false),
-})
-
-// Insurance schemas
-export const createInsuranceCompanySchema = z.object({
-  companyCode: z.string().min(1).max(20),
-  name: z.string().min(1).max(200),
-  contactPerson: z.string().max(100).optional(),
-  phone: z.string().max(20).optional(),
-  email: z.string().email().optional(),
-  address: z.string().max(500).optional(),
-  tin: z.string().max(50).optional(),
 })
 
 // Finance schemas

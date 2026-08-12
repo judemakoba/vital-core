@@ -3,7 +3,7 @@
  *
  * Replaces the old SMS-based `lib/messaging.ts sendSMS` with a proper
  * email client. The clinic configures one or more `EmailAccount` rows
- * (notifications@, claims@, staff@, etc.) and the system can send and
+ * (notifications@, staff@, etc.) and the system can send and
  * receive through them.
  *
  *   sendEmail({ to, subject, html })  →  picks the right account, sends, logs to EmailMessage
@@ -28,8 +28,7 @@ export type SendEmailOptions = {
     text?: string;
     /** Optional FK links for traceability */
     patientId?: string;
-    claimId?: string;
-    visitId?: string;
+visitId?: string;
     appointmentId?: string;
     labOrderId?: string;
     fromUserId?: string;
@@ -258,7 +257,6 @@ async function persistOutbound(opts: any) {
             failureReason: opts.failureReason,
             attachments: opts.attachments,
             patientId: opts.patientId,
-            claimId: opts.claimId,
             visitId: opts.visitId,
             appointmentId: opts.appointmentId,
             labOrderId: opts.labOrderId,

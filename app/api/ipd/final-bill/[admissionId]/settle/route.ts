@@ -56,8 +56,7 @@ export async function POST(
              patientShareTotal += charge.patientShare !== null ? charge.patientShare : charge.totalAmount;
         }
 
-        // We only bill the patient share to the patient invoice. 
-        // Insurance share goes to a claim object, which is beyond this IPD module's scope directly, 
+        // We only bill the patient share to the patient invoice.
         // but IPD sets the foundation.
 
         // Create the core Invoice (use tenant-configured format; add IPD tag for clarity)

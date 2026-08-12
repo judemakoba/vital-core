@@ -2,17 +2,6 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { 
-    User, 
-    Mail, 
-    Shield, 
-    IdCard, 
-    Lock, 
-    KeyRound, 
-    CheckCircle2, 
-    AlertCircle,
-    Loader2
-} from "lucide-react";
 import styles from "./page.module.css";
 
 export default function ProfilePage() {

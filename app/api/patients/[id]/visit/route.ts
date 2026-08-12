@@ -8,7 +8,6 @@ import {
     isBillableVisitType,
     isDirectServiceVisitType,
 } from "@/lib/visits/consultation-fee";
-import { isInsuranceEnabled } from "@/lib/insurance/settings";
 import {
     VISIT_STATUS,
     initialStatusForVisitType,
@@ -54,7 +53,6 @@ export async function POST(
             doctorId,
             chiefComplaint,
             linkedPriorVisitId, // optional; required when type=FOLLOW_UP
-            // R48: optional verification result from the create-visit
             // form. If the patient has insurance on file and the cashier
             // ran the third-party check before submitting, the result is
             // passed here so the visit is created with the right initial
@@ -156,7 +154,6 @@ export async function POST(
 
         // 2. Resolve fee + initial status
         //
-        // R47 spec: insurance validation is no longer auto-validated on
         // the patient profile or at visit creation. The visit just checks
         // whether the patient has an active enrollment on FILE. The
         // actual third-party validation happens later when the cashier
@@ -177,50 +174,9 @@ export async function POST(
         //     irrelevant for these)
         const isDirect = isDirectServiceVisitType(visitType);
         const shouldCharge = await isBillableVisitType(visitType);
-
-        // R49: when the insurance feature is disabled for this
-        // clinic, we skip the enrollment lookup entirely. The
-        // patient is treated as cash, the visit goes straight to
-        // ConsultationBilling, no consult fee is deferred, and no
-        // InsuranceVerification row is recorded.
-        const insuranceFeatureOn = await isInsuranceEnabled();
-
-        // Find the patient's most recent active enrollment (no
-        // 4-condition eligibility check — we just want to know "is
-        // there an insurance record on file?"). The cashier will run
-        // the actual third-party validation later.
-        const enrollmentOnFile = insuranceFeatureOn && shouldCharge && !isDirect
-            ? await prisma.patientInsurance.findFirst({
-                where: { patientId, isActive: true },
-                orderBy: { createdAt: 'desc' },
-                include: { insurance: { select: { id: true, name: true, code: true, consultationFee: true } } },
-            })
-            : null;
-
-        // Resolve the consultation fee (we need it for the UI display
-        // and for the FINAL- invoice line item if validation succeeds)
-        const feeResolution = await getConsultationFeeForNewVisit(prisma, patientId, visitType);
-        const consultationFee = feeResolution.fee;
-
-        // Decide initial status
+        // Decide initial status (cash-only — insurance was removed 2026-08)
         let initialStatus: VisitStatus;
-        if (isDirect) {
-            initialStatus = VISIT_STATUS.DirectServicePending;
-        } else if (insuranceFeatureOn && enrollmentOnFile && shouldCharge) {
-            // Insurance on file + billable visit. R48: the cashier can
-            // pass a verification result from the create-visit form. If
-            // provided, the visit is created with the appropriate status
-            // based on the result. If absent, default to
-            // PendingInsuranceValidation (cashier can verify later via
-            // the visit page).
-            if (verification && (verification.status === 'APPROVED' || verification.status === 'DENIED')) {
-                initialStatus = verification.status === 'APPROVED'
-                    ? VISIT_STATUS.Triage
-                    : VISIT_STATUS.ConsultationBilling;
-            } else {
-                initialStatus = VISIT_STATUS.PendingInsuranceValidation;
-            }
-        } else if (!shouldCharge && consultationFee <= 0) {
+else if (!shouldCharge && consultationFee <= 0) {
             initialStatus = VISIT_STATUS.Triage; // zero-fee auto-transition
         } else {
             initialStatus = VISIT_STATUS.ConsultationBilling; // cash flow
@@ -263,13 +219,10 @@ export async function POST(
                             ...(linkedPriorVisitId ? { linkedPriorVisitId } : {}),
                         },
                     });
-
-                    // R48: when the cashier validates insurance on the
                     // create-visit form, the verification result is
                     // included in the request body. We use that result to
                     // (a) create the consultation fee invoice if denied
                     // (cash fallback), and (b) record the
-                    // InsuranceVerification row for audit.
                     //
                     // Three branches:
                     //   - CASH (no insurance on file): consult invoice
@@ -283,12 +236,8 @@ export async function POST(
                     //   - INSURANCE on file + no verification provided
                     //     (default): visit → PendingInsuranceValidation,
                     //     no consult invoice, cashier can verify later
-                    const isCashFlow = !enrollmentOnFile;
-                    const isDenied = enrollmentOnFile && verification?.status === 'DENIED';
-
-                    const createConsultInvoice = shouldCharge
-                        && consultationFee > 0
-                        && (isCashFlow || isDenied);
+                    // Always cash flow — issue a consultation fee invoice for billable visits
+                    const createConsultInvoice = shouldCharge && consultationFee > 0;
                     if (createConsultInvoice) {
                         const invCountToday = await tx.invoice.count({ where: { createdAt: { gte: todayStart } } });
                         const invoiceNumber = await generateInvoiceNumber(invCountToday + 1, today);
@@ -330,7 +279,6 @@ export async function POST(
                             data: {
                                 visitId: visit.id,
                                 patientId,
-                                insuranceId: enrollmentOnFile.insurance.id,
                                 memberNumber: enrollmentOnFile.memberNumber ?? null,
                                 policyNumber: enrollmentOnFile.policyNumber ?? null,
                                 provider: verification.provider || enrollmentOnFile.insurance.name,
@@ -405,7 +353,6 @@ export async function POST(
                             data: {
                                 visitId: visit.id,
                                 patientId,
-                                insuranceId: enrollmentOnFile.insurance.id,
                                 memberNumber: enrollmentOnFile.memberNumber ?? null,
                                 policyNumber: enrollmentOnFile.policyNumber ?? null,
                                 provider: verification.provider || enrollmentOnFile.insurance.name,
@@ -430,7 +377,6 @@ export async function POST(
         return NextResponse.json(
             {
                 ...result,
-                // R48: a consult invoice is issued at visit creation
                 // when (a) the patient is cash OR (b) the cashier ran
                 // the third-party check on the create-visit form and
                 // the result was DENIED. For APPROVED, no consult
@@ -447,15 +393,7 @@ export async function POST(
                 initialStatus,
                 feeSource: feeResolution.source,
                 isDirectService: isDirect,
-                insuranceOnFile: !!enrollmentOnFile,
-                insuranceName: enrollmentOnFile ? enrollmentOnFile.insurance.name : null,
-                insuranceMemberNumber: enrollmentOnFile?.memberNumber ?? null,
-                insurancePolicyNumber: enrollmentOnFile?.policyNumber ?? null,
-                // R48: which branch drove the visit status. Lets the
                 // success alert distinguish the cases.
-                insuranceDeferConsult: enrollmentOnFile && verification?.status === 'APPROVED',
-                insuranceDenied: enrollmentOnFile && verification?.status === 'DENIED',
-                // R49: surface the feature flag so the UI knows whether
                 // to show insurance-related controls. The insurance is
                 // OFF → enrollmentOnFile will always be false, so the
                 // UI shouldn't render the validation panel.

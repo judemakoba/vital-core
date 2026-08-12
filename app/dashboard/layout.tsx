@@ -4,61 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import {
-    Activity,
-    LayoutDashboard,
-    Users,
-    Calendar,
-    Pill,
-    Stethoscope,
-    CreditCard,
-    Settings,
-    LogOut,
-    Menu,
-    X,
-    Shield,
-    Mail,
-    BarChart3,
-    TestTube,
-    Scan,
-    User,
-    TrendingUp,
-    BedDouble
-} from "lucide-react";
 import styles from "./layout.module.css";
-import { TenantProvider, useTenant } from "@/components/TenantContext";
-
-// Routes that are gated by the `insurance.enabled` system setting.
-// Hidden from the sidebar when insurance is OFF so the UI stays clean.
-// The pages themselves still exist (so admins can re-enable later).
-const INSURANCE_NAVGATION_HREFS = new Set<string>([
-    '/dashboard/admin/insurance',
-    '/dashboard/admin/insurance/claims',
-]);
-
-const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Patients', href: '/dashboard/patients', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'RECEPTIONIST'] },
-    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar, roles: ['SUPER_ADMIN', 'ADMIN', 'RECEPTIONIST'] },
-    { name: 'Triage', href: '/dashboard/triage', icon: Activity, roles: ['SUPER_ADMIN', 'ADMIN', 'RECEPTIONIST', 'NURSE'] },
-    { name: 'Doctor', href: '/dashboard/doctor', icon: Stethoscope, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'] },
-    { name: 'Pharmacy', href: '/dashboard/pharmacy', icon: Pill, roles: ['SUPER_ADMIN', 'ADMIN', 'PHARMACIST'] },
-    { name: 'Laboratory', href: '/dashboard/lab', icon: TestTube, roles: ['SUPER_ADMIN', 'ADMIN', 'LAB_TECH', 'LAB_ADMIN'] },
-    { name: 'Radiology', href: '/dashboard/radiology', icon: Scan, roles: ['SUPER_ADMIN', 'ADMIN', 'RADIOLOGIST'] },
-    { name: 'Inpatient (IPD)', href: '/dashboard/ipd', icon: BedDouble, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'] },
-    { name: 'Finance (Billing)', href: '/dashboard/billing', icon: CreditCard, roles: ['SUPER_ADMIN', 'ADMIN', 'CASHIER', 'ACCOUNTANT'] },
-    { name: 'Finance & Accounting', href: '/dashboard/finance', icon: TrendingUp, roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { name: 'Insurance Claims', href: '/dashboard/admin/insurance/claims', icon: Shield, roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { name: 'Messages', href: '/dashboard/communication', icon: Mail, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'] },
-    { name: 'Email', href: '/dashboard/email', icon: Mail, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'ACCOUNTANT'] },
-    { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { name: 'User Profile', href: '/dashboard/profile', icon: User },
-    { name: 'Admin Settings', href: '/dashboard/settings', icon: Settings, roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { name: 'Insurance Partners', href: '/dashboard/admin/insurance', icon: Shield, roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { name: 'Lab Catalog', href: '/dashboard/admin/lab-catalog', icon: TestTube, roles: ['SUPER_ADMIN', 'ADMIN'] }
-];
-
-export default function DashboardLayout({
+import { TenantProvider, useTenant } from "@/components/TenantContext";export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
@@ -75,17 +22,10 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     const { data: session } = useSession();
     const { tenant, settings } = useTenant();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    // R49: insurance feature flag. When OFF, hide the insurance nav items
     // ("Insurance Claims" + "Insurance Partners") from the sidebar so the
     // admin/staff don't see dead-end tabs. The routes themselves still
     // exist — admins can re-enable insurance later and the tabs reappear.
-    const [insuranceEnabled, setInsuranceEnabled] = useState(true);
     useEffect(() => {
-        fetch("/api/insurance/enabled", { credentials: "include" })
-            .then(r => r.ok ? r.json() : { enabled: true })
-            .then(data => setInsuranceEnabled(data.enabled !== false))
-            .catch(() => setInsuranceEnabled(true));
     }, []);
 
     // Role-based logic
@@ -161,8 +101,6 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
                         if (item.roles && !item.roles.includes(userRole)) {
                             return null;
                         }
-
-                        // R49: hide insurance nav items when the feature is OFF
                         if (!insuranceEnabled && INSURANCE_NAVGATION_HREFS.has(item.href)) {
                             return null;
                         }
@@ -228,7 +166,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
                     {isForbidden ? (
                         <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
                             <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', maxWidth: '400px', borderRadius: 'var(--radius-lg)' }}>
-                                <Shield size={48} color="var(--danger-color)" style={{ marginBottom: '1.5rem', margin: '0 auto' }} />
+                                
                                 <h2 style={{ marginBottom: '0.5rem' }}>Access Denied</h2>
                                 <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
                                     Your account does not have permission to access this module.

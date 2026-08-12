@@ -331,14 +331,6 @@ export const SETTINGS_REGISTRY: SettingDef[] = [
         group: "Finance",
     },
     {
-        key: "numbering.claim.prefix",
-        label: "Insurance Claim Prefix",
-        category: "NUMBERING",
-        valueType: "STRING",
-        defaultValue: "CLM",
-        group: "Insurance",
-    },
-    {
         key: "numbering.settlement.prefix",
         label: "Settlement Invoice Prefix",
         category: "NUMBERING",
@@ -604,7 +596,7 @@ export const SETTINGS_REGISTRY: SettingDef[] = [
         group: "Workflow",
     },
 
-    // ───── Billing / Insurance ─────
+    // ───── Billing ─────
     {
         key: "billing.agingBuckets",
         label: "AR Aging Bucket Days",
@@ -624,18 +616,9 @@ export const SETTINGS_REGISTRY: SettingDef[] = [
         group: "Accounting",
     },
     {
-        key: "billing.contractualAllowanceAccountCode",
-        label: "Contractual Allowance Account Code",
-        description: "Used when an insurance claim is paid below billed amount",
-        category: "BILLING",
-        valueType: "STRING",
-        defaultValue: "4220",
-        group: "Accounting",
-    },
-    {
         key: "billing.badDebtAccountCode",
         label: "Bad Debt Account Code",
-        description: "Used when writing off denied/uncollectable claims",
+        description: "Used when writing off bad debts and uncollectable receivables",
         category: "BILLING",
         valueType: "STRING",
         defaultValue: "5430",
@@ -644,7 +627,7 @@ export const SETTINGS_REGISTRY: SettingDef[] = [
     {
         key: "billing.autoWriteoffThreshold",
         label: "Auto-Writeoff Threshold",
-        description: "Claims denied below this amount are auto-written-off instead of tracked",
+        description: "Outstanding balances below this amount are auto-written-off",
         category: "BILLING",
         valueType: "NUMBER",
         defaultValue: "5000",
@@ -654,10 +637,10 @@ export const SETTINGS_REGISTRY: SettingDef[] = [
     {
         key: "billing.allowedPaymentMethods",
         label: "Allowed Payment Methods",
-        description: "Comma-separated (CASH,MOBILE_MONEY,CARD,BANK_TRANSFER,INSURANCE,CHEQUE)",
+        description: "Comma-separated (CASH,MOBILE_MONEY,CARD,BANK_TRANSFER,CHEQUE)",
         category: "BILLING",
         valueType: "STRING",
-        defaultValue: "CASH,MOBILE_MONEY,CARD,BANK_TRANSFER,INSURANCE,CHEQUE",
+        defaultValue: "CASH,MOBILE_MONEY,CARD,BANK_TRANSFER,CHEQUE",
         group: "Payments",
     },
 

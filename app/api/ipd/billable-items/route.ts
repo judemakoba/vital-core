@@ -80,7 +80,6 @@ export async function POST(request: Request) {
                 defaultQuantity: body.defaultQuantity || 1,
                 unitOfMeasure: body.unitOfMeasure,
                 standardRate: body.standardRate,
-                insuranceRate: body.insuranceRate,
                 memberRate: body.memberRate,
                 staffRate: body.staffRate,
                 taxRateId: body.taxRateId,

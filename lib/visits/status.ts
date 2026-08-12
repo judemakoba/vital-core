@@ -61,20 +61,6 @@ export const VISIT_STATUS = {
     // Pre-consultation fee (or zero-fee auto-transition)
     ConsultationBilling: "ConsultationBilling",
 
-    // R47: visit is on file with insurance but the cashier hasn't
-    // yet called the third-party verifier. No consultation fee
-    // invoice has been issued; the cashier triggers the verification
-    // by pressing the "Validate Insurance" button on the visit page.
-    // Result:
-    //   APPROVED → visit advances to Triage (deferred billing,
-    //               fee is added to the FINAL- invoice at first
-    //               order placement, then submitted as a claim)
-    //   DENIED   → visit falls back to ConsultationBilling (cash
-    //               flow, consultation fee invoice issued at this point)
-    //   ERROR    → visit stays in PendingInsuranceValidation, the
-    //               cashier can retry or fall back to cash manually
-    PendingInsuranceValidation: "PendingInsuranceValidation",
-
     // Triage flow
     Triage: "Triage",
 
@@ -125,7 +111,6 @@ export type ItemSubStatus = (typeof ITEM_SUB_STATUS)[keyof typeof ITEM_SUB_STATU
 export const ACTIVE_VISIT_STATUSES: string[] = [
     VISIT_STATUS.Waiting,
     VISIT_STATUS.ConsultationBilling,
-    VISIT_STATUS.PendingInsuranceValidation,
     VISIT_STATUS.Triage,
     VISIT_STATUS.Triaged,
     VISIT_STATUS.InConsultation,

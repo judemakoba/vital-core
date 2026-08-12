@@ -67,7 +67,6 @@ export async function GET(
                      subtotal: 0,
                      taxTotal: 0,
                      grandTotal: 0,
-                     insuranceTotal: 0,
                      patientTotal: 0,
                      charges: []
                  });
