@@ -79,14 +79,12 @@ export default function PatientProfilePage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [patientRes, visitsRes, flagRes] = await Promise.all([
-                    fetch(`/api/patients/${params.id}`),
-                    fetch(`/api/patients/${params.id}/visits`),
+                const [patientRes, visitsRes] = await Promise.all([
+                    fetch(`/api/patients/${params.id}`, { credentials: "include" }),
+                    fetch(`/api/patients/${params.id}/visits`, { credentials: "include" }),
+                ]);
                 if (patientRes.ok) setPatient(await patientRes.json());
                 if (visitsRes.ok) setVisits(await visitsRes.json());
-                if (flagRes.ok) {
-                    const data = await flagRes.json();
-                }
             } catch (err) {
                 console.error("Failed to fetch patient data", err);
             } finally {

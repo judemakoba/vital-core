@@ -2,200 +2,72 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { Save, ArrowLeft } from "lucide-react";
 import styles from "./page.module.css";
-import { useEffect } from "react";
 
-/**
- * R48: The patient creation form no longer asks "does this patient have
- * insurance?" with a simple yes/no + provider dropdown. Instead, the
- * optional "Insurance Enrollment" section below captures the full
- * enrollment record (provider, member #, policy #, coverage dates) and
- * the API creates the PatientInsurance row in the same transaction.
- *
- * The patient profile no longer has an insurance section (it's
- * insurance-agnostic now). Insurance validation happens on the visit
- * creation form per visit.
- */
-const patientSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    dateOfBirth: z.string().min(1, "Date of birth is required"),
-    gender: z.enum(['MALE', 'FEMALE', 'OTHER'], { errorMap: () => ({ message: "Please select a valid gender" }) }),
-    phone: z.string().min(10, "Valid phone number is required").max(20),
-    alternativePhone: z.string().max(20).optional().or(z.literal('')).default(""),
-    email: z.string().email("Invalid email").or(z.literal('')).default(""),
-    address: z.string().max(500).optional().or(z.literal('')).default(""),
-    city: z.string().max(100).optional().or(z.literal('')).default(""),
-    district: z.string().max(100).optional().or(z.literal('')).default(""),
-    emergencyContactName: z.string().max(100).optional().or(z.literal('')).default(""),
-    emergencyContactPhone: z.string().max(20).optional().or(z.literal('')).default(""),
-    emergencyContactRel: z.string().max(50).optional().or(z.literal('')).default(""),
-    nextOfKinName: z.string().max(100).optional().or(z.literal('')).default(""),
-    nextOfKinPhone: z.string().max(20).optional().or(z.literal('')).default(""),
-    nextOfKinEmail: z.string().email("Invalid email").or(z.literal('')).default(""),
-    nextOfKinAddress: z.string().max(500).optional().or(z.literal('')).default(""),
-    nextOfKinRel: z.string().max(50).optional().or(z.literal('')).default(""),
-    allergies: z.string().max(1000).optional().or(z.literal('')).default(""),
-    chronicConditions: z.string().max(1000).optional().or(z.literal('')).default(""),
-    currentMedications: z.string().max(1000).optional().or(z.literal('')).default(""),
-    bloodGroup: z.string().max(10).optional().or(z.literal('')).default(""),
-    maritalStatus: z.string().max(50).optional().or(z.literal('')).default(""),
-    occupation: z.string().max(100).optional().or(z.literal('')).default(""),
-    // section below. If the user toggles "Enroll in insurance", these
-    // fields become required.
-    enrollInInsurance: z.boolean().default(false),
-    enrollmentInsuranceId: z.string().optional().or(z.literal('')).default(""),
-    enrollmentMemberNumber: z.string().max(50).optional().or(z.literal('')).default(""),
-    enrollmentPolicyNumber: z.string().max(50).optional().or(z.literal('')).default(""),
-    enrollmentCoverageStart: z.string().optional().or(z.literal('')).default(""),
-    enrollmentCoverageEnd: z.string().optional().or(z.literal('')).default(""),
-}).refine(
-    (data) => !data.enrollInInsurance || !!data.enrollmentInsuranceId,
-    { message: "Insurance provider is required when enrolling", path: ["enrollmentInsuranceId"] }
-).refine(
-    (data) => !data.enrollInInsurance || !!data.enrollmentPolicyNumber,
-    { message: "Policy number is required when enrolling", path: ["enrollmentPolicyNumber"] }
-).refine(
-    (data) => !data.enrollInInsurance || !!data.enrollmentCoverageStart,
-    { message: "Coverage start date is required when enrolling", path: ["enrollmentCoverageStart"] }
-);
-
-type PatientFormValues = z.infer<typeof patientSchema>;
+interface PatientFormValues {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    gender: "MALE" | "FEMALE" | "OTHER";
+    phone: string;
+    alternativePhone?: string;
+    email?: string;
+    address?: string;
+    city?: string;
+    district?: string;
+    emergencyContactName?: string;
+    emergencyContactPhone?: string;
+    emergencyContactRel?: string;
+    nextOfKinName?: string;
+    nextOfKinPhone?: string;
+    nextOfKinEmail?: string;
+    nextOfKinAddress?: string;
+    nextOfKinRel?: string;
+    bloodGroup?: string;
+    maritalStatus?: string;
+    occupation?: string;
+    allergies?: string;
+    chronicConditions?: string;
+    currentMedications?: string;
+}
 
 export default function NewPatientPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [serverError, setServerError] = useState("");
-    const [insuranceCompanies, setInsuranceCompanies] = useState<any[]>([]);
-    // section entirely. Default true so the form works for clinics
-    // that haven't touched the toggle.
-    const {
-        register,
-        handleSubmit,
-        watch,
-        formState: { errors },
-    } = useForm<PatientFormValues>({
-        resolver: zodResolver(patientSchema) as any,
+
+    const { register, handleSubmit, formState: { errors } } = useForm<PatientFormValues>({
         defaultValues: {
             firstName: "",
             lastName: "",
             dateOfBirth: "",
             gender: "MALE",
             phone: "",
-            alternativePhone: "",
-            email: "",
-            address: "",
-            city: "",
-            district: "",
-            emergencyContactName: "",
-            emergencyContactPhone: "",
-            emergencyContactRel: "",
-            nextOfKinName: "",
-            nextOfKinPhone: "",
-            nextOfKinEmail: "",
-            nextOfKinAddress: "",
-            nextOfKinRel: "",
-            allergies: "",
-            chronicConditions: "",
-            currentMedications: "",
-            bloodGroup: "",
-            maritalStatus: "",
-            occupation: "",
-            enrollInInsurance: false,
-            enrollmentInsuranceId: "",
-            enrollmentMemberNumber: "",
-            enrollmentPolicyNumber: "",
-            enrollmentCoverageStart: "",
-            enrollmentCoverageEnd: "",
-        }
+        },
     });
-
-    const enrollInInsurance = watch("enrollInInsurance");
-
-    useEffect(() => {
-                } else {
-                    console.error("Received non-array insurance data:", data);
-                    setInsuranceCompanies([]);
-                }
-            })
-            .catch(err => console.error("Failed to fetch insurance companies", err));
-    }, []);
 
     const onSubmit = async (data: PatientFormValues) => {
         setIsSubmitting(true);
         setServerError("");
-
         try {
-            // Build the patient payload (just personal info — R48)
-            const submitData: any = {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                dateOfBirth: data.dateOfBirth
-                    ? new Date(data.dateOfBirth).toISOString()
-                    : undefined,
-                gender: data.gender,
-                phone: data.phone,
-                alternativePhone: data.alternativePhone || undefined,
-                email: data.email || undefined,
-                address: data.address || undefined,
-                city: data.city || undefined,
-                district: data.district || undefined,
-                emergencyContactName: data.emergencyContactName || undefined,
-                emergencyContactPhone: data.emergencyContactPhone || undefined,
-                emergencyContactRel: data.emergencyContactRel || undefined,
-                nextOfKinName: data.nextOfKinName || undefined,
-                nextOfKinPhone: data.nextOfKinPhone || undefined,
-                nextOfKinEmail: data.nextOfKinEmail || undefined,
-                nextOfKinAddress: data.nextOfKinAddress || undefined,
-                nextOfKinRel: data.nextOfKinRel || undefined,
-                allergies: data.allergies || undefined,
-                chronicConditions: data.chronicConditions || undefined,
-                currentMedications: data.currentMedications || undefined,
-                bloodGroup: data.bloodGroup || undefined,
-                maritalStatus: data.maritalStatus || undefined,
-                occupation: data.occupation || undefined,
-            };
-            if (data.enrollInInsurance && data.enrollmentInsuranceId) {
-                submitData.insuranceEnrollment = {
-                    insuranceId: data.enrollmentInsuranceId,
-                    memberNumber: data.enrollmentMemberNumber || undefined,
-                    policyNumber: data.enrollmentPolicyNumber,
-                    coverageStart: data.enrollmentCoverageStart,
-                    coverageEnd: data.enrollmentCoverageEnd || undefined,
-                };
-            }
-
             const res = await fetch("/api/patients", {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(submitData),
+                body: JSON.stringify({
+                    ...data,
+                    dateOfBirth: data.dateOfBirth
+                        ? new Date(data.dateOfBirth).toISOString()
+                        : undefined,
+                }),
             });
-
             if (!res.ok) {
-                const errorData = await res.json();
-                const errObj = errorData?.error;
-                let errorMessage: string;
-                if (typeof errObj === 'string') {
-                    errorMessage = errObj;
-                } else if (errObj?.message) {
-                    errorMessage = errObj.message;
-                } else {
-                    errorMessage = "Failed to register patient";
-                }
-                if (errObj?.details) {
-                    const detailStr = typeof errObj.details === 'string'
-                        ? errObj.details
-                        : JSON.stringify(errObj.details);
-                    errorMessage = `${errorMessage}: ${detailStr}`;
-                }
-                throw new Error(errorMessage);
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || err.message || "Failed to register patient");
             }
-
             router.push("/dashboard/patients");
             router.refresh();
         } catch (err: any) {
@@ -211,119 +83,148 @@ export default function NewPatientPage() {
                 <Link href="/dashboard/patients" className={styles.backLink}>
                     <ArrowLeft size={16} /> Back to Directory
                 </Link>
-                                <div className={styles.formGrid}>
-                    <div className={styles.formGroupFull}>
-                        <label className={styles.checkboxContainer}>
-                            <input type="checkbox" {...register("enrollInInsurance")} style={{ width: "16px", height: "16px" }} />
-                            Enroll this patient in insurance coverage
-                        </label>
+                <h1 className={styles.title}>Register New Patient</h1>
+                <p className={styles.subtitle}>All patients are cash-only (insurance module removed 2026-08).</p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+                {serverError && <div className={styles.serverError}>{serverError}</div>}
+
+                <fieldset className={styles.section}>
+                    <legend>Personal info</legend>
+                    <div className={styles.grid2}>
+                        <div>
+                            <label>First name *</label>
+                            <input {...register("firstName", { required: "First name is required", maxLength: 100 })} className={styles.input} />
+                            {errors.firstName && <span className={styles.errorText}>{errors.firstName.message}</span>}
+                        </div>
+                        <div>
+                            <label>Last name *</label>
+                            <input {...register("lastName", { required: "Last name is required", maxLength: 100 })} className={styles.input} />
+                            {errors.lastName && <span className={styles.errorText}>{errors.lastName.message}</span>}
+                        </div>
+                        <div>
+                            <label>Date of birth *</label>
+                            <input type="date" {...register("dateOfBirth", { required: "DOB is required" })} className={styles.input} />
+                            {errors.dateOfBirth && <span className={styles.errorText}>{errors.dateOfBirth.message}</span>}
+                        </div>
+                        <div>
+                            <label>Gender *</label>
+                            <select {...register("gender", { required: true })} className={styles.input}>
+                                <option value="MALE">Male</option>
+                                <option value="FEMALE">Female</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
                     </div>
+                </fieldset>
 
-                    {enrollInInsurance && (
-                        <>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Insurance Provider *</label>
-                                <select {...register("enrollmentInsuranceId")} className={styles.select}>
-                                    <option value="">Select Provider</option>
-                                    {insuranceCompanies.map(comp => (
-                                        <option key={comp.id} value={comp.id}>
-                                            {comp.name} {comp.consultationFee ? `(Consultation: UGX ${comp.consultationFee.toLocaleString()})` : ''}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.enrollmentInsuranceId && <span className={styles.errorText}>{errors.enrollmentInsuranceId.message}</span>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Policy Number *</label>
-                                <input
-                                    {...register("enrollmentPolicyNumber")}
-                                    className={styles.input}
-                                    placeholder="e.g. JUB-2025-00432"
-                                />
-                                {errors.enrollmentPolicyNumber && <span className={styles.errorText}>{errors.enrollmentPolicyNumber.message}</span>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Member Number</label>
-                                <input
-                                    {...register("enrollmentMemberNumber")}
-                                    className={styles.input}
-                                    placeholder="e.g. 001"
-                                />
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Coverage Start *</label>
-                                <input
-                                    {...register("enrollmentCoverageStart")}
-                                    type="date"
-                                    className={styles.input}
-                                    defaultValue={new Date().toISOString().split('T')[0]}
-                                />
-                                {errors.enrollmentCoverageStart && <span className={styles.errorText}>{errors.enrollmentCoverageStart.message}</span>}
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Coverage End</label>
-                                <input
-                                    {...register("enrollmentCoverageEnd")}
-                                    type="date"
-                                    className={styles.input}
-                                />
-                                <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: 2 }}>
-                                    Optional. Leave blank for open-ended coverage.
-                                </small>
-                            </div>
-                        </>
-                    )}
-                </div>
-                    </>
-                )}
-
-                {/* Next of Kin Information */}
-
-                {/* Next of Kin Information */}
-                <h2 className={styles.sectionTitle}>Next of Kin Information</h2>
-                <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Full Name of Next of Kin *</label>
-                        <input {...register("nextOfKinName")} className={styles.input} placeholder="John Kin" />
-                        {errors.nextOfKinName && <span className={styles.errorText}>{errors.nextOfKinName.message}</span>}
+                <fieldset className={styles.section}>
+                    <legend>Contact</legend>
+                    <div className={styles.grid2}>
+                        <div>
+                            <label>Phone *</label>
+                            <input {...register("phone", { required: "Phone is required", minLength: 10, maxLength: 20 })} className={styles.input} placeholder="+256…" />
+                            {errors.phone && <span className={styles.errorText}>{errors.phone.message}</span>}
+                        </div>
+                        <div>
+                            <label>Alternative phone</label>
+                            <input {...register("alternativePhone")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Email</label>
+                            <input type="email" {...register("email")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>City</label>
+                            <input {...register("city")} className={styles.input} />
+                        </div>
+                        <div className={styles.gridFull}>
+                            <label>Address</label>
+                            <input {...register("address")} className={styles.input} placeholder="Village / cell, parish, district" />
+                        </div>
                     </div>
+                </fieldset>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Telephone Contact (10 Digits) *</label>
-                        <input {...register("nextOfKinPhone")} className={styles.input} placeholder="0700000000" />
-                        {errors.nextOfKinPhone && <span className={styles.errorText}>{errors.nextOfKinPhone.message}</span>}
+                <fieldset className={styles.section}>
+                    <legend>Emergency contact</legend>
+                    <div className={styles.grid3}>
+                        <div>
+                            <label>Name</label>
+                            <input {...register("emergencyContactName")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Phone</label>
+                            <input {...register("emergencyContactPhone")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Relationship</label>
+                            <input {...register("emergencyContactRel")} className={styles.input} />
+                        </div>
                     </div>
+                </fieldset>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Email Address (Optional)</label>
-                        <input {...register("nextOfKinEmail")} type="email" className={styles.input} placeholder="kin@example.com" />
-                        {errors.nextOfKinEmail && <span className={styles.errorText}>{errors.nextOfKinEmail.message}</span>}
+                <fieldset className={styles.section}>
+                    <legend>Next of kin</legend>
+                    <div className={styles.grid3}>
+                        <div>
+                            <label>Name</label>
+                            <input {...register("nextOfKinName")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Phone</label>
+                            <input {...register("nextOfKinPhone")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Email</label>
+                            <input type="email" {...register("nextOfKinEmail")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Address</label>
+                            <input {...register("nextOfKinAddress")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Relationship</label>
+                            <input {...register("nextOfKinRel")} className={styles.input} />
+                        </div>
                     </div>
+                </fieldset>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>Relationship to Patient *</label>
-                        <select {...register("nextOfKinRel")} className={styles.select}>
-                            <option value="">Select Relationship</option>
-                            <option value="Spouse">Spouse</option>
-                            <option value="Parent">Parent</option>
-                            <option value="Child">Child</option>
-                            <option value="Sibling">Sibling</option>
-                            <option value="Friend">Friend</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        {errors.nextOfKinRel && <span className={styles.errorText}>{errors.nextOfKinRel.message}</span>}
+                <fieldset className={styles.section}>
+                    <legend>Medical</legend>
+                    <div className={styles.grid3}>
+                        <div>
+                            <label>Blood group</label>
+                            <select {...register("bloodGroup")} className={styles.input}>
+                                <option value="">—</option>
+                                <option value="A+">A+</option><option value="A-">A-</option>
+                                <option value="B+">B+</option><option value="B-">B-</option>
+                                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                                <option value="O+">O+</option><option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Marital status</label>
+                            <input {...register("maritalStatus")} className={styles.input} />
+                        </div>
+                        <div>
+                            <label>Occupation</label>
+                            <input {...register("occupation")} className={styles.input} />
+                        </div>
+                        <div className={styles.gridFull}>
+                            <label>Allergies</label>
+                            <textarea {...register("allergies")} className={styles.input} rows={2} />
+                        </div>
+                        <div className={styles.gridFull}>
+                            <label>Chronic conditions</label>
+                            <textarea {...register("chronicConditions")} className={styles.input} rows={2} />
+                        </div>
+                        <div className={styles.gridFull}>
+                            <label>Current medications</label>
+                            <textarea {...register("currentMedications")} className={styles.input} rows={2} />
+                        </div>
                     </div>
-
-                    <div className={styles.formGroupFull}>
-                        <label className={styles.label}>Address *</label>
-                        <input {...register("nextOfKinAddress")} className={styles.input} placeholder="Village, City, District" />
-                        {errors.nextOfKinAddress && <span className={styles.errorText}>{errors.nextOfKinAddress.message}</span>}
-                    </div>
-                </div>
+                </fieldset>
 
                 <div className={styles.formActions}>
                     <button type="button" onClick={() => router.back()} className={styles.cancelBtn}>
@@ -331,7 +232,7 @@ export default function NewPatientPage() {
                     </button>
                     <button type="submit" disabled={isSubmitting} className={styles.submitBtn}>
                         <Save size={18} />
-                        {isSubmitting ? "Registering..." : "Register Patient"}
+                        {isSubmitting ? "Registering…" : "Register Patient"}
                     </button>
                 </div>
             </form>

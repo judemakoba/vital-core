@@ -5,7 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import styles from "./layout.module.css";
-import { TenantProvider, useTenant } from "@/components/TenantContext";export default function DashboardLayout({
+import { TenantProvider, useTenant } from "@/components/TenantContext";
+import {
+    LayoutDashboard, Users, Calendar, Activity, Stethoscope, Pill, TestTube,
+    Scan, BedDouble, CreditCard, TrendingUp, Mail, BarChart3, User, Settings,
+    LogOut, Menu
+} from "lucide-react";
+export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
@@ -47,6 +53,28 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     ];
 
     const isForbidden = isReceptionist && forbiddenPaths.some(path => pathname.startsWith(path));
+
+// Navigation config. The insurance module was removed in 2026-08, so
+// the "Insurance Claims" and "Insurance Partners" nav items are gone.
+const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Patients', href: '/dashboard/patients', icon: Users, roles: ['SUPER_ADMIN', 'ADMIN', 'RECEPTIONIST'] },
+    { name: 'Appointments', href: '/dashboard/appointments', icon: Calendar, roles: ['SUPER_ADMIN', 'ADMIN', 'RECEPTIONIST'] },
+    { name: 'Triage', href: '/dashboard/triage', icon: Activity, roles: ['SUPER_ADMIN', 'ADMIN', 'RECEPTIONIST', 'NURSE'] },
+    { name: 'Doctor', href: '/dashboard/doctor', icon: Stethoscope, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'] },
+    { name: 'Pharmacy', href: '/dashboard/pharmacy', icon: Pill, roles: ['SUPER_ADMIN', 'ADMIN', 'PHARMACIST'] },
+    { name: 'Laboratory', href: '/dashboard/lab', icon: TestTube, roles: ['SUPER_ADMIN', 'ADMIN', 'LAB_TECH', 'LAB_ADMIN'] },
+    { name: 'Radiology', href: '/dashboard/radiology', icon: Scan, roles: ['SUPER_ADMIN', 'RADIOLOGIST'] },
+    { name: 'Inpatient (IPD)', href: '/dashboard/ipd', icon: BedDouble, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'] },
+    { name: 'Finance (Billing)', href: '/dashboard/billing', icon: CreditCard, roles: ['SUPER_ADMIN', 'ADMIN', 'CASHIER', 'ACCOUNTANT'] },
+    { name: 'Finance & Accounting', href: '/dashboard/finance', icon: TrendingUp, roles: ['SUPER_ADMIN', 'ADMIN'] },
+    { name: 'Messages', href: '/dashboard/communication', icon: Mail, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'] },
+    { name: 'Email', href: '/dashboard/email', icon: Mail, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'ACCOUNTANT'] },
+    { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, roles: ['SUPER_ADMIN', 'ADMIN'] },
+    { name: 'User Profile', href: '/dashboard/profile', icon: User },
+    { name: 'Admin Settings', href: '/dashboard/settings', icon: Settings, roles: ['SUPER_ADMIN', 'ADMIN'] },
+    { name: 'Lab Catalog', href: '/dashboard/admin/lab-catalog', icon: TestTube, roles: ['SUPER_ADMIN', 'ADMIN'] }
+];
 
     // Improved Title Logic: Match most specific route first
     const currentNavItem = [...navigation]
@@ -99,9 +127,6 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
                     {navigation.map((item: any, index) => {
                         // Role-based filtering
                         if (item.roles && !item.roles.includes(userRole)) {
-                            return null;
-                        }
-                        if (!insuranceEnabled && INSURANCE_NAVGATION_HREFS.has(item.href)) {
                             return null;
                         }
 

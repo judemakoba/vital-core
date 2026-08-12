@@ -6,51 +6,28 @@ import styles from "./page.module.css";
 import ModernInvoicePaper from "@/components/finance/ModernInvoicePaper";
 import { useTenant } from "@/components/TenantContext";
 
+const fmt = (n: number) => `UGX ${(n ?? 0).toLocaleString("en-UG")}`;
+
 export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
     const { tenant } = useTenant();
     const [invoice, setInvoice] = useState<any>(null);
-    const [companies, setCompanies] = useState<any[]>([]);
-    const [settings, setSettings] = useState<any>({});
     const [loading, setLoading] = useState(true);
     const [amount, setAmount] = useState("");
     const [method, setMethod] = useState("Cash");
     const [notes, setNotes] = useState("");
     const [saving, setSaving] = useState(false);
-    const [insurancePreview, setInsurancePreview] = useState<any>(null);
-    const [loadingPreview, setLoadingPreview] = useState(false);
-    const [submittingClaim, setSubmittingClaim] = useState(false);
-    const [claimSubmitError, setClaimSubmitError] = useState<string | null>(null);
-    const [claimSubmitSuccess, setClaimSubmitSuccess] = useState<string | null>(null);
-    // flow is hidden on the settlement page — no claim status card,
-    // no "Submit Insurance Claim" card, no "Insurance" payment
-    // method option, no warning banner. The clinic has opted out of
-    // insurance; the cashier settles in cash.
-    const [waiveDialogOpen, setWaiveDialogOpen] = useState(false);
-    const [waiverReason, setWaiverReason] = useState("");
-    const [waiverConfirmed, setWaiverConfirmed] = useState(false);
-    const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
-    const [enrollInsuranceId, setEnrollInsuranceId] = useState("");
-    const [enrollMemberNumber, setEnrollMemberNumber] = useState("");
-    const [enrollPolicyNumber, setEnrollPolicyNumber] = useState("");
-    const [enrolling, setEnrolling] = useState(false);
-    const [enrollError, setEnrollError] = useState<string | null>(null);
-    const [enrollSuccess, setEnrollSuccess] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [invoiceRes, companiesRes, settingsRes, insuranceEnabledRes] = await Promise.all([
-                fetch(`/api/billing/invoices/${params.id}`, { credentials: "include" }),
-            if (invoiceRes.ok) {
-                const data = await invoiceRes.json();
+            const res = await fetch(`/api/billing/invoices/${params.id}`, { credentials: "include" });
+            if (res.ok) {
+                const data = await res.json();
                 setInvoice(data);
-                setAmount(data.balanceDue.toString());
+                setAmount(String(data.balanceDue ?? 0));
             }
-            if (companiesRes.ok) setCompanies(await companiesRes.json());
-            if (settingsRes.ok) setSettings(await settingsRes.json());
-            // server-side helper which defaults to enabled when the
-            // SystemSetting row is missing).
-            const enabled = insuranceEnabledRes?.enabled;
         } catch (err) {
             console.error("Fetch error", err);
         } finally {
@@ -62,593 +39,195 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         fetchData();
     }, [params.id]);
 
-    useEffect(() => {
-        if (invoice?.patientId && invoice?.visitId) {
-            setLoadingPreview(true);
-        }
-
-        if (invoice?.isInsurance) {
-                        setAmount(invoice.balanceDue.toString());
-        }
-    }, [invoice]);
-
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!amount || parseFloat(amount) <= 0) return;
-
-        // If patient is insured and the cashier is paying non-insurance, require explicit waiver
-        const isInsuredWithCoverage = insurancePreview?.hasInsurance
-            && (insurancePreview?.summary?.totalInsuranceNet ?? 0) > 0;
-        const isNonInsurancePayment = method !== "Insurance";
-        if (isInsuredWithCoverage && isNonInsurancePayment && !waiverConfirmed) {
-            setWaiveDialogOpen(true);
+        setError(null);
+        setSuccess(null);
+        if (!amount || parseFloat(amount) <= 0) {
+            setError("Enter a valid amount");
             return;
         }
 
-        await submitPayment();
-    };
-
-    const submitPayment = async () => {
         setSaving(true);
         try {
-            const body: any = { amount, paymentMethod: method, notes };
-            // Attach waiver info if applicable
-            if (waiverConfirmed && method !== "Insurance" && insurancePreview?.hasInsurance) {
-            }
             const res = await fetch(`/api/billing/invoices/${params.id}/payments`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
+                body: JSON.stringify({
+                    amount: parseFloat(amount),
+                    paymentMethod: method,
+                    notes,
+                }),
             });
             const data = await res.json();
             if (res.ok) {
-                setInvoice((prev: any) => prev ? {
-                    ...prev,
-                    status: data.updatedInvoice?.status ?? prev.status,
-                    amountPaid: data.updatedInvoice?.amountPaid ?? prev.amountPaid,
-                    balanceDue: data.updatedInvoice?.balanceDue ?? prev.balanceDue,
-                    // a `claimNumber`. In that case, leave the existing payments
-                    // list alone; the invoice is marked Paid and a claim row is
-                    // created, both of which are reflected via re-fetch.
-                    payments: data.payment
-                        ? [data.payment, ...(prev.payments || [])]
-                        : (prev.payments || [])
-                } : prev);
+                setSuccess(`Payment recorded.`);
                 setNotes("");
-                setWaiverConfirmed(false);
-                setWaiverReason("");
-                // If insurance path, re-fetch so the claim row appears in the
-                // claim status card and the payments list stays clean.
-                if (!data.payment) {
-                    fetchData();
-                }
+                // Refetch to update amounts
+                await fetchData();
             } else {
-                alert(`Payment failed: ${data.error || "Unknown error"}`);
+                setError(data.error || "Payment failed");
             }
-        } catch (err) {
-            alert("An error occurred while processing payment.");
+        } catch (err: any) {
+            setError(err.message || "Network error");
         } finally {
             setSaving(false);
         }
     };
 
-    const handleSwitchToInsurance = () => {
-                if (insurancePreview?.summary) {
-            // Pre-fill with the patient's copay (what they'd actually pay out of pocket)
-            setAmount(insurancePreview.summary.totalPatientPayable.toString());
-        }
-        setWaiverConfirmed(false);
-        setWaiverReason("");
-    };
+    if (loading && !invoice) {
+        return <div className={styles.card} style={{ padding: 24 }}>Loading invoice…</div>;
+    }
 
-    const handleConfirmWaive = () => {
-        setWaiveDialogOpen(false);
-        setWaiverConfirmed(true);
-        // Trigger the actual payment submission
-        // Use a microtask to let state update first
-        setTimeout(() => submitPayment(), 0);
-    };
+    if (!invoice) {
+        return (
+            <div className={styles.card} style={{ padding: 24 }}>
+                <p>Invoice not found.</p>
+                <Link href="/dashboard/billing" className={styles.btnSecondary}>← Back to Billing</Link>
+            </div>
+        );
+    }
 
-    // Quick-enroll handler — creates a PatientInsurance record inline so the
-    // patient becomes immediately eligible for insurance billing.
-    const handleQuickEnroll = async () => {
-        if (!invoice?.patientId || !enrollInsuranceId || !enrollMemberNumber) {
-            setEnrollError('Insurance company and member number are required');
-            return;
-        }
-        setEnrolling(true);
-        setEnrollError(null);
-        try {
-            const res = await fetch('/api/admin/insurance/enrollments', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    patientId: invoice.patientId,
-                    insuranceId: enrollInsuranceId,
-                    memberNumber: enrollMemberNumber,
-                    policyNumber: enrollPolicyNumber || enrollMemberNumber,
-                }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                setEnrollError(data.error || 'Failed to enroll patient');
-                return;
-            }
-            setEnrollSuccess(data.message);
-            // Refresh preview so Insurance option becomes available
-            if (invoice?.patientId && invoice?.visitId) {
-                const previewRes = await fetch(
-                    `/api/billing/insurance-preview?patientId=${invoice.patientId}&visitId=${invoice.visitId}`,
-                    { credentials: 'include' }
-                );
-                if (previewRes.ok) setInsurancePreview(await previewRes.json());
-            }
-            // Reset form + close dialog after a brief delay
-            setTimeout(() => {
-                setEnrollDialogOpen(false);
-                setEnrollInsuranceId('');
-                setEnrollMemberNumber('');
-                setEnrollPolicyNumber('');
-                setEnrollSuccess(null);
-                setEnrollError(null);
-            }, 1500);
-        } catch (err) {
-            setEnrollError('Network error');
-        } finally {
-            setEnrolling(false);
-        }
-    };
-
-    // When the cashier picks Insurance in the dropdown, gate it by eligibility.
-    // If ineligible, intercept and open the enroll dialog instead.
-    const handleMethodChange = (newMethod: string) => {
-        setWaiverConfirmed(false); // method change invalidates waiver
-        if (newMethod === 'Insurance') {
-            // Check eligibility (preview already loaded hasInsurance; but use the
-            // structured eligibility object for more nuance).
-            if (insurancePreview && !insurancePreview.eligibility?.eligible) {
-                // Open quick-enroll dialog
-                setEnrollDialogOpen(true);
-                setEnrollError(null);
-                setEnrollSuccess(null);
-                return;
-            }
-            handleSwitchToInsurance();
-        } else {
-            setMethod(newMethod);
-        }
-    };
-
-    // Retroactively submit a claim for an already-paid invoice
-    const handleSubmitClaim = async () => {
-        if (!confirm('Create a retroactive insurance claim for this invoice? It will be saved as DRAFT for review.')) return;
-        setSubmittingClaim(true);
-        setClaimSubmitError(null);
-        setClaimSubmitSuccess(null);
-        try {
-            const res = await fetch('/api/admin/insurance/claims/retroactive', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ invoiceId: params.id, notes }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setClaimSubmitSuccess(`Claim ${data.claimNumber} created in DRAFT. Review in Claims Dashboard.`);
-                fetchData();
-            } else {
-                setClaimSubmitError(data.error || 'Failed to create claim');
-            }
-        } catch (err) {
-            setClaimSubmitError('Network error');
-        } finally {
-            setSubmittingClaim(false);
-        }
-    };
-
-    if (loading) return <div style={{ padding: "2rem" }}>Loading invoice...</div>;
-    if (!invoice) return <div style={{ padding: "2rem" }}>Invoice not found.</div>;
-
-    // Build clinic identity from the Tenant row (single source of truth
-    // for identity/branding). The Tenant columns (name, address, city,
-    // phone, logoUrl) are configured in /dashboard/settings. The
-    // terms text comes from a TenantSetting (clinic.regulatoryText).
-    // Fallbacks only kick in if the admin hasn't configured anything.
-    const clinicAddress = [tenant.address, tenant.city, tenant.region, tenant.country]
-        .filter(Boolean)
-        .join(', ');
-    const clinicInfo = {
-        name: tenant.shortName || tenant.name || "VitalCore Healthcare",
-        address: clinicAddress || "Plot 123, Medical Hub, City",
-        phone: tenant.phone || "+256 000 000 000",
-        email: tenant.email || undefined,
-        taxId: tenant.taxId || undefined,
-        registrationNumber: tenant.registrationNumber || undefined,
-        logoUrl: tenant.logoUrl || undefined,
-        terms: settings['clinic.regulatoryText']
-            || `Thank you for choosing ${tenant.shortName || tenant.name || 'our clinic'}. Please keep this invoice for your medical records.`,
-    };
-
-    // ── Compute whether to show the insurance warning banner ──
-    // Show when: (a) not yet paid, (b) patient has valid active insurance, (c) at least 1 line
-    // would be covered, (d) cashier hasn't already chosen Insurance
-    // somehow true in leftover state, don't show the warning when
-    // insurance is OFF.
-    const showInsuranceWarning = insuranceEnabled
-        && invoice.status !== 'Paid'
-        && insurancePreview?.eligibility?.eligible === true
-        && !method !== 'Insurance'
-        && (insurancePreview?.summary?.totalInsuranceNet ?? 0) > 0;
-
-    // Count covered vs total line items
-    const coveredCount = insurancePreview?.lineItems?.filter((li: any) => li.insuranceNet > 0).length ?? 0;
-    const totalLines = insurancePreview?.lineItems?.length ?? 0;
+    const isPaid = invoice.status === "Paid";
+    const balance = Number(invoice.balanceDue ?? 0);
 
     return (
-        <div className={styles.container}>
-            <div className={styles.noPrint}>
-                <Link href="/dashboard/billing" className={styles.backLink}>
-                    <ArrowLeft size={16} /> Back to Invoices
-                </Link>
+        <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                <Link href="/dashboard/billing" className={styles.btnSecondary}>← Back</Link>
+                <h1 style={{ fontSize: 20, margin: 0 }}>Invoice {invoice.invoiceNumber}</h1>
+                <span className={styles[`status${invoice.status}`] ?? ""} style={{ marginLeft: 8 }}>
+                    {invoice.status}
+                </span>
+            </div>
 
-                <div className={styles.toolbar}>
-                    <div className={styles.statusBox}>
-                        <span className={`badge ${invoice.status === 'Paid' ? 'status-completed' : 'status-waiting'}`}>
-                            {invoice.status.toUpperCase()}
-                        </span>
+            <div className={styles.card} style={{ padding: 16, marginBottom: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                    <div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Patient</div>
+                        <div style={{ fontSize: 14, fontWeight: 600 }}>
+                            {invoice.visit?.patient ? `${invoice.visit.patient.firstName} ${invoice.visit.patient.lastName}` : "—"}
+                        </div>
                     </div>
-                    <button className="btn-primary" onClick={() => window.print()}>
-                        <Printer size={16} /> Print Branded Invoice
-                    </button>
+                    <div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Visit</div>
+                        <div style={{ fontSize: 14 }}>
+                            {invoice.visit?.visitNumber ?? "—"}
+                        </div>
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Issued</div>
+                        <div style={{ fontSize: 14 }}>
+                            {invoice.createdAt ? new Date(invoice.createdAt).toLocaleString() : "—"}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Premium High-Fidelity Invoice Paper */}
-            <div className={styles.invoicePaperContainer}>
-                <ModernInvoicePaper
-                    clinicInfo={clinicInfo}
-                    invoice={invoice}
-                    patient={invoice.patient}
-                    visit={invoice.visit}
-                />
+            {/* Line items */}
+            <div className={styles.card} style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
+                <div style={{ padding: 16, borderBottom: "1px solid var(--border)", fontWeight: 600 }}>
+                    Line items
+                </div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                        <tr style={{ background: "var(--bg-elevated)" }}>
+                            <th style={th}>Description</th>
+                            <th style={thRight}>Qty</th>
+                            <th style={thRight}>Unit price</th>
+                            <th style={thRight}>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {(invoice.items ?? []).map((it: any, i: number) => (
+                            <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
+                                <td style={td}>{it.description}</td>
+                                <td style={tdRight}>{it.quantity}</td>
+                                <td style={tdRight}>{fmt(it.unitPrice)}</td>
+                                <td style={tdRight}>{fmt(it.totalPrice ?? it.unitPrice * it.quantity)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                    <tfoot>
+                        <tr style={{ borderTop: "2px solid var(--border)" }}>
+                            <td colSpan={3} style={{ ...tdRight, fontWeight: 700 }}>Total</td>
+                            <td style={{ ...tdRight, fontWeight: 700, fontFamily: "monospace" }}>{fmt(invoice.totalAmount)}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={3} style={tdRight}>Paid</td>
+                            <td style={{ ...tdRight, color: "#059669", fontFamily: "monospace" }}>{fmt(invoice.amountPaid)}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={3} style={{ ...tdRight, fontWeight: 700 }}>Balance</td>
+                            <td style={{ ...tdRight, fontWeight: 700, color: balance > 0 ? "#dc2626" : "#059669", fontFamily: "monospace" }}>
+                                {fmt(balance)}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
 
-            <div className={`${styles.noPrint} ${styles.adminSection}`}>
-                <div style={{ display: "grid", gridTemplateColumns: invoice.status !== 'Paid' ? "1.5fr 1fr" : "1fr", gap: "1.5rem" }}>
-                    {/* Show the payment form whenever the invoice is not fully paid — even
-                       if an insurance claim is attached. The patient may still owe a copay
-                       or extra charges, and settlement is independent of claim state. */}
-                    {invoice.status !== 'Paid' && (
-                        <div className={styles.card}>
-                                                        {/* ─── Insurance warning banner ───────────────────────────
-                                R49c: hidden when insurance is OFF. The clinic has
-                                opted out of insurance, so there's no point
-                                showing a "switch to insurance" prompt. */}
-                            
-
-                            <form onSubmit={handlePayment} className={styles.paymentForm}>
-                                <div className={styles.inputGroup}>
-                                    <label className={styles.label}>Amount to Pay (UGX)</label>
-                                    <input
-                                        type="number"
-                                        className={styles.input}
-                                        value={amount}
-                                        max={invoice.balanceDue}
-                                        onChange={e => {
-                                            setAmount(e.target.value);
-                                            setWaiverConfirmed(false); // amount change invalidates waiver
-                                        }}
-                                        required
-                                        disabled={method === 'Insurance'}
-                                    />
-                                    {method === 'Insurance' && insurancePreview?.summary && (
-                                        <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: 4, display: 'block' }}>
-                                            Patient copay: UGX {insurancePreview.summary.totalPatientPayable.toLocaleString()} ·
-                                            Insurance covers: UGX {insurancePreview.summary.totalInsuranceNet.toLocaleString()}
-                                        </small>
-                                    )}
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label className={styles.label}>Payment Method</label>
-                                    <select
-                                        className={styles.select}
-                                        value={method}
-                                        onChange={e => handleMethodChange(e.target.value)}
-                                        disabled={invoice.isInsurance}
-                                    >
-                                        <option value="Cash">Cash</option>
-                                        <option value="Mobile_Money">Mobile Money</option>
-                                        <option value="Credit_Card">Credit Card</option>
-                                        <option value="Bank_Transfer">Bank Transfer</option>
-                                        {insuranceEnabled && (
-                                            )}
-                                    </select>
-                                    {insuranceEnabled && insurancePreview?.eligibility?.eligible === false && method !== 'Insurance' && (
-                                        <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: 4, display: 'block' }}>
-                                            <AlertTriangle size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-                                            {insurancePreview.eligibility.reason}
-                                        </small>
-                                    )}
-                                </div>
-                                {!(
-                                    <div className={styles.inputGroup} style={{ gridColumn: "1 / span 2" }}>
-                                        <label className={styles.label}>Notes / Ref #</label>
-                                        <input
-                                            type="text"
-                                            className={styles.input}
-                                            placeholder="e.g. Transaction ID"
-                                            value={notes}
-                                            onChange={e => setNotes(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-                                {waiverConfirmed && method !== 'Insurance' && insurancePreview?.hasInsurance && (
-                                    <div style={{ gridColumn: "1 / span 2", padding: '0.5rem 0.75rem', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, fontSize: '0.8rem', color: '#92400e' }}>
-                                        ⚠️ Insurance waived for this payment. Reason: <strong>{waiverReason || '(none given)'}</strong>
-                                        &nbsp;·&nbsp;
-                                        <button type="button" onClick={() => { setWaiverConfirmed(false); setWaiverReason(''); }} style={{ background: 'none', border: 'none', color: 'inherit', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>undo</button>
-                                    </div>
-                                )}
-                                <button type="submit" className={styles.submitBtn} disabled={saving} style={{ gridColumn: "1 / span 2" }}>
-                                    {saving ? "Processing..." : "Record Payment"}
-                                </button>
-                            </form>
+            {/* Payments */}
+            {(invoice.payments ?? []).length > 0 && (
+                <div className={styles.card} style={{ padding: 16, marginBottom: 16 }}>
+                    <h3 style={{ margin: "0 0 12px 0", fontSize: 14 }}>Payments</h3>
+                    {invoice.payments.map((p: any) => (
+                        <div key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--border)" }}>
+                            <span>{new Date(p.createdAt).toLocaleString()} — {p.paymentMethod}</span>
+                            <span style={{ fontFamily: "monospace" }}>{fmt(p.amount)}</span>
                         </div>
-                    )}
-                    {insuranceEnabled && invoice.claim && (
-                        <div className={styles.card} style={{ borderLeft: "4px solid var(--warning-color)" }}>
-                                                        <div style={{ marginBottom: "1rem" }}>
-                                <span className={`badge status-waiting`}>{(invoice.claim.status || "DRAFT").toUpperCase()}</span>
-                                <p style={{ marginTop: "1rem", fontSize: "0.875rem" }}>
-                                    Claim #: <strong>{invoice.claim.claimNumber || "—"}</strong><br />
-                                    Claimed: <strong>UGX {(invoice.claim.totalAmount || 0).toLocaleString()}</strong><br />
-                                    Provider: <strong>{companies.find(c => c.id === invoice.claim.insuranceId)?.name || "Insurance Partner"}</strong>
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                    ))}
+                </div>
+            )}
 
-                    {/* Retroactive "Submit Claim" — for Paid invoices that have insurance but no claim yet.
-                        R49c: hidden when insurance is OFF. The clinic has opted out of insurance;
-                        creating a claim after the fact would be pointless. */}
-                    {insuranceEnabled && invoice.status === 'Paid' && !invoice.claim && (
-                        <div className={styles.card} style={{ borderLeft: "4px solid var(--info-color)" }}>
-                                                        <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
-                                This invoice is paid but no insurance claim has been filed yet. Submit one if the patient had insurance.
-                                The claim will be created as DRAFT so you can review before submitting.
-                            </p>
-                            {claimSubmitError && (
-                                <div style={{ background: 'rgba(244, 63, 94, 0.08)', color: 'var(--danger-color)', padding: '0.5rem 0.75rem', borderRadius: 6, fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                                    {claimSubmitError}
-                                </div>
-                            )}
-                            {claimSubmitSuccess && (
-                                <div style={{ background: 'rgba(16, 185, 129, 0.08)', color: 'var(--success-color)', padding: '0.5rem 0.75rem', borderRadius: 6, fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                                    {claimSubmitSuccess}
-                                </div>
-                            )}
-                            <button
-                                className="btn-primary"
-                                onClick={handleSubmitClaim}
-                                disabled={submittingClaim}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                            >
-                                <FilePlus2 size={16} />
-                                {submittingClaim ? 'Creating…' : 'Create Draft Claim'}
-                            </button>
+            {/* Payment form */}
+            {!isPaid && balance > 0 && (
+                <div className={styles.card} style={{ padding: 16 }}>
+                    <h3 style={{ margin: "0 0 12px 0", fontSize: 14 }}>Record payment</h3>
+                    <form onSubmit={handlePayment} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 12, alignItems: "end" }}>
+                        <div>
+                            <label style={labelStyle}>Amount (UGX)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                max={balance}
+                                step="0.01"
+                                value={amount}
+                                onChange={e => setAmount(e.target.value)}
+                                required
+                                style={inputStyle}
+                            />
                         </div>
-                    )}
-
-                    <div className={styles.card}>
-                                            <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                        <X size={18} />
-                    </button>
+                        <div>
+                            <label style={labelStyle}>Method</label>
+                            <select value={method} onChange={e => setMethod(e.target.value)} style={inputStyle}>
+                                <option value="Cash">Cash</option>
+                                <option value="Mobile_Money">Mobile Money</option>
+                                <option value="Card">Card</option>
+                                <option value="Bank_Transfer">Bank Transfer</option>
+                                <option value="Cheque">Cheque</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style={labelStyle}>Notes</label>
+                            <input value={notes} onChange={e => setNotes(e.target.value)} style={inputStyle} />
+                        </div>
+                        <button type="submit" disabled={saving} className={styles.btnPrimary}>
+                            {saving ? "Saving…" : "Pay"}
+                        </button>
+                    </form>
+                    {error && <div style={{ marginTop: 12, padding: 8, background: "rgba(239,68,68,0.1)", color: "#dc2626", borderRadius: 6 }}>{error}</div>}
+                    {success && <div style={{ marginTop: 12, padding: 8, background: "rgba(34,197,94,0.1)", color: "#059669", borderRadius: 6 }}>{success}</div>}
                 </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 16 }}>
-                    You are about to record a cash payment for a patient enrolled with <strong>{insuranceName}</strong>.
-                    By proceeding, the clinic is choosing <strong>not</strong> to file an insurance claim worth
-                    {' '}<strong>UGX {insuranceNet.toLocaleString()}</strong> for this visit.
-                </p>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 16 }}>
-                    The reason will be saved on the payment record for reporting.
-                </p>
-                <div style={{ marginBottom: 16 }}>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, marginBottom: 6 }}>
-                        Reason for waiving insurance
-                    </label>
-                    <select
-                        value={reason}
-                        onChange={e => setReason(e.target.value)}
-                        style={{
-                            width: '100%', padding: '8px 10px', border: '1px solid var(--border-color)',
-                            borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', background: 'var(--bg-card)',
-                        }}
-                    >
-                        <option value="">— Select a reason —</option>
-                        <option value="Patient deductible not met">Patient deductible not met</option>
-                        <option value="Service not covered by plan">Service not covered by plan</option>
-                        <option value="Patient chose to pay cash">Patient chose to pay cash</option>
-                        <option value="Insurance card not presented">Insurance card not presented</option>
-                        <option value="Coverage expired">Coverage expired</option>
-                        <option value="Pre-auth not obtained">Pre-authorization not obtained</option>
-                        <option value="Other (specify in notes)">Other (specify in notes)</option>
-                    </select>
-                </div>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        style={{
-                            padding: '8px 16px', background: 'transparent', color: 'var(--text-secondary)',
-                            border: '1px solid var(--border-color)', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
-                        }}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onConfirm}
-                        disabled={!reason}
-                        style={{
-                            padding: '8px 16px', background: 'var(--warning-color)', color: 'white',
-                            border: 'none', borderRadius: 6, cursor: reason ? 'pointer' : 'not-allowed',
-                            opacity: reason ? 1 : 0.5, fontFamily: 'inherit', fontWeight: 500,
-                        }}
-                    >
-                        Confirm waiver & record payment
-                    </button>
-                </div>
-            </div>
+            )}
         </div>
     );
 }
 
-/* ──────────────────────────────────────────────────────────────────────────── */
-/*  Quick-enroll dialog (when patient has no valid insurance enrollment)        */
-/* ──────────────────────────────────────────────────────────────────────────── */
-
-function EnrollDialog({
-    patientName,
-    companies,
-    insuranceId, setInsuranceId,
-    memberNumber, setMemberNumber,
-    policyNumber, setPolicyNumber,
-    reason,
-    error, success,
-    enrolling,
-    onSubmit, onCancel,
-}: {
-    patientName: string;
-    companies: any[];
-    insuranceId: string;
-    setInsuranceId: (v: string) => void;
-    memberNumber: string;
-    setMemberNumber: (v: string) => void;
-    policyNumber: string;
-    setPolicyNumber: (v: string) => void;
-    reason: string | null;
-    error: string | null;
-    success: string | null;
-    enrolling: boolean;
-    onSubmit: () => void;
-    onCancel: () => void;
-}) {
-    const activeCompanies = companies.filter(c => c.isActive);
-    return (
-        <div style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-        }}>
-            <div style={{
-                background: 'var(--bg-card, white)', borderRadius: 12, padding: 24,
-                maxWidth: 520, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                                        <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                        <X size={18} />
-                    </button>
-                </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: 8 }}>
-                    Quick-enrolling <strong>{patientName}</strong> so they can use insurance billing.
-                </p>
-                {reason && (
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 16, fontStyle: 'italic' }}>
-                        Reason: {reason}
-                    </p>
-                )}
-                {error && (
-                    <div style={{ background: 'rgba(244, 63, 94, 0.08)', color: 'var(--danger-color)', padding: '0.5rem 0.75rem', borderRadius: 6, fontSize: '0.85rem', marginBottom: 12 }}>
-                        {error}
-                    </div>
-                )}
-                {success && (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.08)', color: 'var(--success-color)', padding: '0.5rem 0.75rem', borderRadius: 6, fontSize: '0.85rem', marginBottom: 12 }}>
-                        {success}
-                    </div>
-                )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.8rem' }}>
-                        <span style={{ fontWeight: 500 }}>Insurance Provider *</span>
-                        <select
-                            value={insuranceId}
-                            onChange={e => setInsuranceId(e.target.value)}
-                            disabled={enrolling || !!success}
-                            style={{
-                                padding: '8px 10px', border: '1px solid var(--border-color)',
-                                borderRadius: 6, fontSize: '0.9rem', fontFamily: 'inherit',
-                                background: 'var(--bg-card)',
-                            }}
-                        >
-                            <option value="">— Select insurance —</option>
-                            {activeCompanies.map(c => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name} ({c.code})
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.8rem' }}>
-                        <span style={{ fontWeight: 500 }}>Member Number *</span>
-                        <input
-                            type="text"
-                            value={memberNumber}
-                            onChange={e => setMemberNumber(e.target.value)}
-                            placeholder="As shown on the insurance card"
-                            disabled={enrolling || !!success}
-                            style={{
-                                padding: '8px 10px', border: '1px solid var(--border-color)',
-                                borderRadius: 6, fontSize: '0.9rem', fontFamily: 'inherit',
-                                background: 'var(--bg-card)',
-                            }}
-                        />
-                    </label>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.8rem' }}>
-                        <span style={{ fontWeight: 500 }}>Policy Number <small style={{ color: 'var(--text-muted)' }}>(optional, defaults to member #)</small></span>
-                        <input
-                            type="text"
-                            value={policyNumber}
-                            onChange={e => setPolicyNumber(e.target.value)}
-                            placeholder="Group/policy number if different"
-                            disabled={enrolling || !!success}
-                            style={{
-                                padding: '8px 10px', border: '1px solid var(--border-color)',
-                                borderRadius: 6, fontSize: '0.9rem', fontFamily: 'inherit',
-                                background: 'var(--bg-card)',
-                            }}
-                        />
-                    </label>
-                </div>
-                <div style={{ background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: 6, padding: '0.5rem 0.75rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 16 }}>
-                    <strong>Note:</strong> The enrollment is created in <strong>VERIFIED</strong> state so the patient is immediately eligible for insurance billing. In production, you would typically mark as PENDING and verify manually — but at the cashier we skip that for speed.
-                </div>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        disabled={enrolling}
-                        style={{
-                            padding: '8px 16px', background: 'transparent', color: 'var(--text-secondary)',
-                            border: '1px solid var(--border-color)', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit',
-                        }}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onSubmit}
-                        disabled={enrolling || !insuranceId || !memberNumber || !!success}
-                        style={{
-                            padding: '8px 16px', background: 'var(--primary-color)', color: 'white',
-                            border: 'none', borderRadius: 6, cursor: (enrolling || !insuranceId || !memberNumber || !!success) ? 'not-allowed' : 'pointer',
-                            opacity: (enrolling || !insuranceId || !memberNumber || !!success) ? 0.5 : 1, fontFamily: 'inherit', fontWeight: 500,
-                        }}
-                    >
-                        {enrolling ? 'Enrolling…' : success ? 'Done' : 'Enroll & use Insurance'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
+const th: React.CSSProperties = { textAlign: "left", padding: "10px 12px", fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase" };
+const thRight: React.CSSProperties = { ...th, textAlign: "right" };
+const td: React.CSSProperties = { padding: "10px 12px", fontSize: 13 };
+const tdRight: React.CSSProperties = { ...td, textAlign: "right", fontFamily: "monospace" };
+const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, color: "var(--text-muted)", marginBottom: 4, textTransform: "uppercase" };
+const inputStyle: React.CSSProperties = { width: "100%", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--bg)", color: "var(--text)" };
