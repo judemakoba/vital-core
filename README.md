@@ -1,5 +1,10 @@
 # Vital Core HMS
 
+> **Note (2026-08):** The insurance module was removed in a single atomic
+> commit (`feat: remove insurance module`). The clinic is now cash-only.
+> Re-integration guide at [`docs/INSURANCE_REINTEGRATION_GUIDE.md`](docs/INSURANCE_REINTEGRATION_GUIDE.md)
+> (2,150 lines, mega-prompt format).
+
 > A complete, production-ready Hospital Management System for small to mid-size clinics.
 > Built with Next.js 14, Prisma, and PostgreSQL. Single-DB, multi-role, multi-tenant-ready.
 

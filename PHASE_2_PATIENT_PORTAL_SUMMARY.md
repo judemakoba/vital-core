@@ -1,5 +1,8 @@
 # Phase 2 Implementation: Patient Payment Portal
 
+> **Note (2026-08):** The insurance module has been removed. This document
+> describes the pre-removal architecture.
+
 ## Overview
 As part of the ongoing enhancement of the VitalCore hospital management system, I have begun implementing Phase 2 features focusing on the patient payment portal. This allows patients to view their billing information, make payments, and check payment history through a secure portal.
 

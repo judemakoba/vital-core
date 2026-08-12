@@ -235,7 +235,8 @@ cert for `https://<lxc-lan-ip>`.
 ## 9. Initial data seed
 
 The database starts empty. Run the seeds to populate reference data
-(drugs, lab tests, insurance companies, etc.):
+(drugs, lab tests, etc.). Note: the insurance module was removed in
+2026-08 — the clinic is cash-only, no insurance seed needed.
 
 ```bash
 docker compose --env-file .env.production exec app \

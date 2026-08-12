@@ -1,5 +1,7 @@
 # VitalCore Hospital Management System - Implementation Progress
 
+> **Note (2026-08):** The insurance module has been removed.
+
 ## 🎯 OVERALL STATUS: Phase 1 Complete, Phase 2 In Progress
 
 ---

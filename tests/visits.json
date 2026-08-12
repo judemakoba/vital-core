@@ -48,10 +48,6 @@
       "allergies": "",
       "chronicConditions": "",
       "currentMedications": null,
-      "hasInsurance": false,
-      "insuranceId": null,
-      "insuranceNo": "",
-      "insurancePlanId": null,
       "isActive": true,
       "createdAt": "2026-03-09T15:11:17.096Z",
       "updatedAt": "2026-03-09T23:05:43.031Z"
@@ -122,10 +118,6 @@
       "allergies": "",
       "chronicConditions": "",
       "currentMedications": null,
-      "hasInsurance": false,
-      "insuranceId": null,
-      "insuranceNo": "",
-      "insurancePlanId": null,
       "isActive": true,
       "createdAt": "2026-03-09T15:11:17.096Z",
       "updatedAt": "2026-03-09T23:05:43.031Z"

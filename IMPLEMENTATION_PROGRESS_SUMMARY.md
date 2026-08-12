@@ -1,5 +1,7 @@
 # VitalCore Hospital Management System - Implementation Progress
 
+> **Note (2026-08):** The insurance module has been removed.
+
 ## Phase 1: Financial Optimization Foundation - ✅ COMPLETED
 - **Claim Scrubbing Service**: Prevents insurance claim denials through eligibility, enrollment, duplicate, and financial validation
 - **Billing Validation & Charge Capture Audit**: Ensures billing accuracy and detects unbilled services (prescriptions, lab orders, medications)

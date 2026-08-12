@@ -1,5 +1,9 @@
 # Phase 1 Implementation Summary: Financial Optimization Foundation
 
+> **Note (2026-08):** The insurance module has been removed. This document
+> describes the pre-removal architecture. See `docs/INSURANCE_REINTEGRATION_GUIDE.md`
+> for the re-integration reference.
+
 ## Overview
 Completed implementation of Phase 1 foundation enhancements focusing on financial optimization through:
 1. Automated claim scrubbing to prevent denials

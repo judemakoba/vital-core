@@ -68,8 +68,6 @@ describe('Patients API', () => {
             phone: true,
             isActive: true,
             createdAt: true,
-            hasInsurance: true,
-            insurance: { select: { name: true } },
           },
           skip,
           take: limit,

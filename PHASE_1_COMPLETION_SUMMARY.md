@@ -1,5 +1,8 @@
 # Phase 1 Implementation Complete: Financial Optimization Foundation
 
+> **Note (2026-08):** The insurance module has been removed. This document
+> describes the pre-removal architecture.
+
 ## Summary
 I have successfully completed Phase 1 of the financial optimization plan for the VitalCore hospital management system, focusing on foundational enhancements to prevent revenue leakage and improve financial operations.
 

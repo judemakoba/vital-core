@@ -126,36 +126,8 @@ describe('Validation Schemas', () => {
       expect(result.nextOfKinRel).toBe('Spouse');
     });
 
-    it('should accept optional insurance fields', () => {
-      const validData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        dateOfBirth: '1990-01-01T00:00:00.000Z',
-        gender: 'MALE',
-        phone: '+256****0000',
-        hasInsurance: true,
-        insuranceId: 'cuid12345678901234567890', // valid CUID
-        insurancePlanId: 'cuid09876543210987654321',
-        insuranceNo: 'INS-12345',
-      };
-
-      const result = validateRequest(createPatientSchema, validData);
-      expect(result.hasInsurance).toBe(true);
-      expect(result.insuranceNo).toBe('INS-12345');
-    });
-
-    it('should reject invalid insuranceId format', () => {
-      const invalidData = {
-        firstName: 'John',
-        lastName: 'Doe',
-        dateOfBirth: '1990-01-01T00:00:00.000Z',
-        gender: 'MALE',
-        phone: '+256****0000',
-        insuranceId: 'not-a-cuid',
-      };
-
-      expect(() => validateRequest(createPatientSchema, invalidData)).toThrow();
-    });
+    // Insurance tests removed 2026-08 along with the insurance module.
+    // Patient is now purely a personal-info form (no insurance enrollment).
 
     it('should accept all optional fields as empty strings', () => {
       const validData = {
@@ -183,9 +155,6 @@ describe('Validation Schemas', () => {
         bloodGroup: '',
         maritalStatus: '',
         occupation: '',
-        insuranceId: '',
-        insurancePlanId: '',
-        insuranceNo: '',
       };
 
       const result = validateRequest(createPatientSchema, validData);
