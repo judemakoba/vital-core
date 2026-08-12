@@ -3,6 +3,20 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+    Edit2,
+    Activity,
+    HeartPulse,
+    CalendarCheck,
+    Users,
+    User,
+    Phone,
+    MapPin,
+    AlertCircle,
+    Pill,
+    Clock,
+    FileText,
+} from "lucide-react";
 import styles from "../page.module.css";
 import stylesProfile from "./profile.module.css";
 
