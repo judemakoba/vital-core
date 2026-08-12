@@ -1,9 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Search, Plus, Eye, CalendarPlus, Trash2, X, Edit, Sparkles, Loader2 } from "lucide-react";
+import styles from "./page.module.css";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import styles from "./page.module.css";
+
+/**
+ * Patients Directory.
+ *
+ * Cash-only flow (insurance module was removed 2026-08):
+ *   - No per-patient insurance enrollments, no third-party verification panel.
+ *   - All visits are billed up front (ConsultationBilling for billable types,
+ *     Triage for zero-fee auto-transition, DirectServicePending for direct
+ *     service types).
+ *
+ * R45 features that ARE preserved:
+ *   - Smart visit-type suggestion based on patient's last visit
+ *   - FOLLOW_UP prior-visit picker (must link to a recent Completed visit)
+ *   - Rich pop-out visit creation modal with patient banner + sectioned form
+ */
 
 interface Patient {
     id: string;
@@ -20,44 +36,24 @@ interface Patient {
 interface Doctor {
     id: string;
     name: string;
+    department?: string | null;
+    role?: { name: string };
 }
 
-interface VisitType {
-    value: string;
-    label: string;
-    billable: boolean;
+interface PriorVisit {
+    id: string;
+    visitNumber: string;
+    type: string;
+    checkInTime: string | null;
+    status: string;
+    chiefComplaint?: string | null;
 }
 
-const VISIT_TYPES: VisitType[] = [
-    { value: "OPD", label: "OPD (Out-Patient)", billable: true },
-    { value: "EMERGENCY", label: "Emergency", billable: true },
-    { value: "SCHEDULED", label: "Scheduled Visit", billable: true },
-    { value: "FOLLOW_UP", label: "Follow-up (within 14d)", billable: false },
-    { value: "VACCINATION", label: "Vaccination", billable: false },
-    { value: "ANTENATAL", label: "Antenatal", billable: false },
-    { value: "LAB_REVIEW", label: "Lab Review", billable: false },
-    { value: "LAB_ONLY", label: "Lab Test Only", billable: false },
-    { value: "RADIOLOGY_ONLY", label: "Radiology Only", billable: false },
-    { value: "PRESCRIPTION_ONLY", label: "Prescription Pickup Only", billable: false },
-    { value: "OTHER", label: "Other", billable: true },
-];
-
-const fmtDate = (s: string | null | undefined) => {
-    if (!s) return "—";
-    const d = new Date(s);
-    return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
-};
-
-const calcAge = (dob: string) => {
-    if (!dob) return "—";
-    const d = new Date(dob);
-    if (isNaN(d.getTime())) return "—";
-    const now = new Date();
-    let age = now.getFullYear() - d.getFullYear();
-    const m = now.getMonth() - d.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
-    return age;
-};
+interface VisitSuggestion {
+    suggestedType: string;
+    reason: string;
+    followUpWindowDays?: number;
+}
 
 export default function PatientsPage() {
     const { data: session } = useSession();
@@ -77,16 +73,28 @@ export default function PatientsPage() {
         type: "OPD",
         doctorId: "",
         chiefComplaint: "",
+        linkedPriorVisitId: "" as string,
     });
+    const [priorVisits, setPriorVisits] = useState<PriorVisit[]>([]);
+    const [loadingPriorVisits, setLoadingPriorVisits] = useState(false);
     const [isCreatingVisit, setIsCreatingVisit] = useState(false);
-    const [visitError, setVisitError] = useState<string | null>(null);
-    const [visitSuccess, setVisitSuccess] = useState<string | null>(null);
+
+    // Smart visit-type suggestion (cash-only flow)
+    const [visitSuggestion, setVisitSuggestion] = useState<VisitSuggestion | null>(null);
+    const [loadingSuggestion, setLoadingSuggestion] = useState(false);
+
+    // Inline status for the create-visit result (since the visit detail page
+    // route is in flux; keeps the user on the directory and shows a banner)
+    const [visitFeedback, setVisitFeedback] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
     useEffect(() => {
         const fetchPatients = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/api/patients?search=${encodeURIComponent(search)}&page=${page}`, {
+                const params = new URLSearchParams();
+                if (search) params.set("search", search);
+                params.set("page", String(page));
+                const res = await fetch(`/api/patients?${params.toString()}`, {
                     credentials: "include",
                 });
                 if (res.ok) {
@@ -95,6 +103,9 @@ export default function PatientsPage() {
                     setTotalPages(data.totalPages || 1);
                 } else if (res.status === 401) {
                     window.location.href = "/login";
+                } else {
+                    const err = await res.json().catch(() => ({}));
+                    console.error("Failed to fetch patients:", res.status, err);
                 }
             } catch (err) {
                 console.error("Failed to fetch patients:", err);
@@ -107,6 +118,7 @@ export default function PatientsPage() {
 
     useEffect(() => {
         if (showVisitModal) {
+            // Load doctors for the assign-doctor picker
             fetch("/api/users?role=DOCTOR", { credentials: "include" })
                 .then(r => r.ok ? r.json() : [])
                 .then(data => setDoctors(Array.isArray(data) ? data : []))
@@ -114,174 +126,471 @@ export default function PatientsPage() {
         }
     }, [showVisitModal]);
 
+    const calculateAge = (dobString: string | null | undefined) => {
+        if (!dobString) return "N/A";
+        const dob = new Date(dobString);
+        if (isNaN(dob.getTime())) return "N/A";
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+        return age;
+    };
+
     const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Delete patient ${name}?`)) return;
-        const res = await fetch(`/api/patients/${id}`, {
-            method: "DELETE",
-            credentials: "include",
-        });
-        if (res.ok) {
-            setPatients(prev => prev.filter(p => p.id !== id));
-        } else {
-            const data = await res.json().catch(() => ({}));
-            alert(data.error || data.message || "Delete failed");
+        const confirmMsg = `Are you sure you want to delete ${name}? Patients with history will be deactivated instead of deleted.`;
+        if (!confirm(confirmMsg)) return;
+        try {
+            const res = await fetch(`/api/patients/${id}`, {
+                method: "DELETE",
+                credentials: "include",
+            });
+            if (res.ok) {
+                const data = await res.json().catch(() => ({}));
+                alert(data.message || `${name} removed.`);
+                window.location.reload();
+            } else {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || "Failed to delete patient");
+            }
+        } catch (err) {
+            alert("Error deleting patient");
         }
     };
 
     const openVisitModal = (p: Patient) => {
         setSelectedPatient(p);
-        setVisitData({ type: "OPD", doctorId: "", chiefComplaint: "" });
-        setVisitError(null);
-        setVisitSuccess(null);
+        setVisitData({ type: "OPD", doctorId: "", chiefComplaint: "", linkedPriorVisitId: "" });
+        setVisitSuggestion(null);
+        setPriorVisits([]);
+        setVisitFeedback(null);
+
         setShowVisitModal(true);
+
+        // Smart suggestion based on patient's visit history
+        setLoadingSuggestion(true);
+        fetch(`/api/patients/${p.id}/visit-suggestion`, { credentials: "include" })
+            .then(r => r.ok ? r.json() : null)
+            .then((d: VisitSuggestion | null) => {
+                if (d && d.suggestedType) {
+                    setVisitSuggestion(d);
+                    setVisitData(prev => ({ ...prev, type: d.suggestedType }));
+                }
+            })
+            .catch(() => {})
+            .finally(() => setLoadingSuggestion(false));
+
+        // Prior visits for FOLLOW_UP picker
+        setLoadingPriorVisits(true);
+        fetch(`/api/patients/${p.id}/recent-visits`, { credentials: "include" })
+            .then(r => r.ok ? r.json() : null)
+            .then((d: PriorVisit[] | null) => {
+                if (Array.isArray(d)) setPriorVisits(d);
+            })
+            .catch(() => {})
+            .finally(() => setLoadingPriorVisits(false));
     };
 
     const handleCreateVisit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedPatient) return;
-        setVisitError(null);
-        setVisitSuccess(null);
-        if (!visitData.doctorId) {
-            setVisitError("Please select a doctor");
+        if (!selectedPatient || !visitData.doctorId) return;
+        if (visitData.type === "FOLLOW_UP" && !visitData.linkedPriorVisitId) {
+            setVisitFeedback({ kind: "err", text: "Please select the prior visit this follow-up is linked to." });
             return;
         }
+
         setIsCreatingVisit(true);
+        setVisitFeedback(null);
         try {
+            const payload: Record<string, unknown> = {
+                type: visitData.type,
+                doctorId: visitData.doctorId,
+                chiefComplaint: visitData.chiefComplaint,
+            };
+            if (visitData.type === "FOLLOW_UP" && visitData.linkedPriorVisitId) {
+                payload.linkedPriorVisitId = visitData.linkedPriorVisitId;
+            }
             const res = await fetch(`/api/patients/${selectedPatient.id}/visit`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(visitData),
+                body: JSON.stringify(payload),
             });
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
             if (res.ok) {
-                setVisitSuccess(`Visit created — initial status: ${data.initialStatus || "(see visit page)"}.`);
+                let msg: string;
+                if (data.isDirectService) {
+                    msg = `direct service (${data.initialStatus})`;
+                } else if (data.feeCharged) {
+                    msg = `cash patient — consultation fee UGX ${Number(data.consultationFee || 0).toLocaleString()}, status: ${data.initialStatus}`;
+                } else {
+                    msg = `no consultation fee, status: ${data.initialStatus}`;
+                }
+                setVisitFeedback({ kind: "ok", text: `Visit ${data.visitNumber} created — ${msg}.` });
+                // Auto-close and route after a beat
                 setTimeout(() => {
                     setShowVisitModal(false);
                     window.location.href = `/dashboard/patients/${selectedPatient.id}/visits/${data.visitId}`;
+                }, 1200);
+                return;
+            }
+            setVisitFeedback({ kind: "err", text: data.error || "Failed to create visit" });
+            // Close on hard validation errors to avoid the user re-submitting
+            if (res.status === 400) {
+                setTimeout(() => {
+                    setShowVisitModal(false);
+                    setSelectedPatient(null);
                 }, 1500);
-            } else {
-                setVisitError(data.error || "Failed to create visit");
             }
         } catch (err: any) {
-            setVisitError(err.message || "Network error");
+            setVisitFeedback({ kind: "err", text: err?.message || "Network error" });
         } finally {
             setIsCreatingVisit(false);
         }
     };
 
     return (
-        <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                <h1 style={{ fontSize: 22, margin: 0 }}>Patients</h1>
-                <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Patients Directory</h1>
+                <Link href="/dashboard/patients/new" className={styles.addBtn}>
+                    <Plus size={18} /> Register Patient
+                </Link>
+            </div>
+
+            <div className={`glass-card ${styles.controls}`}>
+                <div className={styles.searchBox}>
+                    <Search size={18} className={styles.searchIcon} />
                     <input
+                        type="text"
+                        placeholder="Search by name, ID, or phone number..."
                         className={styles.searchInput}
-                        placeholder="Search by name, phone, or patient #…"
                         value={search}
-                        onChange={e => { setSearch(e.target.value); setPage(1); }}
-                        style={{ width: 320 }}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                     />
-                    <Link href="/dashboard/patients/new" className={styles.btnPrimary}>＋ New Patient</Link>
                 </div>
             </div>
 
-            <div className={styles.card} style={{ padding: 0, overflow: "hidden" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <div className={styles.tableContainer}>
+                <table className={styles.table}>
                     <thead>
-                        <tr style={{ background: "var(--bg-elevated)" }}>
-                            <th style={th}>Patient #</th>
-                            <th style={th}>Name</th>
-                            <th style={th}>Sex</th>
-                            <th style={th}>Age</th>
-                            <th style={th}>Phone</th>
-                            <th style={th}>Registered</th>
-                            <th style={th}>Status</th>
-                            <th style={th}>Actions</th>
+                        <tr>
+                            <th className={styles.th}>Patient Details</th>
+                            <th className={styles.th}>Patient Number</th>
+                            <th className={styles.th}>Contact</th>
+                            <th className={styles.th}>Age / Gender</th>
+                            <th className={styles.th}>Status</th>
+                            <th className={styles.th}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={8} style={{ ...td, textAlign: "center", color: "var(--text-muted)" }}>Loading…</td></tr>
-                        ) : patients.length === 0 ? (
-                            <tr><td colSpan={8} style={{ ...td, textAlign: "center", color: "var(--text-muted)" }}>No patients found.</td></tr>
-                        ) : patients.map(p => (
-                            <tr key={p.id} style={{ borderTop: "1px solid var(--border)" }}>
-                                <td style={td}><strong>{p.patientNumber}</strong></td>
-                                <td style={td}>
-                                    <Link href={`/dashboard/patients/${p.id}`} style={{ color: "var(--primary-color)" }}>
-                                        {p.firstName} {p.lastName}
-                                    </Link>
-                                </td>
-                                <td style={td}>{p.gender}</td>
-                                <td style={td}>{calcAge(p.dateOfBirth)}</td>
-                                <td style={td}>{p.phone}</td>
-                                <td style={td}>{fmtDate(p.createdAt)}</td>
-                                <td style={td}>
-                                    <span style={{
-                                        padding: "2px 8px", borderRadius: 4, fontSize: 11,
-                                        background: p.isActive ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
-                                        color: p.isActive ? "#059669" : "#dc2626",
-                                    }}>
-                                        {p.isActive ? "Active" : "Inactive"}
-                                    </span>
-                                </td>
-                                <td style={td}>
-                                    <Link href={`/dashboard/patients/${p.id}`} className={styles.btnSecondary}>View</Link>
-                                    <button onClick={() => openVisitModal(p)} className={styles.btnPrimary} style={{ marginLeft: 4 }}>＋ Visit</button>
-                                    {canDelete && (
-                                        <button onClick={() => handleDelete(p.id, `${p.firstName} ${p.lastName}`)} className={styles.btnSecondary} style={{ marginLeft: 4, color: "#dc2626" }}>🗑</button>
-                                    )}
+                            <tr>
+                                <td colSpan={6} className={styles.td} style={{ textAlign: "center", padding: "2rem" }}>
+                                    Loading records...
                                 </td>
                             </tr>
-                        ))}
+                        ) : patients.length === 0 ? (
+                            <tr>
+                                <td colSpan={6} className={styles.td} style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+                                    No patients found matching your search.
+                                </td>
+                            </tr>
+                        ) : (
+                            patients.map(patient => (
+                                <tr key={patient.id} className={`${styles.tr} ${!patient.isActive ? styles.inactiveRow : ""}`}>
+                                    <td className={styles.td}>
+                                        <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                                            {patient.firstName} {patient.lastName}
+                                        </div>
+                                    </td>
+                                    <td className={styles.td}>
+                                        <span className={styles.patientId}>{patient.patientNumber}</span>
+                                    </td>
+                                    <td className={styles.td}>{patient.phone || "N/A"}</td>
+                                    <td className={styles.td}>
+                                        {calculateAge(patient.dateOfBirth)} yrs, {patient.gender ? patient.gender.substring(0, 1) : "N/A"}
+                                    </td>
+                                    <td className={styles.td}>
+                                        <span className={`${styles.statusBadge} ${patient.isActive ? styles.active : styles.inactive}`}>
+                                            {patient.isActive ? "Active" : "Inactive"}
+                                        </span>
+                                    </td>
+                                    <td className={styles.td}>
+                                        <Link
+                                            href={`/dashboard/patients/${patient.id}`}
+                                            className={styles.actionBtn}
+                                            title="View Profile"
+                                        >
+                                            <Eye size={18} />
+                                        </Link>
+                                        {canDelete && (
+                                            <Link
+                                                href={`/dashboard/patients/${patient.id}/edit`}
+                                                className={styles.actionBtn}
+                                                title="Edit Patient"
+                                            >
+                                                <Edit size={18} />
+                                            </Link>
+                                        )}
+                                        <button
+                                            className={`${styles.actionBtn} ${styles.visitBtn}`}
+                                            title="New Visit"
+                                            onClick={() => openVisitModal(patient)}
+                                            disabled={!patient.isActive}
+                                        >
+                                            <CalendarPlus size={18} />
+                                        </button>
+                                        {canDelete && (
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                                                title="Delete Patient"
+                                                onClick={() => handleDelete(patient.id, `${patient.firstName} ${patient.lastName}`)}
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
+
+                {totalPages > 1 && (
+                    <div className={styles.pagination}>
+                        <button
+                            className={styles.pageBtn}
+                            disabled={page === 1}
+                            onClick={() => setPage(p => p - 1)}
+                        >
+                            Previous
+                        </button>
+                        <span style={{ padding: "0.5rem", fontSize: "0.875rem" }}>
+                            Page {page} of {totalPages}
+                        </span>
+                        <button
+                            className={styles.pageBtn}
+                            disabled={page === totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </div>
 
-            {totalPages > 1 && (
-                <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
-                    <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className={styles.btnSecondary}>← Prev</button>
-                    <span style={{ alignSelf: "center" }}>Page {page} of {totalPages}</span>
-                    <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className={styles.btnSecondary}>Next →</button>
-                </div>
-            )}
-
-            {/* New visit modal */}
+            {/* New Visit Modal */}
             {showVisitModal && selectedPatient && (
-                <div className={styles.modalBackdrop} onClick={() => setShowVisitModal(false)}>
-                    <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ padding: 16, maxWidth: 480 }}>
-                        <h3 style={{ margin: "0 0 16px 0" }}>New Visit — {selectedPatient.firstName} {selectedPatient.lastName}</h3>
-                        <form onSubmit={handleCreateVisit}>
-                            <div style={{ marginBottom: 12 }}>
-                                <label style={labelStyle}>Visit type</label>
-                                <select value={visitData.type} onChange={e => setVisitData(v => ({ ...v, type: e.target.value }))} style={inputStyle}>
-                                    {VISIT_TYPES.map(vt => (
-                                        <option key={vt.value} value={vt.value}>
-                                            {vt.label}{vt.billable ? "" : " (no consult fee)"}
-                                        </option>
-                                    ))}
-                                </select>
+                <div className={styles.modalOverlay}>
+                    <div className={`glass-card ${styles.visitModal}`}>
+                        <form onSubmit={handleCreateVisit} className={styles.visitForm}>
+                            {/* ── Modal Header ── */}
+                            <div className={styles.visitModalHeader}>
+                                <div>
+                                    <h2 className={styles.visitModalTitle}>Create New Visit</h2>
+                                    <p className={styles.visitModalSubtitle}>
+                                        Step 1 of 1 — confirm details and start the visit
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.visitCloseBtn}
+                                    onClick={() => setShowVisitModal(false)}
+                                    aria-label="Close"
+                                >
+                                    <X size={18} />
+                                </button>
                             </div>
-                            <div style={{ marginBottom: 12 }}>
-                                <label style={labelStyle}>Doctor *</label>
-                                <select value={visitData.doctorId} onChange={e => setVisitData(v => ({ ...v, doctorId: e.target.value }))} style={inputStyle} required>
-                                    <option value="">— Select —</option>
-                                    {doctors.map(d => (
-                                        <option key={d.id} value={d.id}>{d.name}</option>
-                                    ))}
-                                </select>
+
+                            <div className={styles.visitModalBody}>
+                                {/* ── Patient Banner ── */}
+                                <div className={styles.visitPatientBanner}>
+                                    <div className={styles.visitPatientAvatar}>
+                                        {selectedPatient.firstName?.[0] || ""}{selectedPatient.lastName?.[0] || ""}
+                                    </div>
+                                    <div className={styles.visitPatientInfo}>
+                                        <div className={styles.visitPatientName}>
+                                            {selectedPatient.firstName} {selectedPatient.lastName}
+                                        </div>
+                                        <div className={styles.visitPatientMeta}>
+                                            <span className={styles.visitPatientChip}>{selectedPatient.patientNumber}</span>
+                                            <span className={styles.visitPatientChip}>
+                                                {calculateAge(selectedPatient.dateOfBirth)} yrs
+                                            </span>
+                                            <span className={styles.visitPatientChip}>
+                                                {selectedPatient.gender || "—"}
+                                            </span>
+                                            {selectedPatient.phone && (
+                                                <span className={styles.visitPatientChipMuted}>{selectedPatient.phone}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Smart suggestion banner */}
+                                {loadingSuggestion && (
+                                    <div className={styles.visitSuggestionBanner} data-tone="indigo">
+                                        <Loader2 size={14} className={styles.spin} />
+                                        <div>
+                                            <strong>Looking at recent visits…</strong>
+                                        </div>
+                                    </div>
+                                )}
+                                {visitSuggestion && !loadingSuggestion && (
+                                    <div
+                                        className={styles.visitSuggestionBanner}
+                                        data-tone={visitSuggestion.suggestedType === 'FOLLOW_UP' ? 'green' : 'indigo'}
+                                    >
+                                        <Sparkles size={14} />
+                                        <div>
+                                            <strong>Suggested: {visitSuggestion.suggestedType}</strong>
+                                            <div className={styles.visitSuggestionReason}>
+                                                {visitSuggestion.reason}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── Visit Type Picker ── */}
+                                <div className={styles.visitSection}>
+                                    <div className={styles.visitSectionHeader}>
+                                        <span className={styles.visitSectionNumber}>1</span>
+                                        <span className={styles.visitSectionTitle}>Visit Type</span>
+                                        <span className={styles.visitSectionHint}>
+                                            Non-billable types skip the consultation fee
+                                        </span>
+                                    </div>
+
+                                    <select
+                                        className={styles.select}
+                                        value={visitData.type}
+                                        onChange={(e) => setVisitData({ ...visitData, type: e.target.value, linkedPriorVisitId: '' })}
+                                        required
+                                    >
+                                        <optgroup label="Consultation visits">
+                                            <option value="OPD">OPD — General outpatient (UGX 50K)</option>
+                                            <option value="EMERGENCY">Emergency (UGX 50K)</option>
+                                            <option value="SCHEDULED">Scheduled (UGX 50K)</option>
+                                            <option value="OTHER">Other (UGX 50K)</option>
+                                            <option value="FOLLOW_UP">Follow-up — link to prior visit (no fee)</option>
+                                            <option value="LAB_REVIEW">Lab/Radiology review (no fee)</option>
+                                            <option value="VACCINATION">Vaccination only (no fee)</option>
+                                            <option value="ANTENATAL">Antenatal (no fee)</option>
+                                        </optgroup>
+                                        <optgroup label="Direct service (skips triage + consultation)">
+                                            <option value="LAB_ONLY">Lab only</option>
+                                            <option value="RADIOLOGY_ONLY">Radiology only</option>
+                                            <option value="PRESCRIPTION_ONLY">Prescription only</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
+                                {/* FOLLOW_UP: link to a prior visit */}
+                                {visitData.type === "FOLLOW_UP" && (
+                                    <div className={styles.visitSection}>
+                                        <div className={styles.visitSectionHeader}>
+                                            <span className={styles.visitSectionNumber}>2</span>
+                                            <span className={styles.visitSectionTitle}>Prior Visit</span>
+                                            <span className={styles.visitSectionHint}>
+                                                Must be Completed within 14 days
+                                            </span>
+                                        </div>
+                                        <select
+                                            className={styles.select}
+                                            value={visitData.linkedPriorVisitId}
+                                            onChange={(e) => setVisitData({ ...visitData, linkedPriorVisitId: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">— Select a recent completed visit —</option>
+                                            {loadingPriorVisits && (
+                                                <option value="" disabled>Loading prior visits…</option>
+                                            )}
+                                            {!loadingPriorVisits && priorVisits.length === 0 && (
+                                                <option value="" disabled>No eligible prior visits in last 14 days</option>
+                                            )}
+                                            {priorVisits.map(v => (
+                                                <option key={v.id} value={v.id}>
+                                                    {v.visitNumber} — {v.type}{v.checkInTime ? ` — ${new Date(v.checkInTime).toLocaleDateString()}` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {/* ── Doctor + Complaint ── */}
+                                <div className={styles.visitSection}>
+                                    <div className={styles.visitSectionHeader}>
+                                        <span className={styles.visitSectionNumber}>
+                                            {visitData.type === "FOLLOW_UP" ? '3' : '2'}
+                                        </span>
+                                        <span className={styles.visitSectionTitle}>Doctor &amp; Complaint</span>
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Assign Doctor *</label>
+                                        <select
+                                            className={styles.select}
+                                            value={visitData.doctorId}
+                                            onChange={(e) => setVisitData({ ...visitData, doctorId: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">Select Doctor</option>
+                                            {doctors.map(doc => (
+                                                <option key={doc.id} value={doc.id}>
+                                                    {doc.name}{doc.department ? ` — ${doc.department}` : ""}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Chief Complaint (optional)</label>
+                                        <textarea
+                                            className={styles.textarea}
+                                            placeholder="Brief description of why the patient is visiting today…"
+                                            value={visitData.chiefComplaint}
+                                            onChange={(e) => setVisitData({ ...visitData, chiefComplaint: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {visitFeedback && (
+                                    <div
+                                        className={visitFeedback.kind === "ok" ? styles.visitSuggestionBanner : styles.visitSuggestionBanner}
+                                        data-tone={visitFeedback.kind === "ok" ? "green" : "indigo"}
+                                        style={visitFeedback.kind === "err" ? { borderColor: "var(--tint-danger-border)", background: "var(--tint-danger-soft)" } : undefined}
+                                    >
+                                        {visitFeedback.kind === "ok" ? <Sparkles size={14} /> : <X size={14} />}
+                                        <div>
+                                            <strong>{visitFeedback.kind === "ok" ? "Success" : "Error"}</strong>
+                                            <div className={styles.visitSuggestionReason}>
+                                                {visitFeedback.text}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <div style={{ marginBottom: 12 }}>
-                                <label style={labelStyle}>Chief complaint</label>
-                                <textarea value={visitData.chiefComplaint} onChange={e => setVisitData(v => ({ ...v, chiefComplaint: e.target.value }))} rows={3} style={inputStyle} />
-                            </div>
-                            {visitError && <div style={errorStyle}>{visitError}</div>}
-                            {visitSuccess && <div style={successStyle}>{visitSuccess}</div>}
-                            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
-                                <button type="button" onClick={() => setShowVisitModal(false)} className={styles.btnSecondary}>Cancel</button>
-                                <button type="submit" disabled={isCreatingVisit} className={styles.btnPrimary}>
-                                    {isCreatingVisit ? "Creating…" : "Create Visit"}
+
+                            {/* ── Modal Footer ── */}
+                            <div className={styles.visitModalFooter}>
+                                <button
+                                    type="button"
+                                    className={styles.cancelBtn}
+                                    onClick={() => setShowVisitModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className={styles.submitBtn}
+                                    disabled={isCreatingVisit}
+                                >
+                                    {isCreatingVisit ? (
+                                        <><Loader2 size={16} className={styles.spin} /> Creating…</>
+                                    ) : (
+                                        <><CalendarPlus size={16} /> Start Visit</>
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -291,10 +600,3 @@ export default function PatientsPage() {
         </div>
     );
 }
-
-const th: React.CSSProperties = { textAlign: "left", padding: "10px 12px", fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase" };
-const td: React.CSSProperties = { padding: "10px 12px", fontSize: 13 };
-const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, color: "var(--text-muted)", marginBottom: 4, textTransform: "uppercase" };
-const inputStyle: React.CSSProperties = { width: "100%", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--bg)", color: "var(--text)" };
-const errorStyle: React.CSSProperties = { padding: 8, background: "rgba(239,68,68,0.1)", color: "#dc2626", borderRadius: 6, fontSize: 13 };
-const successStyle: React.CSSProperties = { padding: 8, background: "rgba(34,197,94,0.1)", color: "#059669", borderRadius: 6, fontSize: 13 };

@@ -4,16 +4,20 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { suggestVisitTypeForPatient } from "@/lib/visits/consultation-fee";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/patients/[id]/visit-suggestion
  *
- * Returns a suggested VisitType for a NEW visit based on the patient's
- * recent visit history. Used by the cashier UI to pre-select FOLLOW_UP
- * when a patient was seen recently (saves them from charging an unnecessary
- * consultation fee).
+ * Smart visit-type suggestion based on the patient's recent visit history.
+ * - Last visit within the configured follow-up window (default 14 days)
+ *   → suggests FOLLOW_UP
+ * - Otherwise → suggests OPD
  *
- * Response:
- *   { suggestedType: 'OPD' | 'FOLLOW_UP' | ..., reason: string, lastVisit: {...} | null }
+ * Returns:
+ *   { suggestedType, reason, followUpWindowDays, lastVisit? }
+ *
+ * Used by the create-visit modal to pre-select the most likely type.
  */
 export async function GET(
     _request: Request,
@@ -21,11 +25,21 @@ export async function GET(
 ) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) {
+        if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const suggestion = await suggestVisitTypeForPatient(prisma, params.id);
+        const patientId = params.id;
+
+        const patient = await prisma.patient.findUnique({
+            where: { id: patientId },
+            select: { id: true },
+        });
+        if (!patient) {
+            return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+        }
+
+        const suggestion = await suggestVisitTypeForPatient(prisma, patientId);
         return NextResponse.json(suggestion);
     } catch (error: any) {
         console.error("Visit suggestion error:", error);

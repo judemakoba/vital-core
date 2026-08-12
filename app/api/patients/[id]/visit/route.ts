@@ -8,33 +8,31 @@ import {
     isBillableVisitType,
     isDirectServiceVisitType,
 } from "@/lib/visits/consultation-fee";
-import {
-    VISIT_STATUS,
-    initialStatusForVisitType,
-    type VisitStatus,
-} from "@/lib/visits/status";
+import { VISIT_STATUS, type VisitStatus } from "@/lib/visits/status";
 import { VisitType } from "@/lib/generated-prisma";
 
 /**
  * Per the consolidated visit cycle spec (R45):
  *
- *  - Visit type drives the initial status (see `initialStatusForVisitType`):
+ *  - Visit type drives the initial status:
  *      * OPD / EMERGENCY / SCHEDULED / FOLLOW_UP / VACCINATION / ANTENATAL / OTHER
- *          → ConsultationBilling (or Triage if zero-fee auto-transition applies)
+ *          → ConsultationBilling if billable, else Triage (zero-fee auto-transition)
  *      * LAB_ONLY / RADIOLOGY_ONLY / PRESCRIPTION_ONLY
  *          → DirectServicePending (skips triage + consultation entirely)
  *
  *  - FOLLOW_UP requires a `linkedPriorVisitId`:
  *      * the linked visit must exist
  *      * it must be Completed
- *      * its type must be OPD / FOLLOW_UP / VACCINATION / ANTENATAL
+ *      * its type must be OPD / FOLLOW_UP / VACCINATION / ANTENATAL / SCHEDULED
  *      * it must be within the configured follow-up window (default 14 days)
  *
  *  - Zero-fee auto-transition:
- *      * when `isBillableVisitType` returns false AND the resolved fee is 0,
+ *      * when `isBillableVisitType` returns false OR the resolved fee is 0,
  *        the visit is created in Triage (skipping the ConsultationBilling invoice step)
- *      * when `isBillableVisitType` returns false AND the fee is > 0 (e.g. patient-
- *        specific override), the visit stays in ConsultationBilling
+ *
+ *  - Cash-only (insurance module removed 2026-08): all patients are cash.
+ *    The consultation fee invoice is always issued up front for billable
+ *    visits, no deferred-to-claim flow.
  */
 export async function POST(
     request: Request,
@@ -48,18 +46,7 @@ export async function POST(
 
         const patientId = params.id;
         const body = await request.json();
-        const {
-            type,
-            doctorId,
-            chiefComplaint,
-            linkedPriorVisitId, // optional; required when type=FOLLOW_UP
-            // form. If the patient has insurance on file and the cashier
-            // ran the third-party check before submitting, the result is
-            // passed here so the visit is created with the right initial
-            // status. If absent, the visit is created at
-            // PendingInsuranceValidation (cashier can verify later).
-            verification, // { status, verificationNumber?, provider?, reason?, ... }
-        } = body;
+        const { type, doctorId, chiefComplaint, linkedPriorVisitId } = body;
 
         if (!type || !doctorId) {
             return NextResponse.json(
@@ -152,34 +139,19 @@ export async function POST(
             }
         }
 
-        // 2. Resolve fee + initial status
-        //
-        // the patient profile or at visit creation. The visit just checks
-        // whether the patient has an active enrollment on FILE. The
-        // actual third-party validation happens later when the cashier
-        // clicks "Validate Insurance" on the visit page (see
-        // POST /api/visits/[id]/verify-insurance).
-        //
-        // Initial status flow:
-        //   - Patient has an active enrollment AND visit is billable
-        //     AND not direct-service → PendingInsuranceValidation
-        //     (no consultation fee invoice issued, waiting for cashier
-        //      to trigger the third-party check)
-        //   - Patient has NO active enrollment → ConsultationBilling
-        //     (cash flow, consultation fee invoice issued up front)
-        //   - Direct-service visit (LAB_ONLY / RADIOLOGY_ONLY / PRESCRIPTION_ONLY)
-        //     → DirectServicePending (no triage, no consultation)
-        //   - Non-billable visit type (FOLLOW_UP, VACCINATION, ANTENATAL,
-        //     LAB_REVIEW) → Triage (zero-fee auto-transition; insurance
-        //     irrelevant for these)
+        // 2. Resolve fee + initial status (cash-only)
         const isDirect = isDirectServiceVisitType(visitType);
         const shouldCharge = await isBillableVisitType(visitType);
-        // Decide initial status (cash-only — insurance was removed 2026-08)
+        const feeResolution = await getConsultationFeeForNewVisit(prisma, patientId, visitType);
+        const consultationFee = feeResolution.fee;
+
         let initialStatus: VisitStatus;
-else if (!shouldCharge && consultationFee <= 0) {
-            initialStatus = VISIT_STATUS.Triage; // zero-fee auto-transition
+        if (isDirect) {
+            initialStatus = VISIT_STATUS.DirectServicePending;
+        } else if (shouldCharge && consultationFee > 0) {
+            initialStatus = VISIT_STATUS.ConsultationBilling; // cash flow — invoice issued
         } else {
-            initialStatus = VISIT_STATUS.ConsultationBilling; // cash flow
+            initialStatus = VISIT_STATUS.Triage; // zero-fee auto-transition
         }
 
         // 3. Generate Visit Number using tenant-configured format.
@@ -192,12 +164,7 @@ else if (!shouldCharge && consultationFee <= 0) {
         const { generateVisitNumber, generateInvoiceNumber, withUniqueRetry } = await import("@/lib/formatters");
 
         // 4. Create the Visit (+ Invoice if billable) atomically. The retry
-        // catches P2002 on BOTH the visit number AND the invoice number (two
-        // concurrent creations can collide on either field). The retry
-        // re-counts from the DB each attempt, so the next attempt sees
-        // the just-committed row and walks forward to a free number.
-        // If retries are exhausted (extreme concurrency), the fallback
-        // appends a random suffix to guarantee a unique number.
+        // catches P2002 on BOTH the visit number AND the invoice number.
         const result = await withUniqueRetry({
             fields: ["visitNumber", "invoiceNumber"],
             computeSequence: async (attempt) => {
@@ -215,34 +182,15 @@ else if (!shouldCharge && consultationFee <= 0) {
                             assignedDoctorId: doctorId,
                             status: initialStatus,
                             priority: "Normal",
-                            // Link to prior visit when this is a FOLLOW_UP
                             ...(linkedPriorVisitId ? { linkedPriorVisitId } : {}),
                         },
                     });
-                    // create-visit form, the verification result is
-                    // included in the request body. We use that result to
-                    // (a) create the consultation fee invoice if denied
-                    // (cash fallback), and (b) record the
-                    //
-                    // Three branches:
-                    //   - CASH (no insurance on file): consult invoice
-                    //     issued at visit creation (existing flow)
-                    //   - INSURANCE on file + verification=DENIED:
-                    //     consult invoice issued at this point at the
-                    //     negotiated rate (cash fallback)
-                    //   - INSURANCE on file + verification=APPROVED:
-                    //     NO consult invoice — fee is deferred to the
-                    //     FINAL- invoice at first order placement
-                    //   - INSURANCE on file + no verification provided
-                    //     (default): visit → PendingInsuranceValidation,
-                    //     no consult invoice, cashier can verify later
-                    // Always cash flow — issue a consultation fee invoice for billable visits
+
+                    // Issue consultation fee invoice for billable visits (cash flow)
                     const createConsultInvoice = shouldCharge && consultationFee > 0;
                     if (createConsultInvoice) {
                         const invCountToday = await tx.invoice.count({ where: { createdAt: { gte: todayStart } } });
                         const invoiceNumber = await generateInvoiceNumber(invCountToday + 1, today);
-                        const lineDesc = getConsultationFeeDescription(visitType)
-                            + (feeResolution.source === 'insurance' ? ` (${feeResolution.insuranceName} rate)` : '');
 
                         await tx.invoice.create({
                             data: {
@@ -255,43 +203,13 @@ else if (!shouldCharge && consultationFee <= 0) {
                                 issuedById: session.user.id,
                                 items: {
                                     create: {
-                                        description: lineDesc,
+                                        description: getConsultationFeeDescription(visitType),
                                         quantity: 1,
                                         unitPrice: consultationFee,
                                         totalPrice: consultationFee,
                                         itemType: "Consultation",
                                     },
                                 },
-                            },
-                        });
-                    }
-
-                    // Record the InsuranceVerification row when the
-                    // cashier provided a result. The verify-insurance
-                    // route may have already recorded this row if the
-                    // cashier ran the check separately — but since this
-                    // create-visit flow runs the third-party check
-                    // BEFORE creating the visit, this is the first
-                    // record. (No duplicate because verify-insurance is
-                    // not called for the same visit beforehand.)
-                    if (verification && enrollmentOnFile) {
-                        await tx.insuranceVerification.create({
-                            data: {
-                                visitId: visit.id,
-                                patientId,
-                                memberNumber: enrollmentOnFile.memberNumber ?? null,
-                                policyNumber: enrollmentOnFile.policyNumber ?? null,
-                                provider: verification.provider || enrollmentOnFile.insurance.name,
-                                status: verification.status,
-                                verificationNumber: verification.status === 'APPROVED' ? verification.verificationNumber : null,
-                                coverageLimit: verification.coverageLimit ?? null,
-                                deductibleRemaining: verification.deductibleRemaining ?? null,
-                                coverageValidFrom: verification.coverageValidFrom ? new Date(verification.coverageValidFrom) : null,
-                                coverageValidTo: verification.coverageValidTo ? new Date(verification.coverageValidTo) : null,
-                                reason: verification.status === 'DENIED' ? verification.reason : (verification.status === 'ERROR' ? verification.reason : null),
-                                requestPayload: { enrollmentId: enrollmentOnFile.id, source: 'create-visit-form' },
-                                responsePayload: verification,
-                                verifiedById: session.user.id,
                             },
                         });
                     }
@@ -318,12 +236,8 @@ else if (!shouldCharge && consultationFee <= 0) {
                             ...(linkedPriorVisitId ? { linkedPriorVisitId } : {}),
                         },
                     });
-                    const isCashFlowFb = !enrollmentOnFile;
-                    const isDeniedFb = enrollmentOnFile && verification?.status === 'DENIED';
-                    const createConsultInvoiceFallback = shouldCharge
-                        && consultationFee > 0
-                        && (isCashFlowFb || isDeniedFb);
-                    if (createConsultInvoiceFallback) {
+                    const createConsultInvoiceFb = shouldCharge && consultationFee > 0;
+                    if (createConsultInvoiceFb) {
                         const invCountToday = await tx.invoice.count({ where: { createdAt: { gte: todayStart } } });
                         const invoiceNumber = `${await generateInvoiceNumber(invCountToday + 1, today)}-${randomId}`;
                         await tx.invoice.create({
@@ -337,35 +251,13 @@ else if (!shouldCharge && consultationFee <= 0) {
                                 issuedById: session.user.id,
                                 items: {
                                     create: {
-                                        description: getConsultationFeeDescription(visitType)
-                                            + (feeResolution.source === 'insurance' ? ` (${feeResolution.insuranceName} rate)` : ''),
+                                        description: getConsultationFeeDescription(visitType),
                                         quantity: 1,
                                         unitPrice: consultationFee,
                                         totalPrice: consultationFee,
                                         itemType: "Consultation",
                                     },
                                 },
-                            },
-                        });
-                    }
-                    if (verification && enrollmentOnFile) {
-                        await tx.insuranceVerification.create({
-                            data: {
-                                visitId: visit.id,
-                                patientId,
-                                memberNumber: enrollmentOnFile.memberNumber ?? null,
-                                policyNumber: enrollmentOnFile.policyNumber ?? null,
-                                provider: verification.provider || enrollmentOnFile.insurance.name,
-                                status: verification.status,
-                                verificationNumber: verification.status === 'APPROVED' ? verification.verificationNumber : null,
-                                coverageLimit: verification.coverageLimit ?? null,
-                                deductibleRemaining: verification.deductibleRemaining ?? null,
-                                coverageValidFrom: verification.coverageValidFrom ? new Date(verification.coverageValidFrom) : null,
-                                coverageValidTo: verification.coverageValidTo ? new Date(verification.coverageValidTo) : null,
-                                reason: verification.status === 'DENIED' ? verification.reason : (verification.status === 'ERROR' ? verification.reason : null),
-                                requestPayload: { enrollmentId: enrollmentOnFile.id, source: 'create-visit-form' },
-                                responsePayload: verification,
-                                verifiedById: session.user.id,
                             },
                         });
                     }
@@ -377,27 +269,11 @@ else if (!shouldCharge && consultationFee <= 0) {
         return NextResponse.json(
             {
                 ...result,
-                // when (a) the patient is cash OR (b) the cashier ran
-                // the third-party check on the create-visit form and
-                // the result was DENIED. For APPROVED, no consult
-                // invoice — fee is deferred to the FINAL- invoice at
-                // first order placement. If the patient has insurance
-                // on file and no verification was provided, the visit
-                // is parked at PendingInsuranceValidation and the
-                // cashier verifies on the visit page (cashier can
-                // also skip — see verify-insurance route).
-                feeCharged: shouldCharge
-                    && consultationFee > 0
-                    && (!enrollmentOnFile || verification?.status === 'DENIED'),
+                feeCharged: shouldCharge && consultationFee > 0,
                 consultationFee,
                 initialStatus,
                 feeSource: feeResolution.source,
                 isDirectService: isDirect,
-                // success alert distinguish the cases.
-                // to show insurance-related controls. The insurance is
-                // OFF → enrollmentOnFile will always be false, so the
-                // UI shouldn't render the validation panel.
-                insuranceFeatureOn,
             },
             { status: 201 }
         );

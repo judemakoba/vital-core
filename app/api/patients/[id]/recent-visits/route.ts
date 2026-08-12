@@ -1,72 +1,72 @@
-export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getVisitSettings } from "@/lib/visits/consultation-fee";
-import { VISIT_STATUS } from "@/lib/visits/status";
+
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/patients/[id]/recent-visits
  *
- * Returns the patient's recent COMPLETED visits that are eligible to be
- * linked as the `linkedPriorVisitId` of a new FOLLOW_UP visit. Per the
- * consolidated spec (R45):
+ * Returns the patient's most recent Completed visits that are eligible
+ * to be linked as a `linkedPriorVisitId` for a FOLLOW_UP visit. The list
+ * is filtered to:
+ *   - status = Completed
+ *   - type ∈ {OPD, FOLLOW_UP, VACCINATION, ANTENATAL, SCHEDULED}
+ *   - checkInTime (or createdAt) within the configured follow-up window
+ *     (default 14 days, read from settings.visit.followUpWindowDays)
  *
- *   - Must be in status "Completed"
- *   - Type must be OPD / FOLLOW_UP / VACCINATION / ANTENATAL / SCHEDULED
- *   - Must be within the configured follow-up window (default 14 days)
+ * Limited to the 20 most recent.
  *
- * Used by the visit creation modal to populate the prior-visit picker.
+ * Used by the create-visit modal's FOLLOW_UP prior-visit picker.
  */
 export async function GET(
-    request: Request,
+    _request: Request,
     { params }: { params: { id: string } }
 ) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) {
+        if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const patientId = params.id;
 
-        const patient = await prisma.patient.findUnique({
-            where: { id: patientId },
-            select: { id: true },
-        });
-        if (!patient) {
-            return NextResponse.json({ error: "Patient not found" }, { status: 404 });
-        }
-
         const { followUpWindowDays } = await getVisitSettings();
-        const cutoff = new Date(Date.now() - (followUpWindowDays > 0 ? followUpWindowDays : 14) * 86400000);
 
-        const ALLOWED_TYPES = ["OPD", "FOLLOW_UP", "VACCINATION", "ANTENATAL", "SCHEDULED"];
+        // If window is 0, "no time limit" — return all eligible Completed visits.
+        // Otherwise restrict to last `followUpWindowDays` days, measured by
+        // `createdAt` (always populated) — `checkInTime` may be null for some
+        // legacy rows and Prisma's OR-mixed null+comparison is brittle.
+        const since = followUpWindowDays > 0
+            ? new Date(Date.now() - followUpWindowDays * 86400000)
+            : new Date(0);
 
         const visits = await prisma.visit.findMany({
             where: {
                 patientId,
-                status: VISIT_STATUS.Completed,
-                type: { in: ALLOWED_TYPES as any },
-                checkInTime: { gte: cutoff },
+                status: "Completed",
+                type: { in: ["OPD", "FOLLOW_UP", "VACCINATION", "ANTENATAL", "SCHEDULED"] },
+                createdAt: { gte: since },
             },
+            orderBy: { checkInTime: "desc" },
+            take: 20,
             select: {
                 id: true,
                 visitNumber: true,
                 type: true,
                 checkInTime: true,
                 status: true,
+                chiefComplaint: true,
             },
-            orderBy: { checkInTime: "desc" },
-            take: 10,
         });
 
         return NextResponse.json(visits);
     } catch (error: any) {
-        console.error("Failed to fetch recent visits:", error);
+        console.error("Recent visits error:", error);
         return NextResponse.json(
-            { error: "Failed to fetch recent visits", details: error.message },
+            { error: "Failed to load recent visits", details: error.message },
             { status: 500 }
         );
     }
