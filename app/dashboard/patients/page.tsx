@@ -227,10 +227,10 @@ export default function PatientsPage() {
                     msg = `no consultation fee, status: ${data.initialStatus}`;
                 }
                 setVisitFeedback({ kind: "ok", text: `Visit ${data.visitNumber} created — ${msg}.` });
-                // Auto-close and route after a beat
+                // Auto-close and route to the main dashboard
                 setTimeout(() => {
                     setShowVisitModal(false);
-                    window.location.href = `/dashboard/patients/${selectedPatient.id}/visits/${data.visitId}`;
+                    window.location.href = `/dashboard`;
                 }, 1200);
                 return;
             }
