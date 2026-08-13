@@ -1,8 +1,21 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import {
+    Save,
+    CheckCircle,
+    Clipboard,
+    Pill,
+    FlaskConical,
+    History,
+    AlertCircle,
+    Lock,
+    Bed,
+    Scan,
+    ExternalLink
+} from "lucide-react";
 import styles from "./page.module.css";
 
 interface Diagnosis {
@@ -198,6 +211,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                         assessment: data.assessment || "",
                         treatmentPlan: data.treatmentPlan || ""
                     });
+
                 } else {
                     router.push("/dashboard/doctor");
                 }
@@ -446,14 +460,881 @@ export default function ConsultationPage({ params }: { params: { visitId: string
             </div>
             <div>
                 <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>Access Denied</h2>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.95rem" }}>
-                    You are not the assigned doctor for this visit. Redirecting…
+                <p style={{ color: "var(--text-secondary)", maxWidth: 380 }}>
+                    You are not authorized to view this consultation. Only the assigned doctor, admins, and super admins may access it.
+                </p>
+                <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "1rem" }}>
+                    Redirecting you to the dashboard...
                 </p>
             </div>
         </div>
     );
 
-    {/* Admit Patient Modal */}
+    if (!visit) return null;
+
+    return (
+        <div className={styles.container}>
+            <header className={styles.header}>
+                <div className={styles.patientInfo}>
+                    <h1 className={styles.patientName}>
+                        {visit.patient?.firstName} {visit.patient?.lastName}
+                    </h1>
+                    <div className={styles.patientMeta}>
+                        {visit.patient?.gender} • {calculateAge(visit.patient?.dateOfBirth || "")} yrs • BG: {visit.patient?.bloodGroup || "N/A"}
+                    </div>
+                    <div className={styles.vitalsRow}>
+                        <div className={styles.vitalItem}>
+                            <span className={styles.vitalLabel}>BP</span>
+                            <span className={styles.vitalValue}>{visit.bloodPressure || "--/--"}</span>
+                        </div>
+                        <div className={styles.vitalItem}>
+                            <span className={styles.vitalLabel}>HR</span>
+                            <span className={styles.vitalValue}>{visit.heartRate || "--"} bpm</span>
+                        </div>
+                        <div className={styles.vitalItem}>
+                            <span className={styles.vitalLabel}>Temp</span>
+                            <span className={styles.vitalValue}>{visit.temperature || "--"} °C</span>
+                        </div>
+                        <div className={styles.vitalItem}>
+                            <span className={styles.vitalLabel}>Weight</span>
+                            <span className={styles.vitalValue}>{visit.weight ? `${visit.weight} kg` : "--"}</span>
+                        </div>
+                        <div className={styles.vitalItem}>
+                            <span className={styles.vitalLabel}>Height</span>
+                            <span className={styles.vitalValue}>{visit.height ? `${visit.height} cm` : "--"}</span>
+                        </div>
+                        <div className={styles.vitalItem}>
+                            <span className={styles.vitalLabel}>BMI</span>
+                            <span className={styles.vitalValue}>
+                                {visit.weight && visit.height 
+                                    ? (visit.weight / Math.pow(visit.height / 100, 2)).toFixed(1) 
+                                    : "--"}
+                            </span>
+                        </div>
+                    </div>
+                    {visit.patient?.allergies && (
+                        <div style={{ 
+                            backgroundColor: "rgba(239,68,68,0.1)", 
+                            color: "var(--danger-color)", 
+                            padding: "0.5rem 0.75rem", 
+                            borderRadius: "6px",
+                            fontSize: "0.8rem",
+                            marginTop: "0.5rem",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem"
+                        }}>
+                            <AlertCircle size={14} />
+                            <strong>Allergies:</strong> {visit.patient.allergies}
+                        </div>
+                    )}
+                </div>
+            </header>
+
+            <div className={styles.layout}>
+                <div className={styles.mainContent}>
+                    <div className={styles.tabs}>
+                        <div
+                            className={`${styles.tab} ${activeTab === "notes" ? styles.tabActive : ""}`}
+                            onClick={() => setActiveTab("notes")}
+                        >
+                            <Clipboard size={16} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+                            Notes (SOAP)
+                        </div>
+                        <div
+                            className={`${styles.tab} ${activeTab === "diagnosis" ? styles.tabActive : ""}`}
+                            onClick={() => setActiveTab("diagnosis")}
+                        >
+                            <AlertCircle size={16} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+                            Diagnosis
+                        </div>
+                        <div
+                            className={`${styles.tab} ${activeTab === "prescription" ? styles.tabActive : ""}`}
+                            onClick={() => setActiveTab("prescription")}
+                        >
+                            <Pill size={16} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+                            Prescription
+                        </div>
+                        <div
+                            className={`${styles.tab} ${activeTab === "lab" ? styles.tabActive : ""}`}
+                            onClick={() => setActiveTab("lab")}
+                        >
+                            <FlaskConical size={16} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+                            Lab Orders
+                        </div>
+                        <div
+                            className={`${styles.tab} ${activeTab === "radiology" ? styles.tabActive : ""}`}
+                            onClick={() => setActiveTab("radiology")}
+                        >
+                            <Scan size={16} style={{ marginRight: "4px", verticalAlign: "middle" }} />
+                            Radiology
+                        </div>
+                    </div>
+
+                    <div className={styles.card}>
+                        {activeTab === "notes" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Subjective (Symptoms, patient complaints)</label>
+                                    <textarea
+                                        className={styles.textarea}
+                                        value={notes.subjective}
+                                        onChange={(e) => { setNotes({ ...notes, subjective: e.target.value }); setIsDirty(true); }}
+                                        placeholder="e.g. Headache for 3 days, low grade fever..."
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Objective (Physical exam findings)</label>
+                                    <textarea
+                                        className={styles.textarea}
+                                        value={notes.objective}
+                                        onChange={(e) => { setNotes({ ...notes, objective: e.target.value }); setIsDirty(true); }}
+                                        placeholder="e.g. Clear lungs, mild abdominal tenderness..."
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Assessment (Initial thoughts, differential diagnosis)</label>
+                                    <textarea
+                                        className={styles.textarea}
+                                        value={notes.assessment}
+                                        onChange={(e) => { setNotes({ ...notes, assessment: e.target.value }); setIsDirty(true); }}
+                                        placeholder="e.g. Likely malaria but need to rule out typhoid..."
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Treatment Plan (Next steps, counseling)</label>
+                                    <textarea
+                                        className={styles.textarea}
+                                        value={notes.treatmentPlan}
+                                        onChange={(e) => { setNotes({ ...notes, treatmentPlan: e.target.value }); setIsDirty(true); }}
+                                        placeholder="e.g. Order RDT, start paracetamol, follow up in 2 days..."
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "diagnosis" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                                <div className={styles.formGroup} style={{ position: "relative", marginBottom: 0 }}>
+                                    <label className={styles.label}>Search and Add Diagnosis (ICD-11 / ICD-10)</label>
+                                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                                        <input 
+                                            className={styles.input} 
+                                            placeholder="Search by code or title (e.g. Cholera or 1A00)..."
+                                            value={icdSearchQuery}
+                                            onChange={(e) => {
+                                                setIcdSearchQuery(e.target.value);
+                                                setShowIcdDropdown(true);
+                                                setSelectedIcdCode("");
+                                            }}
+                                            onFocus={() => setShowIcdDropdown(true)}
+                                            onBlur={() => setTimeout(() => setShowIcdDropdown(false), 200)}
+                                            onKeyDown={async (e) => {
+                                                if (e.key === 'Enter' && icdSearchQuery && !selectedIcdCode) {
+                                                    // Allow manual entry if no item is selected
+                                                    const name = icdSearchQuery;
+                                                    const res = await fetch(`/api/doctor/consultation/${params.visitId}/diagnosis`, {
+                                                        method: "POST",
+                                                        credentials: "include",
+                                                        headers: { "Content-Type": "application/json" },
+                                                        body: JSON.stringify({ 
+                                                            name, 
+                                                            code: "", 
+                                                            icdVersion: "ICD-10",
+                                                            patientId: visit.patient.id 
+                                                        })
+                                                    });
+                                                    if (res.ok) {
+                                                        const newD = await res.json();
+                                                        setVisit(prev => prev ? { ...prev, diagnoses: [...prev.diagnoses, newD] } : prev);
+                                                        setIcdSearchQuery("");
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <button 
+                                            className={styles.saveBtn}
+                                            style={{ padding: "0.6rem 1.5rem" }}
+                                            onClick={async () => {
+                                                if (!icdSearchQuery) return;
+                                                const res = await fetch(`/api/doctor/consultation/${params.visitId}/diagnosis`, {
+                                                    method: "POST",
+                                                    credentials: "include",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ 
+                                                        name: icdSearchQuery, 
+                                                        code: selectedIcdCode || "", 
+                                                        icdVersion: selectedIcdCode ? "ICD-11" : "ICD-10",
+                                                        patientId: visit.patient.id 
+                                                    })
+                                                });
+                                                if (res.ok) {
+                                                    const newD = await res.json();
+                                                    setVisit(prev => prev ? { ...prev, diagnoses: [...prev.diagnoses, newD] } : prev);
+                                                    setIcdSearchQuery("");
+                                                    setSelectedIcdCode("");
+                                                }
+                                            }}
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                    {showIcdDropdown && icdResults.length > 0 && (
+                                        <ul className={styles.dropdownList} style={{
+                                            position: "absolute",
+                                            top: "100%",
+                                            left: 0,
+                                            right: 0,
+                                            maxHeight: "300px",
+                                            overflowY: "auto",
+                                            background: "var(--bg-color, #fff)",
+                                            border: "1px solid var(--border-color, #e2e8f0)",
+                                            borderRadius: "var(--radius-md, 8px)",
+                                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                            listStyle: "none",
+                                            padding: 0,
+                                            margin: "4px 0 0 0",
+                                            zIndex: 20
+                                        }}>
+                                            {icdResults.map(res => (
+                                                <li
+                                                    key={res.id}
+                                                    style={{
+                                                        padding: "0.75rem 1rem",
+                                                        cursor: "pointer",
+                                                        borderBottom: "1px solid var(--border-color, #e2e8f0)",
+                                                        fontSize: "0.9rem",
+                                                        display: "flex",
+                                                        flexDirection: "column",
+                                                        gap: "0.25rem"
+                                                    }}
+                                                    onMouseDown={async (e) => {
+                                                        e.preventDefault();
+                                                        // Immediately add upon selection
+                                                        const response = await fetch(`/api/doctor/consultation/${params.visitId}/diagnosis`, {
+                                                            method: "POST",
+                                                            credentials: "include",
+                                                            headers: { "Content-Type": "application/json" },
+                                                            body: JSON.stringify({ 
+                                                                name: res.title, 
+                                                                code: res.code, 
+                                                                icdVersion: "ICD-11",
+                                                                patientId: visit.patient.id 
+                                                            })
+                                                        });
+                                                        if (response.ok) {
+                                                            const newD = await response.json();
+                                                            setVisit(prev => prev ? { ...prev, diagnoses: [...prev.diagnoses, newD] } : prev);
+                                                            setIcdSearchQuery("");
+                                                            setShowIcdDropdown(false);
+                                                        }
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        (e.currentTarget as HTMLElement).style.background = "var(--hover-bg, #f1f5f9)";
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        (e.currentTarget as HTMLElement).style.background = "transparent";
+                                                    }}
+                                                >
+                                                    <span style={{ fontWeight: 600, color: "var(--primary-color)" }}>{res.code}</span>
+                                                    <span style={{ color: "var(--text-color)" }}>{res.title}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+
+                                <div className={styles.list}>
+                                    {visit.diagnoses.map((d) => (
+                                        <div key={d.id} className={styles.listItem} style={{ padding: "0.75rem 0", borderBottom: "1px solid var(--border-color)", justifyContent: "space-between", display: "flex", alignItems: "center" }}>
+                                            <div>
+                                                <strong>{d.name}</strong> {d.code && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>({d.icdVersion || "ICD-10"}: {d.code})</span>}
+                                            </div>
+                                            {confirmingId === d.id ? (
+                                                <div className={styles.confirmGroup}>
+                                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--danger-color)' }}>Delete?</span>
+                                                    <button type="button" className={styles.confirmButton} onClick={() => handleRemoveDiagnosis(d.id)}>Yes</button>
+                                                    <button type="button" className={styles.cancelButton} onClick={() => setConfirmingId(null)}>No</button>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    type="button"
+                                                    className={styles.dangerButton}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setConfirmingId(d.id);
+                                                    }}
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {visit.diagnoses.length === 0 && <div className={styles.emptyState} style={{ padding: "1rem" }}>No diagnoses added yet.</div>}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "prescription" && (
+                            <PrescriptionForm
+                                visitId={params.visitId}
+                                patientId={visit.patient.id}
+                                prescriptions={visit.prescriptions}
+                                confirmingId={confirmingId}
+                                setConfirmingId={setConfirmingId}
+                                onAdd={(newP) => setVisit(prev => prev ? { ...prev, prescriptions: [...prev.prescriptions, newP] } : prev)}
+                                onCancel={handleCancelPrescription}
+                            />
+                        )}
+
+                        {activeTab === "lab" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                                {labError && (
+                                    <div style={{ backgroundColor: "#fee2e2", color: "#b91c1c", padding: "0.75rem 1rem", borderRadius: "10px", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem" }}>
+                                        <AlertCircle size={16} />
+                                        <span>{labError}</span>
+                                        <button 
+                                            onClick={() => setLabError("")} 
+                                            style={{ marginLeft: "auto", background: "none", border: "none", color: "#b91c1c", cursor: "pointer", fontSize: "1.2rem", lineHeight: 1 }}
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                )}
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.75rem", alignItems: "flex-end" }}>
+                                    <div className={styles.formGroup} style={{ marginBottom: 0, position: "relative" }}>
+                                        <label className={styles.label}>Search Lab Test From Catalog</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            value={labSearchQuery}
+                                            onChange={(e) => {
+                                                setLabSearchQuery(e.target.value);
+                                                setShowLabDropdown(true);
+                                                setSelectedTestId(""); // Clear selection when typing
+                                            }}
+                                            onFocus={() => setShowLabDropdown(true)}
+                                            onBlur={() => setTimeout(() => setShowLabDropdown(false), 200)}
+                                            placeholder="-- Search a Lab Test --"
+                                        />
+                                        {showLabDropdown && (
+                                            <ul className={styles.dropdownList} style={{
+                                                position: "absolute",
+                                                top: "100%",
+                                                left: 0,
+                                                right: 0,
+                                                maxHeight: "200px",
+                                                overflowY: "auto",
+                                                background: "var(--bg-color, #fff)",
+                                                border: "1px solid var(--border-color, #e2e8f0)",
+                                                borderRadius: "var(--radius-md, 8px)",
+                                                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                                                listStyle: "none",
+                                                padding: 0,
+                                                margin: "4px 0 0 0",
+                                                zIndex: 10
+                                            }}>
+                                                {labCatalog
+                                                    .filter(test => 
+                                                        test.name.toLowerCase().includes(labSearchQuery.toLowerCase()) || 
+                                                        (test.category?.name || "Uncategorized").toLowerCase().includes(labSearchQuery.toLowerCase())
+                                                    )
+                                                    .map(test => (
+                                                        <li
+                                                            key={test.id}
+                                                            style={{
+                                                                padding: "0.5rem 1rem",
+                                                                cursor: "pointer",
+                                                                borderBottom: "1px solid var(--border-color, #e2e8f0)",
+                                                                fontSize: "0.875rem"
+                                                            }}
+                                                            onMouseDown={(e) => {
+                                                                // using onMouseDown instead of onClick to fire before input's onBlur
+                                                                e.preventDefault(); 
+                                                                setSelectedTestId(test.id);
+                                                                setLabSearchQuery(`${test.name} (${test.category?.name || "Uncategorized"})`);
+                                                                setShowLabDropdown(false);
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                (e.target as HTMLElement).style.background = "var(--hover-bg, #f1f5f9)";
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                (e.target as HTMLElement).style.background = "transparent";
+                                                            }}
+                                                        >
+                                                            {test.name} <span style={{ color: "var(--text-muted, #64748b)" }}>({test.category?.name || "Uncategorized"})</span> - {currency} {test.price.toFixed(2)}
+                                                        </li>
+                                                    ))}
+                                                {labCatalog.filter(test => test.name.toLowerCase().includes(labSearchQuery.toLowerCase()) || (test.category?.name || "Uncategorized").toLowerCase().includes(labSearchQuery.toLowerCase())).length === 0 && (
+                                                    <li style={{ padding: "0.5rem 1rem", color: "var(--text-muted, #64748b)", fontSize: "0.875rem" }}>
+                                                        No tests found.
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        )}
+                                    </div>
+                                    <button
+                                        className={styles.saveBtn}
+                                        style={{ height: "42px" }}
+                                        disabled={!selectedTestId}
+                                        onClick={async () => {
+                                            if (!selectedTestId) return;
+
+                                            const selectedTest = labCatalog.find(t => t.id === selectedTestId);
+                                            if (!selectedTest) return;
+
+                                            const isAlreadyOrdered = visit.labOrders && visit.labOrders.some(o => o.testName === selectedTest.name);
+                                            if (isAlreadyOrdered) {
+                                                setLabError("This lab test has already been requested for this consultation.");
+                                                return;
+                                            }
+                                            
+                                            setLabError(""); // Clear error if successful
+
+                                            const res = await fetch(`/api/lab/orders`, {
+                                                method: "POST",
+                                                credentials: "include",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({
+                                                    visitId: params.visitId,
+                                                    patientId: visit.patient.id,
+                                                    testName: selectedTest.name,
+                                                    testCategory: selectedTest.category?.name || "Uncategorized",
+                                                    priority: visit.priority
+                                                })
+                                            });
+                                            if (res.ok) {
+                                                const newL = await res.json();
+                                                setVisit(prev => prev ? { ...prev, labOrders: [...(prev.labOrders || []), newL] } : prev);
+                                                setSelectedTestId(""); // Reset selection
+                                                setLabSearchQuery(""); // Reset search query
+                                            } else {
+                                                const errorData = await res.json();
+                                                setLabError(errorData.error || "Failed to order lab test.");
+                                            }
+                                        }}
+                                    >
+                                        Order Test
+                                    </button>
+                                </div>
+
+                                <div className={styles.list}>
+                                    {(visit.labOrders || []).map((l) => (
+                                        <div key={l.id} className={styles.listItem} style={{ padding: "0.75rem 0", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between" }}>
+                                            <div>
+                                                <strong>{l.testName}</strong> <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>[{l.testCategory}]</span>
+                                                <div style={{ fontSize: "0.75rem", color: l.status === "Completed" ? "var(--success-color)" : "var(--warning-color)", marginBottom: l.status === "Completed" ? "0.5rem" : "0" }}>
+                                                    Status: {l.status}
+                                                </div>
+                                                {l.status === "Completed" && (
+                                                    <div style={{
+                                                        background: "rgba(0,0,0,0.03)",
+                                                        padding: "0.75rem",
+                                                        borderRadius: "var(--radius-sm)",
+                                                        borderLeft: `3px solid ${l.resultFlags === "Normal" ? "var(--success-color)" : (l.resultFlags === "Critical" ? "var(--danger-color)" : "var(--warning-color)")}`,
+                                                        marginTop: "0.5rem"
+                                                    }}>
+                                                        <div style={{ fontSize: "0.75rem", fontWeight: 700, marginBottom: "0.25rem", color: "var(--text-secondary)", display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <span>RESULT <span style={{ marginLeft: "0.5rem", padding: "0.1rem 0.4rem", background: "rgba(0,0,0,0.1)", borderRadius: "4px" }}>{l.resultFlags}</span></span>
+                                                            <a
+                                                                href={`/dashboard/lab/${l.id}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                style={{
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.3rem',
+                                                                    padding: '0.25rem 0.55rem',
+                                                                    fontSize: '0.7rem',
+                                                                    fontWeight: 600,
+                                                                    color: 'var(--primary-color)',
+                                                                    background: 'rgba(99, 102, 241, 0.08)',
+                                                                    border: '1px solid rgba(99, 102, 241, 0.2)',
+                                                                    borderRadius: '6px',
+                                                                    textDecoration: 'none',
+                                                                    whiteSpace: 'nowrap',
+                                                                }}
+                                                                title="Open the full standardized GMC report in a new tab"
+                                                            >
+                                                                <ExternalLink size={12} /> View Full Report
+                                                            </a>
+                                                        </div>
+                                                        <div style={{ fontSize: "0.875rem", whiteSpace: "pre-wrap" }}>
+                                                            {l.result}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {l.status !== "Completed" && (
+                                                confirmingId === l.id ? (
+                                                    <div className={styles.confirmGroup}>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--danger-color)' }}>Cancel?</span>
+                                                        <button type="button" className={styles.confirmButton} onClick={() => handleCancelLabOrder(l.id)}>Confirm</button>
+                                                        <button type="button" className={styles.cancelButton} onClick={() => setConfirmingId(null)}>Back</button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        className={styles.dangerButton}
+                                                        style={{ height: "fit-content" }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setConfirmingId(l.id);
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                )
+                                            )}
+                                        </div>
+                                    ))}
+                                    {(visit.labOrders || []).length === 0 && <div className={styles.emptyState} style={{ padding: "1rem" }}>No lab tests ordered yet.</div>}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "radiology" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                                {radiologyError && (
+                                    <div style={{ backgroundColor: "#fee2e2", color: "#b91c1c", padding: "0.75rem 1rem", borderRadius: "10px", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.875rem" }}>
+                                        <AlertCircle size={16} />
+                                        <span>{radiologyError}</span>
+                                        <button
+                                            onClick={() => setRadiologyError("")}
+                                            style={{ marginLeft: "auto", background: "none", border: "none", color: "#b91c1c", cursor: "pointer", fontSize: "1.2rem", lineHeight: 1 }}
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                )}
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.75rem", alignItems: "flex-end" }}>
+                                    <div className={styles.formGroup} style={{ marginBottom: 0, position: "relative" }}>
+                                        <label className={styles.label}>Search Radiology Exam from Catalog</label>
+                                        <input
+                                            type="text"
+                                            className={styles.input}
+                                            value={radiologySearchQuery}
+                                            onChange={(e) => {
+                                                setRadiologySearchQuery(e.target.value);
+                                                setShowRadiologyDropdown(true);
+                                                setSelectedExamId("");
+                                            }}
+                                            onFocus={() => setShowRadiologyDropdown(true)}
+                                            onBlur={() => setTimeout(() => setShowRadiologyDropdown(false), 200)}
+                                            placeholder="-- Search an X-Ray, CT, MRI, or Ultrasound --"
+                                        />
+                                        {showRadiologyDropdown && (
+                                            <ul style={{
+                                                position: "absolute",
+                                                top: "100%",
+                                                left: 0,
+                                                right: 0,
+                                                maxHeight: "250px",
+                                                overflowY: "auto",
+                                                background: "var(--bg-color, #fff)",
+                                                border: "1px solid var(--border-color, #e2e8f0)",
+                                                borderRadius: "var(--radius-md, 8px)",
+                                                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                                listStyle: "none",
+                                                padding: 0,
+                                                margin: "4px 0 0 0",
+                                                zIndex: 10
+                                            }}>
+                                                {radiologyCatalog
+                                                    .filter(exam =>
+                                                        exam.name.toLowerCase().includes(radiologySearchQuery.toLowerCase()) ||
+                                                        (exam.category?.name || "").toLowerCase().includes(radiologySearchQuery.toLowerCase())
+                                                    )
+                                                    .map(exam => (
+                                                        <li
+                                                            key={exam.id}
+                                                            style={{
+                                                                padding: "0.6rem 1rem",
+                                                                cursor: "pointer",
+                                                                borderBottom: "1px solid var(--border-color, #e2e8f0)",
+                                                                fontSize: "0.875rem",
+                                                                display: "flex",
+                                                                justifyContent: "space-between",
+                                                                alignItems: "center"
+                                                            }}
+                                                            onMouseDown={(e) => {
+                                                                e.preventDefault();
+                                                                setSelectedExamId(exam.id);
+                                                                setRadiologySearchQuery(`${exam.name} (${exam.category?.name || "Uncategorized"})`);
+                                                                setShowRadiologyDropdown(false);
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                    (e.currentTarget as HTMLElement).style.background = "var(--hover-bg, #f1f5f9)";
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                                                            }}
+                                                        >
+                                                            <span>
+                                                                <span style={{ fontWeight: 600 }}>{exam.name}</span>
+                                                                <span style={{ color: "var(--text-muted, #64748b)", marginLeft: "0.5rem" }}>
+                                                                    [{exam.category?.name || "Uncategorized"}]
+                                                                </span>
+                                                            </span>
+                                                            <span style={{ color: "var(--primary-color)", fontWeight: 700, fontSize: "0.8rem" }}>
+                                                                {currency} {exam.price.toFixed(2)}
+                                                            </span>
+                                                        </li>
+                                                    ))}
+                                                {radiologyCatalog.filter(exam =>
+                                                    exam.name.toLowerCase().includes(radiologySearchQuery.toLowerCase()) ||
+                                                    (exam.category?.name || "").toLowerCase().includes(radiologySearchQuery.toLowerCase())
+                                                ).length === 0 && (
+                                                    <li style={{ padding: "0.5rem 1rem", color: "var(--text-muted, #64748b)", fontSize: "0.875rem" }}>
+                                                        No exams found.
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        )}
+                                    </div>
+                                    <button
+                                        className={styles.saveBtn}
+                                        style={{ height: "42px" }}
+                                        disabled={!selectedExamId}
+                                        onClick={async () => {
+                                            if (!selectedExamId) return;
+
+                                            const selectedExam = radiologyCatalog.find(e => e.id === selectedExamId);
+                                            if (!selectedExam) return;
+
+                                            const isAlreadyOrdered = (visit as any).radiologyOrders?.some(
+                                                (o: any) => o.examName.toLowerCase() === selectedExam.name.toLowerCase()
+                                            );
+                                            if (isAlreadyOrdered) {
+                                                setRadiologyError(`"${selectedExam.name}" has already been ordered for this visit.`);
+                                                return;
+                                            }
+
+                                            setRadiologyError("");
+
+                                            const res = await fetch(`/api/radiology/orders`, {
+                                                method: "POST",
+                                                credentials: "include",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({
+                                                    visitId: params.visitId,
+                                                    patientId: visit.patient.id,
+                                                    examName: selectedExam.name,
+                                                    category: selectedExam.category?.name || "General",
+                                                    priority: visit.priority
+                                                })
+                                            });
+
+                                            if (res.ok) {
+                                                const newR = await res.json();
+                                                setVisit((prev: any) => prev ? {
+                                                    ...prev,
+                                                    radiologyOrders: [...(prev.radiologyOrders || []), newR]
+                                                } : null);
+                                                setSelectedExamId("");
+                                                setRadiologySearchQuery("");
+                                            } else {
+                                                const data = await res.json();
+                                                setRadiologyError(data.error || "Failed to order radiology exam.");
+                                            }
+                                        }}
+                                    >
+                                        Order Exam
+                                    </button>
+                                </div>
+
+                                <div className={styles.list}>
+                                    {(visit as any).radiologyOrders?.map((r: any) => (
+                                        <div key={r.id} style={{
+                                            padding: "0.85rem 0",
+                                            borderBottom: "1px solid var(--border-color)",
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            gap: "1rem"
+                                        }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>{r.examName}</div>
+                                                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                                                    {r.category} &bull; Priority: {r.priority}
+                                                </div>
+                                                <div style={{
+                                                    fontSize: "0.75rem",
+                                                    fontWeight: 600,
+                                                    color: r.status === "Completed" ? "var(--success-color)"
+                                                        : r.status === "InProgress" ? "var(--warning-color)"
+                                                        : "var(--primary-color)",
+                                                    marginTop: "4px"
+                                                }}>
+                                                    Status: {r.status}
+                                                </div>
+                                                {r.status === "Completed" && (
+                                                    <div style={{
+                                                        marginTop: "0.5rem",
+                                                        padding: "0.75rem",
+                                                        background: "rgba(0,0,0,0.03)",
+                                                        borderRadius: "var(--radius-sm)",
+                                                        borderLeft: "3px solid var(--success-color)",
+                                                    }}>
+                                                        <div style={{
+                                                            fontSize: "0.75rem",
+                                                            fontWeight: 700,
+                                                            marginBottom: "0.4rem",
+                                                            color: "var(--text-secondary)",
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            gap: '0.5rem'
+                                                        }}>
+                                                            <span>REPORT</span>
+                                                            <a
+                                                                href={`/dashboard/radiology/${r.id}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                style={{
+                                                                    display: 'inline-flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.3rem',
+                                                                    padding: '0.25rem 0.55rem',
+                                                                    fontSize: '0.7rem',
+                                                                    fontWeight: 600,
+                                                                    color: 'var(--primary-color)',
+                                                                    background: 'rgba(99, 102, 241, 0.08)',
+                                                                    border: '1px solid rgba(99, 102, 241, 0.2)',
+                                                                    borderRadius: '6px',
+                                                                    textDecoration: 'none',
+                                                                    whiteSpace: 'nowrap',
+                                                                }}
+                                                                title="Open the full GMC report in a new tab"
+                                                            >
+                                                                <ExternalLink size={12} /> View Full Report
+                                                            </a>
+                                                        </div>
+                                                        {r.modality && (
+                                                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>
+                                                                <strong>Modality:</strong> {r.modality}{r.contrastUsed ? " (with contrast)" : ""}
+                                                            </div>
+                                                        )}
+                                                        {r.technique && (
+                                                            <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", whiteSpace: "pre-wrap" }}>
+                                                                <strong>Technique:</strong> {r.technique}
+                                                            </div>
+                                                        )}
+                                                        {r.findings && (
+                                                            <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", whiteSpace: "pre-wrap" }}>
+                                                                <strong>Findings:</strong> {r.findings}
+                                                            </div>
+                                                        )}
+                                                        {r.impression && (
+                                                            <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", whiteSpace: "pre-wrap" }}>
+                                                                <strong>Impression:</strong> {r.impression}
+                                                            </div>
+                                                        )}
+                                                        {r.recommendations && (
+                                                            <div style={{ fontSize: "0.8rem", whiteSpace: "pre-wrap" }}>
+                                                                <strong>Recommendations:</strong> {r.recommendations}
+                                                            </div>
+                                                        )}
+                                                        {!r.findings && !r.impression && r.result && (
+                                                            <div style={{ fontSize: "0.8rem", whiteSpace: "pre-wrap" }}>
+                                                                {r.result}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {r.status !== "Completed" && (
+                                                confirmingId === r.id ? (
+                                                    <div className={styles.confirmGroup}>
+                                                        <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--danger-color)" }}>Cancel?</span>
+                                                        <button type="button" className={styles.confirmButton} onClick={() => handleCancelRadiologyOrder(r.id)}>Yes</button>
+                                                        <button type="button" className={styles.cancelButton} onClick={() => setConfirmingId(null)}>No</button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        className={styles.dangerButton}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setConfirmingId(r.id);
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                )
+                                            )}
+                                        </div>
+                                    ))}
+                                    {(visit as any).radiologyOrders?.length === 0 && (
+                                        <div className={styles.emptyState} style={{ padding: "1.5rem" }}>
+                                            No radiology exams ordered yet.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <aside className={styles.sidebar}>
+                    <div className={styles.sidebarCard}>
+                        <h2 className={styles.sidebarTitle}>Actions</h2>
+                        <div className={styles.actions}>
+                            <button
+                                className="btn-secondary"
+                                onClick={openAdmitModal}
+                                disabled={saving}
+                                style={{ width: '100%', marginBottom: '0.75rem', justifyContent: 'center' }}
+                            >
+                                <Bed size={18} style={{ marginRight: '8px' }} />
+                                Admit to IPD
+                            </button>
+                            <button
+                                className={styles.saveBtn}
+                                onClick={() => handleSave(false)}
+                                disabled={saving}
+                            >
+                                {saving ? (
+                                    <>
+                                        <Save size={18} />
+                                        Saving...
+                                    </>
+                                ) : isDirty ? (
+                                    <>
+                                        <Save size={18} />
+                                        Save Draft
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle size={18} style={{ color: '#16a34a' }} />
+                                        Saved
+                                    </>
+                                )}
+                            </button>
+                            <button
+                                className={styles.finishBtn}
+                                onClick={() => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); handleSave(true); }}
+                                disabled={saving}
+                            >
+                                <CheckCircle size={18} />
+                                Finish Consultation
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className={styles.sidebarCard}>
+                        <h2 className={styles.sidebarTitle}>
+                            <History size={18} style={{ marginRight: "8px", verticalAlign: "middle" }} />
+                            Quick History
+                        </h2>
+                        <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
+                            No previous visits found for this patient.
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            {/* Admit Patient Modal */}
             {showAdmitModal && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
                     <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '500px' }}>
