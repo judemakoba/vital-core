@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AccountingService } from '@/lib/finance/accounting-service';
-import { PricingEngine } from '@/lib/finance/pricing-engine';
 import { ServiceType } from '@/lib/generated-prisma';
 
 // GET /api/finance/tax-invoices
@@ -32,7 +31,6 @@ export async function GET(req: Request) {
                 orderBy: { invoiceDate: 'desc' },
                 include: {
                     patient: { select: { firstName: true, lastName: true, patientNumber: true } },
-                    insurance: { select: { name: true } },
                     createdBy: { select: { name: true } },
                     lines: true,
                     _count: { select: { allocations: true } },
@@ -55,7 +53,6 @@ export async function POST(req: Request) {
         const {
             invoiceType = 'TAX_INVOICE',
             patientId,
-            insuranceId,
             customerName,
             customerTin,
             customerAddress,
@@ -78,20 +75,10 @@ export async function POST(req: Request) {
         let taxTotal = 0;
 
         const processedLines = await Promise.all(lines.map(async (l: any, idx: number) => {
-            
-            let finalUnitPrice = l.unitPrice;
-            
-            // If linked to a patient, run through our Pricing Engine to enforce insurance rules
-            if (patientId) {
-                const serviceType = l.itemType as ServiceType; // Ensure it casts correctly
-                const pricingResult = await PricingEngine.calculateItemPrice(
-                    patientId,
-                    l.itemId || null,
-                    serviceType || null,
-                    l.unitPrice
-                );
-                finalUnitPrice = pricingResult.finalPrice;
-            }
+            // Cash-only flow: use the unit price from the request directly.
+            // (The PricingEngine was insurance-specific — removed with the
+            // insurance module in 2026-08.)
+            const finalUnitPrice = l.unitPrice;
 
             const lineSubtotal = l.quantity * finalUnitPrice;
             const discountAmt = lineSubtotal * ((l.discountRate ?? 0) / 100);

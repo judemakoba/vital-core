@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { BillingValidationService } from "@/lib/finance/billing-validation-service";
-import { PricingEngine } from "@/lib/finance/pricing-engine";
 import { ServiceType } from "@/lib/generated-prisma";
 
 export async function GET(request: Request) {
@@ -80,29 +79,16 @@ export async function POST(request: Request) {
         const { generateInvoiceNumber } = await import("@/lib/formatters");
         const invoiceNumber = await generateInvoiceNumber(count + 1, today);
 
-        // Transform incoming items by running them through the Pricing Engine
-        const processedItems = await Promise.all(items.map(async (item: any) => {
-            // Determine ServiceType dynamically based on existing itemType string or map it
-            // Assuming item.itemType matches ServiceType or we cast it
-            const serviceType = item.itemType as ServiceType;
-
-            const pricingResult = await PricingEngine.calculateItemPrice(
-                patientId,
-                item.referenceId || null,
-                serviceType || null,
-                item.unitPrice // Act as standard rate fallback
-            );
-
-            const finalUnitPrice = pricingResult.finalPrice;
-
-            return {
-                description: item.description,
-                quantity: item.quantity,
-                unitPrice: finalUnitPrice,
-                totalPrice: finalUnitPrice * item.quantity,
-                itemType: item.itemType,
-                referenceId: item.referenceId
-            };
+        // Cash-only flow: use the unit price from the request directly.
+        // (The PricingEngine was insurance-specific — removed with the
+        // insurance module in 2026-08.)
+        const processedItems = items.map((item: any) => ({
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.unitPrice * item.quantity,
+            itemType: item.itemType,
+            referenceId: item.referenceId,
         }));
 
         const totalAmount = processedItems.reduce((sum: number, item: any) => sum + item.totalPrice, 0);

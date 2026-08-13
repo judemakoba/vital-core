@@ -629,7 +629,4 @@ export class AccountingService {
             return journal;
         });
     }
-
-        });
-    }
 }
