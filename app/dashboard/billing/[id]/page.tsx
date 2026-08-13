@@ -1,33 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ArrowLeft, CreditCard, History, Printer } from "lucide-react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import ModernInvoicePaper from "@/components/finance/ModernInvoicePaper";
 import { useTenant } from "@/components/TenantContext";
 
-const fmt = (n: number) => `UGX ${(n ?? 0).toLocaleString("en-UG")}`;
-
 export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
     const { tenant } = useTenant();
     const [invoice, setInvoice] = useState<any>(null);
+    const [settings, setSettings] = useState<any>({});
     const [loading, setLoading] = useState(true);
     const [amount, setAmount] = useState("");
     const [method, setMethod] = useState("Cash");
     const [notes, setNotes] = useState("");
     const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`/api/billing/invoices/${params.id}`, { credentials: "include" });
-            if (res.ok) {
-                const data = await res.json();
+            const [invoiceRes, settingsRes] = await Promise.all([
+                fetch(`/api/billing/invoices/${params.id}`, { credentials: "include" }),
+                fetch("/api/admin/settings", { credentials: "include" }),
+            ]);
+
+            if (invoiceRes.ok) {
+                const data = await invoiceRes.json();
                 setInvoice(data);
-                setAmount(String(data.balanceDue ?? 0));
+                setAmount(data.balanceDue.toString());
             }
+            if (settingsRes.ok) setSettings(await settingsRes.json());
         } catch (err) {
             console.error("Fetch error", err);
         } finally {
@@ -41,193 +44,167 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
 
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
-        setSuccess(null);
-        if (!amount || parseFloat(amount) <= 0) {
-            setError("Enter a valid amount");
-            return;
-        }
+        if (!amount || parseFloat(amount) <= 0) return;
+        await submitPayment();
+    };
 
+    const submitPayment = async () => {
         setSaving(true);
         try {
             const res = await fetch(`/api/billing/invoices/${params.id}/payments`, {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    amount: parseFloat(amount),
-                    paymentMethod: method,
-                    notes,
-                }),
+                body: JSON.stringify({ amount, paymentMethod: method, notes }),
             });
             const data = await res.json();
             if (res.ok) {
-                setSuccess(`Payment recorded.`);
+                setInvoice((prev: any) => prev ? {
+                    ...prev,
+                    status: data.updatedInvoice?.status ?? prev.status,
+                    amountPaid: data.updatedInvoice?.amountPaid ?? prev.amountPaid,
+                    balanceDue: data.updatedInvoice?.balanceDue ?? prev.balanceDue,
+                    payments: data.payment
+                        ? [data.payment, ...(prev.payments || [])]
+                        : (prev.payments || [])
+                } : prev);
                 setNotes("");
-                // Refetch to update amounts
-                await fetchData();
             } else {
-                setError(data.error || "Payment failed");
+                alert(`Payment failed: ${data.error || "Unknown error"}`);
             }
-        } catch (err: any) {
-            setError(err.message || "Network error");
+        } catch (err) {
+            alert("An error occurred while processing payment.");
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading && !invoice) {
-        return <div className={styles.card} style={{ padding: 24 }}>Loading invoice…</div>;
-    }
+    if (loading) return <div style={{ padding: "2rem" }}>Loading invoice...</div>;
+    if (!invoice) return <div style={{ padding: "2rem" }}>Invoice not found.</div>;
 
-    if (!invoice) {
-        return (
-            <div className={styles.card} style={{ padding: 24 }}>
-                <p>Invoice not found.</p>
-                <Link href="/dashboard/billing" className={styles.btnSecondary}>← Back to Billing</Link>
-            </div>
-        );
-    }
-
-    const isPaid = invoice.status === "Paid";
-    const balance = Number(invoice.balanceDue ?? 0);
+    // Build clinic identity from the Tenant row (single source of truth
+    // for identity/branding). The Tenant columns (name, address, city,
+    // phone, logoUrl) are configured in /dashboard/settings. The
+    // terms text comes from a TenantSetting (clinic.regulatoryText).
+    // Fallbacks only kick in if the admin hasn't configured anything.
+    const clinicAddress = [tenant.address, tenant.city, tenant.region, tenant.country]
+        .filter(Boolean)
+        .join(', ');
+    const clinicInfo = {
+        name: tenant.shortName || tenant.name || "VitalCore Healthcare",
+        address: clinicAddress || "Plot 123, Medical Hub, City",
+        phone: tenant.phone || "+256 000 000 000",
+        email: tenant.email || undefined,
+        taxId: tenant.taxId || undefined,
+        registrationNumber: tenant.registrationNumber || undefined,
+        logoUrl: tenant.logoUrl || undefined,
+        terms: settings['clinic.regulatoryText']
+            || `Thank you for choosing ${tenant.shortName || tenant.name || 'our clinic'}. Please keep this invoice for your medical records.`,
+    };
 
     return (
-        <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                <Link href="/dashboard/billing" className={styles.btnSecondary}>← Back</Link>
-                <h1 style={{ fontSize: 20, margin: 0 }}>Invoice {invoice.invoiceNumber}</h1>
-                <span className={styles[`status${invoice.status}`] ?? ""} style={{ marginLeft: 8 }}>
-                    {invoice.status}
-                </span>
-            </div>
+        <div className={styles.container}>
+            <div className={styles.noPrint}>
+                <Link href="/dashboard/billing" className={styles.backLink}>
+                    <ArrowLeft size={16} /> Back to Invoices
+                </Link>
 
-            <div className={styles.card} style={{ padding: 16, marginBottom: 16 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-                    <div>
-                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Patient</div>
-                        <div style={{ fontSize: 14, fontWeight: 600 }}>
-                            {invoice.visit?.patient ? `${invoice.visit.patient.firstName} ${invoice.visit.patient.lastName}` : "—"}
-                        </div>
+                <div className={styles.toolbar}>
+                    <div className={styles.statusBox}>
+                        <span className={`badge ${invoice.status === 'Paid' ? 'status-completed' : 'status-waiting'}`}>
+                            {invoice.status.toUpperCase()}
+                        </span>
                     </div>
-                    <div>
-                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Visit</div>
-                        <div style={{ fontSize: 14 }}>
-                            {invoice.visit?.visitNumber ?? "—"}
-                        </div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>Issued</div>
-                        <div style={{ fontSize: 14 }}>
-                            {invoice.createdAt ? new Date(invoice.createdAt).toLocaleString() : "—"}
-                        </div>
-                    </div>
+                    <button className="btn-primary" onClick={() => window.print()}>
+                        <Printer size={16} /> Print Branded Invoice
+                    </button>
                 </div>
             </div>
 
-            {/* Line items */}
-            <div className={styles.card} style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
-                <div style={{ padding: 16, borderBottom: "1px solid var(--border)", fontWeight: 600 }}>
-                    Line items
-                </div>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                        <tr style={{ background: "var(--bg-elevated)" }}>
-                            <th style={th}>Description</th>
-                            <th style={thRight}>Qty</th>
-                            <th style={thRight}>Unit price</th>
-                            <th style={thRight}>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {(invoice.items ?? []).map((it: any, i: number) => (
-                            <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
-                                <td style={td}>{it.description}</td>
-                                <td style={tdRight}>{it.quantity}</td>
-                                <td style={tdRight}>{fmt(it.unitPrice)}</td>
-                                <td style={tdRight}>{fmt(it.totalPrice ?? it.unitPrice * it.quantity)}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                    <tfoot>
-                        <tr style={{ borderTop: "2px solid var(--border)" }}>
-                            <td colSpan={3} style={{ ...tdRight, fontWeight: 700 }}>Total</td>
-                            <td style={{ ...tdRight, fontWeight: 700, fontFamily: "monospace" }}>{fmt(invoice.totalAmount)}</td>
-                        </tr>
-                        <tr>
-                            <td colSpan={3} style={tdRight}>Paid</td>
-                            <td style={{ ...tdRight, color: "#059669", fontFamily: "monospace" }}>{fmt(invoice.amountPaid)}</td>
-                        </tr>
-                        <tr>
-                            <td colSpan={3} style={{ ...tdRight, fontWeight: 700 }}>Balance</td>
-                            <td style={{ ...tdRight, fontWeight: 700, color: balance > 0 ? "#dc2626" : "#059669", fontFamily: "monospace" }}>
-                                {fmt(balance)}
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+            {/* Premium High-Fidelity Invoice Paper */}
+            <div className={styles.invoicePaperContainer}>
+                <ModernInvoicePaper
+                    clinicInfo={clinicInfo}
+                    invoice={invoice}
+                    patient={invoice.patient}
+                    visit={invoice.visit}
+                />
             </div>
 
-            {/* Payments */}
-            {(invoice.payments ?? []).length > 0 && (
-                <div className={styles.card} style={{ padding: 16, marginBottom: 16 }}>
-                    <h3 style={{ margin: "0 0 12px 0", fontSize: 14 }}>Payments</h3>
-                    {invoice.payments.map((p: any) => (
-                        <div key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid var(--border)" }}>
-                            <span>{new Date(p.createdAt).toLocaleString()} — {p.paymentMethod}</span>
-                            <span style={{ fontFamily: "monospace" }}>{fmt(p.amount)}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <div className={`${styles.noPrint} ${styles.adminSection}`}>
+                <div style={{ display: "grid", gridTemplateColumns: invoice.status !== 'Paid' ? "1.5fr 1fr" : "1fr", gap: "1.5rem" }}>
+                    {/* Show the payment form whenever the invoice is not fully paid. */}
+                    {invoice.status !== 'Paid' && (
+                        <div className={styles.card}>
+                            <h2 className={styles.sectionTitle}>
+                                <CreditCard size={18} /> Record Payment
+                            </h2>
 
-            {/* Payment form */}
-            {!isPaid && balance > 0 && (
-                <div className={styles.card} style={{ padding: 16 }}>
-                    <h3 style={{ margin: "0 0 12px 0", fontSize: 14 }}>Record payment</h3>
-                    <form onSubmit={handlePayment} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto", gap: 12, alignItems: "end" }}>
-                        <div>
-                            <label style={labelStyle}>Amount (UGX)</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max={balance}
-                                step="0.01"
-                                value={amount}
-                                onChange={e => setAmount(e.target.value)}
-                                required
-                                style={inputStyle}
-                            />
+                            <form onSubmit={handlePayment} className={styles.paymentForm}>
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.label}>Amount to Pay (UGX)</label>
+                                    <input
+                                        type="number"
+                                        className={styles.input}
+                                        value={amount}
+                                        max={invoice.balanceDue}
+                                        onChange={e => setAmount(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className={styles.inputGroup}>
+                                    <label className={styles.label}>Payment Method</label>
+                                    <select
+                                        className={styles.select}
+                                        value={method}
+                                        onChange={e => setMethod(e.target.value)}
+                                    >
+                                        <option value="Cash">Cash</option>
+                                        <option value="Mobile_Money">Mobile Money</option>
+                                        <option value="Credit_Card">Credit Card</option>
+                                        <option value="Bank_Transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                                <div className={styles.inputGroup} style={{ gridColumn: "1 / span 2" }}>
+                                    <label className={styles.label}>Notes / Ref #</label>
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        placeholder="e.g. Transaction ID"
+                                        value={notes}
+                                        onChange={e => setNotes(e.target.value)}
+                                    />
+                                </div>
+                                <button type="submit" className={styles.submitBtn} disabled={saving} style={{ gridColumn: "1 / span 2" }}>
+                                    {saving ? "Processing..." : "Record Payment"}
+                                </button>
+                            </form>
                         </div>
-                        <div>
-                            <label style={labelStyle}>Method</label>
-                            <select value={method} onChange={e => setMethod(e.target.value)} style={inputStyle}>
-                                <option value="Cash">Cash</option>
-                                <option value="Mobile_Money">Mobile Money</option>
-                                <option value="Card">Card</option>
-                                <option value="Bank_Transfer">Bank Transfer</option>
-                                <option value="Cheque">Cheque</option>
-                            </select>
+                    )}
+
+                    <div className={styles.card}>
+                        <h2 className={styles.sectionTitle}><History size={18} /> Payment History</h2>
+                        <div className={styles.historyList}>
+                            {invoice.payments.length === 0 ? (
+                                <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No payments recorded yet.</p>
+                            ) : invoice.payments.map((p: any) => (
+                                <div key={p.id} className={styles.historyItem}>
+                                    <div>
+                                        <div style={{ fontWeight: 600 }}>UGX {p.amount.toLocaleString()}</div>
+                                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Via {p.paymentMethod}</div>
+                                    </div>
+                                    <div style={{ textAlign: "right" }}>
+                                        <div style={{ fontSize: "0.875rem" }}>{new Date(p.createdAt).toLocaleDateString()}</div>
+                                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>By {p.receivedBy?.name || "System"}</div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <div>
-                            <label style={labelStyle}>Notes</label>
-                            <input value={notes} onChange={e => setNotes(e.target.value)} style={inputStyle} />
-                        </div>
-                        <button type="submit" disabled={saving} className={styles.btnPrimary}>
-                            {saving ? "Saving…" : "Pay"}
-                        </button>
-                    </form>
-                    {error && <div style={{ marginTop: 12, padding: 8, background: "rgba(239,68,68,0.1)", color: "#dc2626", borderRadius: 6 }}>{error}</div>}
-                    {success && <div style={{ marginTop: 12, padding: 8, background: "rgba(34,197,94,0.1)", color: "#059669", borderRadius: 6 }}>{success}</div>}
+                    </div>
                 </div>
-            )}
+            </div>
+
         </div>
     );
 }
 
-const th: React.CSSProperties = { textAlign: "left", padding: "10px 12px", fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase" };
-const thRight: React.CSSProperties = { ...th, textAlign: "right" };
-const td: React.CSSProperties = { padding: "10px 12px", fontSize: 13 };
-const tdRight: React.CSSProperties = { ...td, textAlign: "right", fontFamily: "monospace" };
-const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, color: "var(--text-muted)", marginBottom: 4, textTransform: "uppercase" };
-const inputStyle: React.CSSProperties = { width: "100%", padding: "8px 10px", border: "1px solid var(--border)", borderRadius: 6, fontSize: 13, background: "var(--bg)", color: "var(--text)" };
