@@ -187,7 +187,6 @@ export async function GET(request: Request) {
             cur.quantity += d.quantityDispensed;
             cur.revenue += d.totalAmount;
             cur.patientPay += d.patientPayAmount;
-            cur.insurancePay += d.insurancePayAmount;
             cur.count += 1;
             dispensedByDrug.set(key, cur);
         }
@@ -199,7 +198,6 @@ export async function GET(request: Request) {
             totalQuantity: dispenses.reduce((s, d) => s + d.quantityDispensed, 0),
             totalRevenue:   dispenses.reduce((s, d) => s + d.totalAmount, 0),
             patientRevenue: dispenses.reduce((s, d) => s + d.patientPayAmount, 0),
-            insuranceRevenue: dispenses.reduce((s, d) => s + d.insurancePayAmount, 0),
             uniqueDrugs: dispensedByDrug.size,
             dispenseCount: dispenses.length,
         };

@@ -103,7 +103,6 @@ export async function POST(req: Request) {
                 discountAmount: discountAmt,
                 taxAmount: taxAmt,
                 lineTotal,
-                isCovered: l.isCovered ?? false,
                 ...(l.taxRateId ? { taxRateId: l.taxRateId } : {}),
             };
         }));

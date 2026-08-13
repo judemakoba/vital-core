@@ -5,10 +5,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 // R50 (Option D): removed the pre-billing IIFE. The pharmacy route
 // now creates the FINAL- invoice line item at dispense time, using
-// the actual batch + actual quantity + actual price. The previous
-// imports (getConsultationFeeDescription, shouldDeferConsultationFeeToClaim)
-// are unused — the consultation-fee deferral logic was scoped to
-// the pre-bill IIFE and now lives in the dispense route instead.
+// the actual batch + actual quantity + actual price. Consultation-fee
+// deferral was an insurance concept — removed with the insurance
+// module in 2026-08.
 
 /** Try to find a Drug formulary entry by name or generic name (case-insensitive) */
 async function findFormularyDrug(medicationName: string) {

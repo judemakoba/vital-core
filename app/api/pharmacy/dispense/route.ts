@@ -12,14 +12,8 @@ import { markOrderFulfilled, transitionOrderSubStatus } from '@/lib/visits/subst
 import { ITEM_SUB_STATUS } from '@/lib/visits/status';
 // R50 (Option D): pharmacy creates the FINAL- invoice line item
 // at dispense time using the actual batch + actual quantity + actual
-// price. Need the invoice helper and the consultation-fee helpers
-// (the deferral logic moved from the prescription route's pre-bill
-// IIFE into this dispense route).
+// price. Need the invoice helper.
 import { findOrCreateFinalBillInvoice } from '@/lib/finance/invoice-helper';
-import {
-    getConsultationFeeDescription,
-    shouldDeferConsultationFeeToClaim,
-} from '@/lib/visits/consultation-fee';
 
 /** Check if a value has a fractional component */
 function isFractional(n: number): boolean {
@@ -303,53 +297,39 @@ export async function POST(request: Request) {
             }
 
             const patient = prescription.visit.patient;
-            const insuranceId = patient.insuranceId;
 
             // 6. Pricing
+            //    Cash-only: look up the drug's REGULAR price, then fall back
+            //    to MEMBER/STAFF/COMPLIMENTARY, then to the most recent batch's
+            //    selling price.
             let unitPrice = 0;
-            let insurancePayAmount = 0;
-            let priceType: 'CASH' | 'INSURANCE' | 'MEMBER' | 'STAFF' | 'COMPLIMENTARY' = 'CASH';
+            let priceType: 'CASH' | 'MEMBER' | 'STAFF' | 'COMPLIMENTARY' = 'CASH';
 
-            if (insuranceId) {
-                const insRate = await tx.insuranceBillableRate.findFirst({
-                    where: { insuranceId, billableItemId: drug!.id }
-                });
-                if (insRate) {
-                    priceType = 'INSURANCE';
-                    unitPrice = insRate.rate;
-                    insurancePayAmount = insRate.rate;
-                }
-            }
-
-            if (unitPrice === 0) {
-                // First try the DrugPrice (price list) for the standard REGULAR price
-                const cashPrice = await tx.drugPrice.findFirst({
-                    where: { drugId: drug!.id, priceType: 'REGULAR', isActive: true }
-                });
-                if (cashPrice?.price && cashPrice.price > 0) {
-                    unitPrice = cashPrice.price;
-                } else {
-                    // Fallback 1: try MEMBER / STAFF / COMPLIMENTARY price types
-                    const fallbackPrice = await tx.drugPrice.findFirst({
-                        where: {
-                            drugId: drug!.id,
-                            priceType: { in: ['MEMBER', 'STAFF', 'COMPLIMENTARY'] },
-                            isActive: true
-                        }
-                    });
-                    if (fallbackPrice?.price && fallbackPrice.price > 0) {
-                        unitPrice = fallbackPrice.price;
-                    } else {
-                        // Fallback 2: use the most recent batch's sellingPrice (set at goods receipt)
-                        const recentBatch = await tx.drugBatch.findFirst({
-                            where: { drugId: drug!.id, sellingPrice: { gt: 0 } },
-                            orderBy: { receivedDate: 'desc' }
-                        });
-                        unitPrice = recentBatch?.sellingPrice ?? 0;
+            // First try the DrugPrice (price list) for the standard REGULAR price
+            const cashPrice = await tx.drugPrice.findFirst({
+                where: { drugId: drug!.id, priceType: 'REGULAR', isActive: true }
+            });
+            if (cashPrice?.price && cashPrice.price > 0) {
+                unitPrice = cashPrice.price;
+            } else {
+                // Fallback 1: try MEMBER / STAFF / COMPLIMENTARY price types
+                const fallbackPrice = await tx.drugPrice.findFirst({
+                    where: {
+                        drugId: drug!.id,
+                        priceType: { in: ['MEMBER', 'STAFF', 'COMPLIMENTARY'] },
+                        isActive: true
                     }
+                });
+                if (fallbackPrice?.price && fallbackPrice.price > 0) {
+                    unitPrice = fallbackPrice.price;
+                } else {
+                    // Fallback 2: use the most recent batch's sellingPrice (set at goods receipt)
+                    const recentBatch = await tx.drugBatch.findFirst({
+                        where: { drugId: drug!.id, sellingPrice: { gt: 0 } },
+                        orderBy: { receivedDate: 'desc' }
+                    });
+                    unitPrice = recentBatch?.sellingPrice ?? 0;
                 }
-                insurancePayAmount = 0;
-                priceType = 'CASH';
             }
 
             // 7. Dispense from batches (FEFO — splits across batches if needed)
@@ -384,7 +364,7 @@ export async function POST(request: Request) {
                         unitPrice:          unitPrice,
                         totalAmount:        unitPrice * take,
                         priceType:          priceType,
-                        patientPayAmount:   (unitPrice - insurancePayAmount) * take,
+                        patientPayAmount:   unitPrice * take,
                         paymentStatus:      'PENDING',
                         dispensedById:      session.user.id,
                         dosageInstructions: prescription.instructions,
@@ -460,7 +440,6 @@ export async function POST(request: Request) {
                     quantity:         doseCalc.totalUnits,
                     unitPrice:        unitPrice,
                     lineTotal:        lineSubtotal,
-                    isCovered:        insurancePayAmount > 0,
                 }
             });
 
@@ -562,63 +541,12 @@ export async function POST(request: Request) {
                 ITEM_SUB_STATUS.InProgress,
             );
 
-            // R50: if this visit is in the insurance-deferred path
-            // (the consultation fee was never invoiced at visit
-            // creation because the patient is verified for insurance),
-            // append the consultation fee to the FINAL- invoice here.
-            // The cashier will submit the whole invoice as a single
-            // claim. This logic used to live in the prescription
-            // route's pre-bill IIFE; it now lives here so it runs
-            // exactly once per visit (the first dispense triggers it).
-            const deferral = await shouldDeferConsultationFeeToClaim(
-                tx as any,
-                prescription.visitId,
-            );
-            if (deferral.defer) {
-                const visitForType = await tx.visit.findUnique({
-                    where: { id: prescription.visitId },
-                    select: { type: true },
-                });
-                const consultLineDesc = getConsultationFeeDescription(
-                    visitForType?.type || 'OPD',
-                ) + ` (deferred to claim — ${deferral.insuranceName})`;
-                await tx.invoiceItem.create({
-                    data: {
-                        invoiceId:   finalBill.id,
-                        description: consultLineDesc,
-                        quantity:    1,
-                        unitPrice:   deferral.fee,
-                        totalPrice:  deferral.fee,
-                        itemType:    'Consultation',
-                    },
-                });
-                // Recompute totals
-                const afterDeferItems = await tx.invoiceItem.findMany({
-                    where: { invoiceId: finalBill.id },
-                    select: { totalPrice: true },
-                });
-                const afterDeferTotal = afterDeferItems.reduce(
-                    (s, it) => s + (Number(it.totalPrice) || 0),
-                    0,
-                );
-                await tx.invoice.update({
-                    where: { id: finalBill.id },
-                    data: {
-                        totalAmount: afterDeferTotal,
-                        balanceDue:  afterDeferTotal - finalBill.amountPaid,
-                    },
-                });
-                console.log(
-                    `[Pharmacy] Visit ${prescription.visitId} — added deferred consultation fee ` +
-                    `(UGX ${deferral.fee}, ${deferral.insuranceName}) to FINAL- invoice ${finalBill.invoiceNumber}`,
-                );
-            }
-
             // 9. Finalize prescription
             await tx.prescription.update({
                 where: { id: prescription.id },
                 data: { status: 'Dispensed' }
             });
+
 
             // 10. Consolidated visit cycle spec (R45):
             //     - SubStatus InProgress → Fulfilled on dispense.

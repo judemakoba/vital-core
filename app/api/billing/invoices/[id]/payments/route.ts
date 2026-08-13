@@ -63,7 +63,6 @@ export async function POST(
         const body = await request.json();
         const {
             amount, paymentMethod, notes, transactionId,
-            waivedInsurance, insuranceId, waiverReason, insuranceSavedAmount,
         } = body;
 
         if (!amount || !paymentMethod) {

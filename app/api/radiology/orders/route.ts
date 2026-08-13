@@ -4,10 +4,6 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { decideNextStatusAfterConsultation } from '@/lib/visits/status';
-import {
-    getConsultationFeeDescription,
-    shouldDeferConsultationFeeToClaim,
-} from '@/lib/visits/consultation-fee';
 
 // GET /api/radiology/orders - List all orders (optionally filtered by visitId or patientId)
 export async function GET(request: Request) {
@@ -148,33 +144,6 @@ export async function POST(request: Request) {
                 // add the consultation fee as a line item on the FINAL-
                 // invoice now. The cashier will submit the whole invoice
                 // as a single claim at end of visit.
-                const deferral = await shouldDeferConsultationFeeToClaim(prisma, visitId);
-                if (deferral.defer) {
-                    const consultLineDesc = getConsultationFeeDescription(order.type || examName)
-                        + ` (deferred to claim — ${deferral.insuranceName})`;
-                    await prisma.invoiceItem.create({
-                        data: {
-                            invoiceId: resolvedInvoice.id,
-                            description: consultLineDesc,
-                            quantity: 1,
-                            unitPrice: deferral.fee,
-                            totalPrice: deferral.fee,
-                            itemType: 'Consultation',
-                        },
-                    });
-                    await prisma.invoice.update({
-                        where: { id: resolvedInvoice.id },
-                        data: {
-                            totalAmount: { increment: deferral.fee },
-                            balanceDue: { increment: deferral.fee },
-                        },
-                    });
-                    console.log(
-                        `[Radiology] Visit ${visitId} — added deferred consultation fee ` +
-                        `(UGX ${deferral.fee}, ${deferral.insuranceName}) to FINAL- invoice ${resolvedInvoice.invoiceNumber}`
-                    );
-                }
-
                 // Consolidated spec (R45): the radiology order's invoiceId FK
                 // must point at the FINAL- invoice so the payment route can
                 // transition AwaitingPayment → InProgress via

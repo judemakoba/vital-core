@@ -74,7 +74,6 @@ export async function POST(
                 discountAmount: -(l.discountAmount ?? 0) * refundRatio,
                 taxAmount: -(l.taxAmount ?? 0) * refundRatio,
                 lineTotal: -l.lineTotal * refundRatio,
-                isCovered: l.isCovered,
                 ...(l.taxRateId ? { taxRateId: l.taxRateId } : {}),
             }));
 

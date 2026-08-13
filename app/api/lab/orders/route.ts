@@ -4,10 +4,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { findOrCreateFinalBillInvoice } from "@/lib/finance/invoice-helper";
 import { decideNextStatusAfterConsultation, VISIT_STATUS } from "@/lib/visits/status";
-import {
-    getConsultationFeeDescription,
-    shouldDeferConsultationFeeToClaim,
-} from "@/lib/visits/consultation-fee";
 
 // Helper: find or create the visit's consolidated FINAL- invoice (one
 // per visit, holds every non-consultation charge). See
@@ -125,33 +121,6 @@ export async function POST(request: Request) {
                 // add the consultation fee as a line item on the FINAL-
                 // invoice now. The cashier will submit the whole invoice
                 // as a single claim at end of visit.
-                const deferral = await shouldDeferConsultationFeeToClaim(prisma, visitId);
-                if (deferral.defer) {
-                    const consultLineDesc = getConsultationFeeDescription(labOrder.testCategory || 'OPD')
-                        + ` (deferred to claim — ${deferral.insuranceName})`;
-                    await prisma.invoiceItem.create({
-                        data: {
-                            invoiceId: invoice.id,
-                            description: consultLineDesc,
-                            quantity: 1,
-                            unitPrice: deferral.fee,
-                            totalPrice: deferral.fee,
-                            itemType: "Consultation",
-                        },
-                    });
-                    await prisma.invoice.update({
-                        where: { id: invoice.id },
-                        data: {
-                            totalAmount: { increment: deferral.fee },
-                            balanceDue: { increment: deferral.fee },
-                        },
-                    });
-                    console.log(
-                        `[Lab] Visit ${visitId} — added deferred consultation fee ` +
-                        `(UGX ${deferral.fee}, ${deferral.insuranceName}) to FINAL- invoice ${invoice.invoiceNumber}`
-                    );
-                }
-
                 // Consolidated spec (R45): the lab order's invoiceId FK must
                 // point at the FINAL- invoice so the payment route can
                 // transition AwaitingPayment → InProgress via
