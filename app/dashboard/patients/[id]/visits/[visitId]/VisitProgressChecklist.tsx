@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, Circle, XCircle, Ban, AlertTriangle, ShieldCheck } from "lucide-react";
+import { CheckCircle, Circle, XCircle, Ban, AlertTriangle } from "lucide-react";
 import styles from "./visit.module.css";
 import { useSession } from "next-auth/react";
 
@@ -36,16 +36,6 @@ interface VisitProgressChecklistProps {
     discontinuationNote?: string | null;
     discontinuationDate?: string | null;
     discontinuedByName?: string | null;
-    /**
-     * Per R46 — if the visit was created with insurance validation
-     * passing, the consultation fee is owed by the insurer and gets
-     * added to the FINAL- invoice at first order placement (then
-     * submitted as a claim). When the cashier sees this banner, they
-     * know to skip the upfront consultation payment and submit the
-     * FINAL- invoice as a claim at end of visit.
-     */
-    insuranceDeferConsult?: boolean;
-    insuranceName?: string | null;
     onDiscontinued: (newStatus: string) => void;
 }
 
@@ -70,8 +60,6 @@ export default function VisitProgressChecklist({
     discontinuationNote,
     discontinuationDate,
     discontinuedByName,
-    insuranceDeferConsult,
-    insuranceName,
     onDiscontinued,
 }: VisitProgressChecklistProps) {
     const { data: session } = useSession();
@@ -196,20 +184,6 @@ export default function VisitProgressChecklist({
                     )}
                 </div>
             )}
-            {!isDiscontinued && insuranceDeferConsult && (
-                <div className={visitStyles.insuranceBanner}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        
-                        <strong>Insurance-verified visit</strong>
-                    </div>
-                    <div style={{ marginTop: 6, fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                        {insuranceName ? `Provider: ${insuranceName}.` : ""} No upfront payment from the patient.
-                        The consultation fee is added to the FINAL- invoice at first order placement, and the
-                        whole invoice gets submitted as a claim at end of visit.
-                    </div>
-                </div>
-            )}
-
             {!isDiscontinued && (
                 <>
                     {/* Main lifecycle checklist */}

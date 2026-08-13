@@ -36,7 +36,6 @@ interface ReportData {
             totalQuantity: number;
             totalRevenue: number;
             patientRevenue: number;
-            insuranceRevenue: number;
             uniqueDrugs: number;
             dispenseCount: number;
         };
@@ -49,7 +48,6 @@ interface ReportData {
             quantity: number;
             revenue: number;
             patientPay: number;
-            insurancePay: number;
             count: number;
         }>;
     };
@@ -60,7 +58,7 @@ interface ReportData {
         drugCount: number;
         byForm: Array<{ form: string; units: number; value: number }>;
     };
-    incomes: { dispensing: { total: number; patientPay: number; insurancePay: number } };
+    incomes: { dispensing: { total: number; patientPay: number } };
     totalIncome: number;
     expenses: {
         purchase: { total: number; units: number; batches: number };
@@ -172,7 +170,6 @@ export default function ReportsTab() {
         rows.push('=== Income ===');
         rows.push(`Dispensing Revenue,${data.incomes.dispensing.total.toFixed(0)}`);
         rows.push(`Patient Pay,${data.incomes.dispensing.patientPay.toFixed(0)}`);
-        rows.push(`Insurance Pay,${data.incomes.dispensing.insurancePay.toFixed(0)}`);
         rows.push(`Total Income,${data.totalIncome.toFixed(0)}`);
         rows.push('');
         rows.push('=== Expenses ===');
@@ -386,7 +383,7 @@ export default function ReportsTab() {
                             <div className={styles.kpiContent}>
                                 <span className={styles.kpiLabel}>Total Income</span>
                                 <span className={styles.kpiValue} style={{ fontSize: '18px' }}>{fmtUGX(data.totalIncome)}</span>
-                                <span className={styles.kpiSub}>Patient + insurance payments</span>
+                                <span className={styles.kpiSub}>Dispensing revenue (all from patients)</span>
                             </div>
                         </div>
                         <div className={`${styles.kpiCard} ${styles.kpiAlerts}`}>
@@ -518,8 +515,7 @@ export default function ReportsTab() {
                                     <TrendingUp size={18} color="#16a34a" />
                                     <h4 style={{ margin: 0, fontSize: '14px', color: '#15803d' }}>Income</h4>
                                 </div>
-                                <IncomeRow label="Dispensing revenue (patient pay)" value={data.incomes.dispensing.patientPay} />
-                                <IncomeRow label="Dispensing revenue (insurance)" value={data.incomes.dispensing.insurancePay} />
+                                <IncomeRow label="Dispensing revenue" value={data.incomes.dispensing.patientPay} />
                                 <div style={{
                                     marginTop: '10px', paddingTop: '10px',
                                     borderTop: '2px solid #16a34a',

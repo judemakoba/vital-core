@@ -20,7 +20,7 @@ export default function FinancialReportsPage() {
 
     // Build payment-method donut data
     const paymentMethodData = (breakdowns.paymentsByMethod ?? []).map((m: any) => ({
-        name: m.method === 'CASH' ? 'Cash' : m.method === 'MOBILE_MONEY' ? 'Mobile Money' : m.method === 'BANK' ? 'Bank' : m.method === 'CARD' ? 'Card' : m.method === 'INSURANCE' ? 'Insurance' : m.method || 'Other',
+        name: m.method === 'CASH' ? 'Cash' : m.method === 'MOBILE_MONEY' ? 'Mobile Money' : m.method === 'BANK' ? 'Bank' : m.method === 'CARD' ? 'Card' : m.method || 'Other',
         value: Number(m.amount) || 0,
         count: m.count,
     }));

@@ -79,15 +79,6 @@ export default function ConsultationPage({ params }: { params: { visitId: string
     const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
     const [visit, setVisit] = useState<Visit | null>(null);
-    const [patientInsurance, setPatientInsurance] = useState<any>(null);
-    const [auths, setAuths] = useState<any[]>([]);
-    const [requestingAuth, setRequestingAuth] = useState(false);
-    const [authServiceName, setAuthServiceName] = useState("");
-    const [authEstCost, setAuthEstCost] = useState("");
-    // sidebar card stays hidden even if the patient has an active
-    // enrollment on file. Insurance fetches are skipped.
-    useEffect(() => {
-    }, []);
 
     // Admit Patient State
     const [showAdmitModal, setShowAdmitModal] = useState(false);
@@ -207,23 +198,6 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                         assessment: data.assessment || "",
                         treatmentPlan: data.treatmentPlan || ""
                     });
-
-                    // Fetch insurance + existing auths — only when the
-                    // feature is enabled. When OFF the patient detail
-                    // is enough for the doctor to treat the visit as cash.
-                    if (insuranceEnabled) {
-                        fetch(`/api/patients/${data.patient.id}/insurance`, { credentials: "include" })
-                            .then(r => r.ok ? r.json() : [])
-                            .then(ins => {
-                                const active = ins.find((i: any) => i.isActive);
-                                if (active) setPatientInsurance(active);
-                            });
-
-                        // Fetch existing auths for this patient
-                        fetch(`/api/admin/insurance/authorizations?patientId=${data.patient.id}`, { credentials: "include" })
-                            .then(r => r.ok ? r.json() : [])
-                            .then(data => setAuths(data));
-                    }
                 } else {
                     router.push("/dashboard/doctor");
                 }
@@ -471,76 +445,15 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                 <Lock size={36} color="var(--danger-color, #ef4444)" />
             </div>
             <div>
-                                            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
-                                {patientInsurance.insurance.name} — {patientInsurance.package?.name || "Base Plan"}
-                            </div>
-
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
-                                <input
-                                    type="text"
-                                    className={styles.input}
-                                    style={{ fontSize: "0.85rem", padding: "0.5rem" }}
-                                    placeholder="Service Name (e.g. MRI Scan)"
-                                    value={authServiceName}
-                                    onChange={e => setAuthServiceName(e.target.value)}
-                                />
-                                <input
-                                    type="number"
-                                    className={styles.input}
-                                    style={{ fontSize: "0.85rem", padding: "0.5rem" }}
-                                    placeholder="Est. Cost (UGX)"
-                                    value={authEstCost}
-                                    onChange={e => setAuthEstCost(e.target.value)}
-                                />
-                                <button
-                                    className="btn-secondary"
-                                    style={{ fontSize: "0.85rem", padding: "0.5rem", justifyContent: "center" }}
-                                    disabled={!authServiceName || !authEstCost || requestingAuth}
-                                    onClick={async () => {
-                                        setRequestingAuth(true);
-                                        const res = await
-                                        if (res.ok) {
-                                            const newA = await res.json();
-                                            setAuths([newA, ...auths]);
-                                            setAuthServiceName("");
-                                            setAuthEstCost("");
-                                        }
-                                        setRequestingAuth(false);
-                                    }}
-                                >
-                                    {requestingAuth ? "Submitting..." : "Submit Request"}
-                                </button>
-                            </div>
-
-                            <div className={styles.list} style={{ gap: "0.5rem", maxHeight: "200px", overflowY: "auto" }}>
-                                {auths.map(a => (
-                                    <div key={a.id} style={{ background: "rgba(0,0,0,0.02)", padding: "0.5rem", borderRadius: "6px", fontSize: "0.8rem" }}>
-                                        <div style={{ fontWeight: 600 }}>{a.serviceName}</div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-                                            <span>{a.status}</span>
-                                            <span style={{ fontWeight: 600, color: a.status === 'APPROVED' ? '#16a34a' : a.status === 'REJECTED' ? '#dc2626' : 'inherit' }}>
-                                                {a.status === 'APPROVED' && a.authorizationCode ? a.authorizationCode : a.status}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className={styles.sidebarCard}>
-                        <h2 className={styles.sidebarTitle}>
-                            <History size={18} style={{ marginRight: "8px", verticalAlign: "middle" }} />
-                            Quick History
-                        </h2>
-                        <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-                            No previous visits found for this patient.
-                        </div>
-                    </div>
-                </aside>
+                <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>Access Denied</h2>
+                <p style={{ color: "var(--text-muted)", fontSize: "0.95rem" }}>
+                    You are not the assigned doctor for this visit. Redirecting…
+                </p>
             </div>
+        </div>
+    );
 
-            {/* Admit Patient Modal */}
+    {/* Admit Patient Modal */}
             {showAdmitModal && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
                     <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '500px' }}>

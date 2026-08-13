@@ -43,15 +43,6 @@ interface Doctor { name: string; department?: string }
 interface Patient {
     id: string; patientNumber: string; firstName: string; lastName: string;
     phone: string; dateOfBirth: string; gender: string;
-        insuranceId: string;
-        memberNumber: string;
-        policyNumber: string;
-        status: string;
-        isActive: boolean;
-        coverageStart: string | null;
-        coverageEnd: string | null;
-        insurance: { id: string; name: string; code: string };
-    }>;
 }
 interface Visit {
     id: string; visitNumber: string; type: string; status: string;
@@ -68,18 +59,6 @@ interface Visit {
     labOrders: LabOrder[];
     radiologyOrders: RadiologyOrder[];
     invoices: Invoice[];
-        status: 'PENDING' | 'APPROVED' | 'DENIED' | 'ERROR';
-        verificationNumber: string | null;
-        reason: string | null;
-        provider: string | null;
-        createdAt: string;
-        coverageLimit: number | null;
-        deductibleRemaining: number | null;
-        coverageValidFrom: string | null;
-        coverageValidTo: string | null;
-        verifiedBy?: { name: string } | null;
-        insurance?: { name: string; code: string } | null;
-    }>;
 }
 
 function fmt(n: number) {
@@ -107,43 +86,13 @@ export default function VisitDetailPage() {
     const router = useRouter();
     const [visit, setVisit] = useState<Visit | null>(null);
     const [loading, setLoading] = useState(true);
-    // the insurance-deferred banner is suppressed.
+
     useEffect(() => {
         fetch(`/api/visits/${params.visitId}`, { credentials: "include" })
             .then(r => r.ok ? r.json() : null)
             .then(data => { setVisit(data); setLoading(false); })
             .catch(() => setLoading(false));
     }, [params.visitId]);
-    // this flag on the visit directly — we infer it from "the visit has a
-    // consultation line item marked as deferred to claim" (or, if no
-    // orders have been placed yet, the visit was created with
-    // insuranceDeferConsult=true which is shown by the FINAL- invoice
-    // missing a separate consultation line). The simplest reliable
-    // signal: any invoice has a consultation line item with the
-    // "(deferred to claim)" suffix in its description.
-    //
-    // if a visit has a leftover "(deferred to claim — AAR Insurance)"
-    // line item (from a time when insurance was ON), we don't want to
-    // show the "insurance-verified visit" banner when the clinic has
-    // since flipped the toggle to OFF.
-    const isInsuranceDefer = insuranceEnabled && !!(visit?.invoices ?? []).some((inv: any) =>
-        (inv.items ?? []).some((it: any) =>
-            it.itemType === 'Consultation' && typeof it.description === 'string' && it.description.includes('(deferred to claim')
-        )
-    );
-
-    // Try to pull the insurance name from the same line item description.
-    const insuranceNameFromLine: string | null = (() => {
-        for (const inv of (visit?.invoices ?? []) as any[]) {
-            for (const it of (inv.items ?? []) as any[]) {
-                if (it.itemType === 'Consultation' && typeof it.description === 'string' && it.description.includes('(deferred to claim — ')) {
-                    const m = it.description.match(/\(deferred to claim — ([^)]+)\)/);
-                    if (m) return m[1];
-                }
-            }
-        }
-        return null;
-    })();
 
     if (loading) return <div className={styles.container}><p style={{ color: "var(--text-muted)" }}>Loading visit details...</p></div>;
     if (!visit) return <div className={styles.container}><p style={{ color: "var(--danger-color)" }}>Visit not found.</p></div>;
@@ -220,30 +169,8 @@ export default function VisitDetailPage() {
                 discontinuationNote={visit.discontinuationNote}
                 discontinuationDate={visit.discontinuationDate ?? undefined}
                 discontinuedByName={visit.discontinuedBy?.name}
-                insuranceDeferConsult={isInsuranceDefer}
-                insuranceName={insuranceNameFromLine}
                 onDiscontinued={(newStatus) => setVisit({ ...visit, status: newStatus })}
             />
-
-            
-            {insuranceEnabled && (
-                <InsuranceValidationCard
-                    visitId={visit.id}
-                    visitStatus={visit.status}
-                    enrollments={visit.patient?.insuranceEnrollments ?? []}
-                    verifications={visit.insuranceVerifications ?? []}
-                    onVerificationComplete={() => {
-                        // Refetch the visit to pick up the new status and any
-                        // consultation fee invoice that was created on denial
-                        setVisit(null);
-                        setLoading(true);
-                        fetch(`/api/visits/${params.visitId}`, { credentials: 'include' })
-                            .then(r => r.ok ? r.json() : null)
-                            .then(data => { setVisit(data); setLoading(false); })
-                            .catch(() => setLoading(false));
-                    }}
-                />
-            )}
 
             {/* Vitals — always visible */}
             {(visit.bloodPressure || visit.heartRate || visit.temperature || visit.weight || visit.height) && (

@@ -29,7 +29,6 @@ type EmailAccount = {
 
 const PURPOSES = [
     { value: "NOTIFICATIONS", label: "Patient Notifications", desc: "Appointment reminders, lab results, statements" },
-    { value: "CLAIMS", label: "Insurance Claims", desc: "Submit and receive claim correspondence" },
     { value: "STAFF", label: "Internal Staff", desc: "Internal staff-to-staff messaging" },
     { value: "INBOX", label: "Generic Inbox", desc: "info@, contact@ — general inbound mailbox" },
     { value: "SUPPORT", label: "Support", desc: "Helpdesk / customer support mailbox" },

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styles from "./page.module.css";
 import ClinicConfigTab from "./components/ClinicConfigTab";
 import UsersTab from "./components/UsersTab";
@@ -10,62 +10,79 @@ import LabCategoriesTab from "./components/LabCategoriesTab";
 import LabConfigTab from "./components/LabConfigTab";
 import IPDSettingsTab from "./components/IPDSettingsTab";
 import EmailSettingsTab from "./components/EmailSettingsTab";
-import { Mail } from "lucide-react";
+import {
+    Building2,
+    Users,
+    Shield,
+    Pill,
+    FlaskConical,
+    Microscope,
+    BedDouble,
+    Mail,
+} from "lucide-react";
 
-type TabType = 'clinic' | 'users' | 'roles' | 'insurance' | 'drugs' | 'labcats' | 'labs' | 'ipd' | 'email';
+type TabType = 'clinic' | 'users' | 'roles' | 'drugs' | 'labcats' | 'labs' | 'ipd' | 'email';
+
+const TABS: { id: TabType; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
+    { id: 'clinic',  label: 'Clinic',      icon: Building2 },
+    { id: 'users',   label: 'Users',       icon: Users },
+    { id: 'roles',   label: 'Roles',       icon: Shield },
+    { id: 'drugs',   label: 'Drugs',       icon: Pill },
+    { id: 'labcats', label: 'Lab Catalog', icon: Microscope },
+    { id: 'labs',    label: 'Lab Config',  icon: FlaskConical },
+    { id: 'ipd',     label: 'IPD',         icon: BedDouble },
+    { id: 'email',   label: 'Email',       icon: Mail },
+];
 
 export default function SettingsPage() {
     const [activeTab, setActiveTab] = useState<TabType>('clinic');
-    // tab in this settings page. The InsuranceTab component is still
-    // imported and rendered if the user navigates to it directly (defense
-    // in depth) but the tab button is gone.
-    useEffect(() => {
-    }, []);
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'clinic':
-                return <ClinicConfigTab />;
-            case 'users':
-                return <UsersTab />;
-            case 'roles':
-                return <RolesTab />;
-            case 'insurance':
-                // the InsuranceTab. The tab button is already hidden, but
-                // this guards against the user landing on this state via
-                // deep link or stale UI.
-                if (!insuranceEnabled) {
-                    return (
-                        <div className={styles.section}>
-                                                        <p style={{ color: 'var(--text-muted)' }}>
-                                Insurance is currently disabled for this clinic.
-                                Re-enable it from the admin insurance toggle to manage partners.
-                            </p>
-                        </div>
-                    );
-                }
-                return <InsuranceTab />;
-            case 'drugs':
-                return <DrugCategoriesTab />;
-            case 'labcats':
-                return <LabCategoriesTab />;
-            case 'labs':
-                return <LabConfigTab />;
-            case 'ipd':
-                return <IPDSettingsTab />;
-            case 'email':
-                return <EmailSettingsTab />;
-            default:
-                return null;
+            case 'clinic':  return <ClinicConfigTab />;
+            case 'users':   return <UsersTab />;
+            case 'roles':   return <RolesTab />;
+            case 'drugs':   return <DrugCategoriesTab />;
+            case 'labcats': return <LabCategoriesTab />;
+            case 'labs':    return <LabConfigTab />;
+            case 'ipd':     return <IPDSettingsTab />;
+            case 'email':   return <EmailSettingsTab />;
+            default:        return null;
         }
     };
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                    Database: PostgreSQL (Encrypted at rest) | Auth: NextAuth.js (JWT + BCrypt) | Role-Based Access Control (RBAC) Enforced
-                </div>
+                <h1 className={styles.title}>Settings</h1>
+                <p className={styles.subtitle}>
+                    Clinic configuration, user management, catalogs, and integrations.
+                </p>
+            </div>
+
+            <div className={styles.tabBar}>
+                {TABS.map(tab => {
+                    const Icon = tab.icon;
+                    return (
+                        <button
+                            key={tab.id}
+                            type="button"
+                            className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
+                            onClick={() => setActiveTab(tab.id)}
+                        >
+                            <Icon size={16} />
+                            <span>{tab.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div className={styles.content}>
+                {renderContent()}
+            </div>
+
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2rem", textAlign: "center" }}>
+                Database: PostgreSQL (encrypted at rest) · Auth: NextAuth.js (JWT + BCrypt) · RBAC enforced
             </div>
         </div>
     );

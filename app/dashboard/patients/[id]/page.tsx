@@ -20,26 +20,6 @@ import {
 import styles from "../page.module.css";
 import stylesProfile from "./profile.module.css";
 
-/**
- * R48 + R48c: Insurance enrollment is captured at patient registration
- * (and can be edited via the patient edit form). The patient profile
- * shows the current enrollment as an informational section so the
- * cashier can see at a glance which insurer covers this patient
- * (and which policy / member # to verify with the third-party when
- * the visit is created).
- */
-interface InsuranceEnrollment {
-    id: string;
-    insuranceId: string;
-    memberNumber: string | null;
-    policyNumber: string;
-    status: string;
-    isActive: boolean;
-    coverageStart: string | null;
-    coverageEnd: string | null;
-    insurance: { id: string; name: string; code: string };
-}
-
 interface Patient {
     id: string;
     patientNumber: string;
@@ -67,7 +47,6 @@ interface Patient {
     allergies: string;
     chronicConditions: string;
     currentMedications: string;
-    // profile (informational). Edit via the patient edit form.
 }
 
 interface Visit {
@@ -89,7 +68,7 @@ export default function PatientProfilePage() {
     const [visits, setVisits] = useState<Visit[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>("overview");
-    // card on the profile.
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -274,53 +253,6 @@ export default function PatientProfilePage() {
                     </div>
 
                     <div>
-                        {insuranceEnabled && (
-                        <div className={stylesProfile.cardRow}>
-                            <div className={stylesProfile.sectionTitle}>Insurance Enrollment</div>
-                            {(() => {
-                                const enrollment = (patient.insuranceEnrollments || []).find(e => e.isActive)
-                                    || (patient.insuranceEnrollments || [])[0]
-                                    || null;
-                                if (!enrollment) {
-                                    return (
-                                        <div style={{ padding: "0.625rem 0.75rem", fontSize: "0.8rem", color: "var(--text-muted)", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-color)", borderRadius: 6 }}>
-                                            No insurance on file — patient is treated as cash. Coverage is validated per visit when applicable.
-                                        </div>
-                                    );
-                                }
-                                return (
-                                    <>
-                                        <div className={stylesProfile.infoRow}>
-                                            <label>Provider</label>
-                                            <span style={{ fontWeight: 700 }}>{enrollment.insurance.name}</span>
-                                        </div>
-                                        <div className={stylesProfile.infoRow}>
-                                            <label>Policy Number</label>
-                                            <span style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>{enrollment.policyNumber}</span>
-                                        </div>
-                                        {enrollment.memberNumber && (
-                                            <div className={stylesProfile.infoRow}>
-                                                <label>Member Number</label>
-                                                <span style={{ fontFamily: "monospace", fontSize: "0.85rem" }}>{enrollment.memberNumber}</span>
-                                            </div>
-                                        )}
-                                        <div className={stylesProfile.infoRow}>
-                                            <label>Coverage Period</label>
-                                            <span>
-                                                {enrollment.coverageStart ? new Date(enrollment.coverageStart).toLocaleDateString() : "—"}
-                                                {" → "}
-                                                {enrollment.coverageEnd ? new Date(enrollment.coverageEnd).toLocaleDateString() : "Open-ended"}
-                                            </span>
-                                        </div>
-                                        <div style={{ marginTop: 6 }}>
-                                            <Link href={`/dashboard/patients/${patient.id}/edit`} style={{ fontSize: "0.78rem", color: "var(--primary-color)", textDecoration: "underline" }}>Edit enrollment</Link>
-                                        </div>
-                                    </>
-                                );
-                            })()}
-                        </div>
-                        )}
-
                         {/* Emergency Contact */}
                         <div className={stylesProfile.cardRow} style={{ marginTop: "0.75rem" }}>
                             <div className={stylesProfile.sectionTitle}><AlertCircle size={14} />Emergency Contact</div>

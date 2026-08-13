@@ -325,7 +325,6 @@ function groupRevenueByService(accounts: Account[]): { name: string; value: numb
         else if (prefix === '415') serviceLabel = 'Radiology';
         else if (prefix === '416') serviceLabel = 'Ancillary';
         else if (prefix.startsWith('41')) serviceLabel = 'Consultation';
-        else if (prefix.startsWith('42')) serviceLabel = 'Insurance';
         else if (prefix.startsWith('49')) serviceLabel = 'Other Income';
         else serviceLabel = `Other (${acc.accountCode})`;
         buckets[serviceLabel] = (buckets[serviceLabel] ?? 0) + acc.balance;
