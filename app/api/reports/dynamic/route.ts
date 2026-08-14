@@ -33,7 +33,6 @@ export async function GET(request: Request) {
                 totalExpenses,
                 totalVisits,
                 newPatients,
-                activeInsurancePolicies,
 
                 // Period-over-period comparison (last period same length)
                 prevPeriodRevenue,
@@ -41,13 +40,7 @@ export async function GET(request: Request) {
                 prevPeriodVisits,
 
                 // Departmental breakdown
-                deptRevenueBreakdown,
-
-                // Payment metrics
-                avgDaysToPay,
-                collectionRate,
-                insuranceClaimApprovalRate,
-                avgClaimProcessingTime
+                deptRevenueBreakdown
             ] = await Promise.all([
                 // Total patients (all time)
                 prisma.patient.count(),
@@ -78,19 +71,6 @@ export async function GET(request: Request) {
                             gte: new Date(startDate),
                             lte: new Date(endDate)
                         }
-                    }
-                }),
-
-                // Active insurance policies
-                prisma.patientInsurance.count({
-                    where: {
-                        isActive: true,
-                        status: 'VERIFIED',
-                        coverageStart: { lte: new Date() },
-                        OR: [
-                            { coverageEnd: null },
-                            { coverageEnd: { gte: new Date() } }
-                        ]
                     }
                 }),
 
@@ -144,29 +124,8 @@ export async function GET(request: Request) {
                     }
                 }),
 
-                // Average days to pay
-                prisma.invoice.aggregate({
-                    where: {
-                        ...dateFilter,
-                        status: 'Paid',
-                        paidAt: { not: null }
-                    },
-                    _avg: {
-                        // This would need a paidAt field or calculation from payment dates
-                        // For now, we'll calculate this differently
-                    }
-                }),
-
-                // Collection rate (percentage of billed amount that's been paid)
-                prisma.$queryRaw`
-                    SELECT
-                        COALESCE(SUM(p.amount) / NULLIF(SUM(i.totalAmount), 0), 0) as collection_rate
-                    FROM Invoice i
-                    LEFT JOIN Payment p ON p.invoiceId = i.id
-                    WHERE ${dateFilter.createdAt ? `i.createdAt BETWEEN '${new Date(startDate).toISOString()}' AND '${new Date(endDate).toISOString()}'` : '1=1'}
-                `,
-                // Average claim processing time (would need submission and payment dates)
-                // Placeholder for now
+                // Average days to pay — computed separately below
+                // Collection rate — computed separately below (collectionRateValue)
             ]);
 
             // Calculate derived metrics
@@ -192,15 +151,6 @@ export async function GET(request: Request) {
             const collectionRateValue = totalBilled > 0 ?
                 ((totalRevenue._sum.amount || 0) / totalBilled) * 100 : 0;
 
-            const claimApproved = await prisma.insuranceClaim.count({
-                where: {
-                    ...dateFilter,
-                    status: { in: ['APPROVED', 'PAID'] }
-                }
-            });
-            const totalClaims = await prisma.insuranceClaim.count({ where: dateFilter });
-            const approvalRate = totalClaims > 0 ? (claimApproved / totalClaims) * 100 : 0;
-
             return NextResponse.json({
                 success: true,
                 data: {
@@ -213,7 +163,6 @@ export async function GET(request: Request) {
                         profitMargin: parseFloat(profitMargin.toFixed(2)),
                         totalVisits,
                         newPatients,
-                        activeInsurancePolicies,
                         revenueGrowth: parseFloat(revenueGrowth.toFixed(2)),
                         expenseGrowth: parseFloat(expenseGrowth.toFixed(2)),
                         collectionRate: parseFloat(collectionRateValue.toFixed(2)),

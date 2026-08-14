@@ -9,9 +9,24 @@ import {
     Users,
     Pill,
     DollarSign,
-    Calendar as CalendarIcon
+    Calendar as CalendarIcon,
+    Stethoscope,
+    Microscope,
+    ScanLine
 } from "lucide-react";
 import styles from "./page.module.css";
+
+// Human-readable labels + icon hints for each itemType in InvoiceItem.
+// The dispense route writes itemType: "Pharmacy", lab orders write "Lab",
+// radiology writes "Radiology", consultation fee writes "Consultation".
+const SECTION_META: Record<string, { label: string; color: string; Icon: React.ComponentType<{ size?: number }> }> = {
+    Consultation: { label: "Consultation", color: "#0047AB", Icon: Stethoscope },
+    Lab:          { label: "Laboratory",   color: "#10B981", Icon: Microscope },
+    Radiology:    { label: "Radiology",    color: "#8B5CF6", Icon: ScanLine },
+    Pharmacy:     { label: "Pharmacy",     color: "#F59E0B", Icon: Pill },
+    Drug:         { label: "Pharmacy",     color: "#F59E0B", Icon: Pill },
+    OTHER:        { label: "Other",        color: "#6B7280", Icon: BarChart3 },
+};
 
 export default function ReportsPage() {
     const today = new Date().toISOString().split('T')[0];
@@ -21,6 +36,7 @@ export default function ReportsPage() {
     const [endDate, setEndDate] = useState(today);
     const [stats, setStats] = useState<any>(null);
     const [pharmacyData, setPharmacyData] = useState<any[]>([]);
+    const [deptPerformance, setDeptPerformance] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
@@ -31,12 +47,18 @@ export default function ReportsPage() {
                 fetch(`/api/reports/dynamic?type=pharmacy&startDate=${startDate}&endDate=${endDate}`)
             ]);
 
+            // API returns { success, data: { ... } } — unwrap to data (fallback to
+            // the raw payload in case the envelope shape ever changes).
             if (overviewRes.ok) {
-                const data = await overviewRes.json();
-                setStats(data.stats);
+                const payload = await overviewRes.json();
+                const body = payload?.data ?? payload;
+                setStats(body?.summary ?? null);
+                setDeptPerformance(Array.isArray(body?.departmentalPerformance) ? body.departmentalPerformance : []);
             }
             if (pharmacyRes.ok) {
-                setPharmacyData(await pharmacyRes.json());
+                const payload = await pharmacyRes.json();
+                const body = payload?.data ?? payload;
+                setPharmacyData(Array.isArray(body?.topMedications) ? body.topMedications : []);
             }
         } catch (err) {
             console.error("Failed to fetch report data");
@@ -134,6 +156,53 @@ export default function ReportsPage() {
                 </div>
             </div>
 
+            {/* Revenue by Service Line (R53 per-section invoices) */}
+            <div className={styles.tableCard}>
+                <h3 className={styles.tableTitle}><BarChart3 size={20} /> Revenue by Service Line</h3>
+                {loading ? (
+                    <p style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>Loading service-line breakdown…</p>
+                ) : deptPerformance.length === 0 ? (
+                    <p style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>No revenue activity in this period.</p>
+                ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", padding: "1rem 0" }}>
+                        {deptPerformance.map((d) => {
+                            const meta = SECTION_META[d.department] ?? SECTION_META.OTHER;
+                            const label = meta.label;
+                            const color = meta.color;
+                            const Icon = meta.Icon;
+                            const pct = Math.min(100, Number(d.percentage) || 0);
+                            return (
+                                <div key={d.department}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.35rem", fontSize: "0.9rem" }}>
+                                        <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600 }}>
+                                            <Icon size={16} color={color} />
+                                            {label}
+                                        </span>
+                                        <span style={{ color: "var(--text-muted)" }}>
+                                            {(d.revenue || 0).toLocaleString()} UGX
+                                            <span style={{ marginLeft: "0.5rem", fontWeight: 600, color }}>
+                                                ({pct.toFixed(1)}%)
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div style={{ height: "10px", background: "var(--bg-muted, rgba(0,0,0,0.08))", borderRadius: "6px", overflow: "hidden" }}>
+                                        <div
+                                            style={{
+                                                height: "100%",
+                                                width: `${pct}%`,
+                                                background: color,
+                                                borderRadius: "6px",
+                                                transition: "width 0.4s ease",
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
             <div className={styles.mainSection}>
                 {/* Pharmacy Top Items */}
                 <div className={styles.tableCard}>
@@ -154,9 +223,9 @@ export default function ReportsPage() {
                             ) : (
                                 pharmacyData.map((item, idx) => (
                                     <tr key={idx}>
-                                        <td className={styles.td}>{item.name}</td>
-                                        <td className={styles.td}>{item._sum.quantity}</td>
-                                        <td className={styles.td}>{item._sum.totalPrice.toLocaleString()}</td>
+                                        <td className={styles.td}>{item.drugName ?? item.name ?? "—"}</td>
+                                        <td className={styles.td}>{item.quantityDispensed ?? item._sum?.quantity ?? 0}</td>
+                                        <td className={styles.td}>{(item.revenueGenerated ?? item._sum?.totalPrice ?? 0).toLocaleString()}</td>
                                     </tr>
                                 ))
                             )}
