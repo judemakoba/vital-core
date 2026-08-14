@@ -107,16 +107,20 @@ export async function POST(request: Request) {
                 // a 25000 X-ray.)
                 const finalPrice = examInCatalog.price;
 
-                // Find or create the visit's consolidated FINAL- invoice (one
-                // per visit, holds every non-consultation charge). See
-                // `findOrCreateFinalBillInvoice` in lib/finance/invoice-helper.ts
-                // for the rationale (single cashier-facing bill per visit,
-                // deterministic visit completion transition).
-                const { findOrCreateFinalBillInvoice } = await import('@/lib/finance/invoice-helper');
-                const resolvedInvoice = await findOrCreateFinalBillInvoice({
+                // Find or create the visit's per-section radiology invoice
+                // (RADINV- prefix). Per-section model: each radiology order's
+                // line item lands on a rad-only invoice (never bundled with lab
+                // or pharmacy). The cashier settles each section's invoice
+                // independently; the visit auto-completes when all visit
+                // invoices (consultation + lab + radiology + pharmacy) are paid.
+                const { findOrCreateInvoiceForTransaction } = await import('@/lib/finance/invoice-helper');
+                const resolvedInvoice = await findOrCreateInvoiceForTransaction({
                     visitId,
                     patientId,
                     issuedById: user.id,
+                    category: 'Radiology',
+                    itemType: 'Radiology',
+                    numberPrefix: 'RADINV',
                 });
 
                 await prisma.invoiceItem.create({

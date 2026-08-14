@@ -78,6 +78,15 @@ export async function findOrCreateInvoiceForTransaction(input: FindOrCreateInvoi
 }
 
 /**
+ * @deprecated Use `findOrCreateInvoiceForTransaction` with the appropriate
+ * `category` / `itemType` / `numberPrefix` instead. Per-section invoices
+ * (LABINV-, RADINV-, PHARMINV-) are the current model — each section
+ * (Lab, Radiology, Pharmacy) has its own invoice so the cashier can
+ * settle them independently. The visit auto-completes when ALL visit
+ * invoices (consultation + per-section) are paid to zero. This helper
+ * is kept exported for legacy data reconciliation (visits with a paid
+ * FINAL- invoice from the R44 era) and for any backfill script.
+ *
  * Find or create the consolidated "Final Bill" invoice for a visit.
  *
  * Unlike `findOrCreateInvoiceForTransaction` (which keeps a SEPARATE
@@ -85,14 +94,16 @@ export async function findOrCreateInvoiceForTransaction(input: FindOrCreateInvoi
  * always reuses or creates a single `FINAL-` invoice per visit that holds
  * every non-consultation charge.
  *
- * Why this exists:
+ * Why this exists (historical, R44-era):
  *   The previous per-category model produced 3-4 separate invoices per visit
  *   (Consultation fee + Lab + Radiology + Pharmacy). The cashier had to
  *   pay them one at a time, and the `FinalBilling → Completed` visit
  *   transition would fire prematurely when ANY ONE of them was paid
  *   (see FinalBilling-Completed bug fix). Consolidating into a single
- *   final bill makes the cashier flow obvious (one bill to pay) and the
- *   visit transition deterministic.
+ *   final bill was a mitigation, but the user (2026-08-14) reversed
+ *   the decision: per-section invoices are clearer for the cashier and
+ *   the multi-invoice `areAllVisitInvoicesPaid` check handles the
+ *   visit transition correctly.
  *
  * Behaviour:
  *   - The consultation fee invoice is NEVER touched here — it stays
@@ -103,13 +114,10 @@ export async function findOrCreateInvoiceForTransaction(input: FindOrCreateInvoi
  *   - If no eligible final bill exists, a new one is created with prefix
  *     "FINAL-".
  *   - Legacy per-category invoices (e.g. `LABINV-`, `RADINV-`, `PHARMINV-`)
- *     are LEFT ALONE — they remain payable in the cashier UI but the new
+ *     are LEFT ALONE — they remain payable in the cashier UI but this
  *     helper does not add to them. The `areAllVisitInvoicesPaid` helper
  *     in the payments route still accounts for them so the visit won't
  *     close until every outstanding invoice is paid.
- *
- * Used by the dispense and lab/radiology render flows to find the open
- * FINAL- invoice for a visit, creating one if none exists.
  */
 export async function findOrCreateFinalBillInvoice(opts: {
     visitId: string;

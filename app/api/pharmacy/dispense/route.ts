@@ -10,11 +10,14 @@ import { AccountingService } from '@/lib/finance/accounting-service';
 // commit in Option D.
 import { markOrderFulfilled, transitionOrderSubStatus } from '@/lib/visits/substatus';
 import { ITEM_SUB_STATUS } from '@/lib/visits/status';
-// R50 (Option D): pharmacy creates the FINAL- invoice line item
-// at dispense time using the actual batch + actual quantity + actual
-// price. Need the invoice helper.
-import { findOrCreateFinalBillInvoice } from '@/lib/finance/invoice-helper';
-
+// R50 (Option D): pharmacy creates the per-section pharmacy invoice line
+// item at dispense time using the actual batch + actual quantity + actual
+// price. Per-section model: pharmacy line items land on a pharmacy-only
+// invoice (PHARMINV- prefix), never bundled with lab or radiology. The
+// cashier settles each section's invoice independently; the visit
+// auto-completes when all visit invoices (consultation + lab + radiology
+// + pharmacy) are paid.
+import { findOrCreateInvoiceForTransaction } from '@/lib/finance/invoice-helper';
 /** Check if a value has a fractional component */
 function isFractional(n: number): boolean {
   return !Number.isInteger(n);
@@ -402,17 +405,25 @@ export async function POST(request: Request) {
             });
 
             if (!taxInvoice) {
-                const count = await tx.taxInvoice.count();
                 // Find the visit's legacy Invoice (if any) so the TaxInvoice can be linked
                 // as a sub-bill. This prevents double-counting in finance summary.
-                const visitLegacyInvoice = await tx.invoice.findFirst({
+                const visitLegacyInvoice = await prisma.invoice.findFirst({
                     where: { visitId: prescription.visitId },
                     orderBy: { createdAt: 'desc' },
                     select: { id: true },
                 });
+                // Race-safe invoice number. count() + 1 is racy under
+                // concurrent dispenses; the @unique constraint makes a
+                // simple count-based sequence unsafe. Use a 4-char
+                // base36 random suffix instead — ~1.7M possibilities,
+                // collisions are effectively impossible at clinic
+                // volumes. The @unique constraint on invoiceNumber is
+                // the safety net.
+                const randomSuffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+                const taxInvoiceNumber = `INV-${new Date().getFullYear()}-${randomSuffix}`;
                 taxInvoice = await tx.taxInvoice.create({
                     data: {
-                        invoiceNumber: `INV-${new Date().getFullYear()}-${String(count + 1).padStart(6, '0')}`,
+                        invoiceNumber: taxInvoiceNumber,
                         invoiceType:   'TAX_INVOICE',
                         patientId:     patient.id,
                         customerName:  `${patient.firstName} ${patient.lastName}`,
@@ -450,7 +461,7 @@ export async function POST(request: Request) {
                 data: { subtotal: newTotal, totalAmount: newTotal, balanceDue: newTotal - taxInvoice.amountPaid }
             });
 
-            // 8b. R50 (Option D): create the visit's consolidated FINAL-
+            // 8b. R50 (Option D): create the visit's per-section pharmacy
             //     invoice line item HERE, at dispense time. The old flow
             //     had the prescription route pre-create this line at
             //     order placement using the catalog estimate; we now
@@ -461,9 +472,11 @@ export async function POST(request: Request) {
             //       - unit price = the dispense-time fallback chain
             //         (DrugPrice.REGULAR → MEMBER/STAFF → DrugBatch.sellingPrice)
             //
-            //     This is the single source of truth — no more dual
-            //     records (legacy Invoice + TaxInvoice) that can
-            //     disagree on price or quantity.
+            //     Per-section model: the pharmacy line lands on the visit's
+            //     PHARMINV- invoice (one per visit that has pharmacy activity).
+            //     Same source-of-truth invariant as before — no more dual
+            //     records (legacy Invoice + TaxInvoice) that can disagree
+            //     on price or quantity.
             //
             //     The prescription's `pharmacyInvoiceId` FK is set
             //     HERE so the payment route's
@@ -472,19 +485,23 @@ export async function POST(request: Request) {
             //
             //     Backward-compat: if this prescription already has a
             //     pharmacyInvoiceId (set by the OLD pre-bill flow before
-            //     R50), skip creating a new line item to avoid
+            //     R50, or a FINAL- invoice from before the per-section
+            //     split), skip creating a new line item to avoid
             //     double-billing. The legacy line was already paid
             //     (or will be) on the cashier's old invoice.
             if (!prescription.pharmacyInvoiceId) {
-                const finalBill = await findOrCreateFinalBillInvoice({
+                const pharmacyInvoice = await findOrCreateInvoiceForTransaction({
                     visitId:    prescription.visitId,
                     patientId:  prescription.patientId,
                     issuedById: session.user.id,
+                    category:   'Pharmacy',
+                    itemType:   'Pharmacy',
+                    numberPrefix: 'PHARMINV',
                 });
 
                 await tx.invoiceItem.create({
                     data: {
-                        invoiceId:   finalBill.id,
+                        invoiceId:   pharmacyInvoice.id,
                         description: `Dispensed: ${drug!.name} (${drug!.genericName} ${drug!.strength})`,
                         quantity:    doseCalc.totalUnits,
                         unitPrice:   unitPrice,
@@ -494,22 +511,20 @@ export async function POST(request: Request) {
                     },
                 });
 
-                // Recompute the FINAL- invoice totals from its line items so
-                // the legacy Invoice (used by the cashier dashboard) stays
-                // consistent with the TaxInvoice created in step 8a.
-                const allFinalItems = await tx.invoiceItem.findMany({
-                    where: { invoiceId: finalBill.id },
+                // Recompute the per-section invoice totals from its line items.
+                const allPharmItems = await tx.invoiceItem.findMany({
+                    where: { invoiceId: pharmacyInvoice.id },
                     select: { totalPrice: true },
                 });
-                const finalTotal = allFinalItems.reduce(
+                const pharmTotal = allPharmItems.reduce(
                     (s, it) => s + (Number(it.totalPrice) || 0),
                     0,
                 );
                 await tx.invoice.update({
-                    where: { id: finalBill.id },
+                    where: { id: pharmacyInvoice.id },
                     data: {
-                        totalAmount: finalTotal,
-                        balanceDue:  finalTotal - finalBill.amountPaid,
+                        totalAmount: pharmTotal,
+                        balanceDue:  pharmTotal - pharmacyInvoice.amountPaid,
                     },
                 });
 
@@ -520,7 +535,7 @@ export async function POST(request: Request) {
                 // check (areAllVisitInvoicesPaid) needs to see the invoice.
                 await tx.prescription.update({
                     where: { id: prescription.id },
-                    data: { pharmacyInvoiceId: finalBill.id },
+                    data: { pharmacyInvoiceId: pharmacyInvoice.id },
                 });
             }
 

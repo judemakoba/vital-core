@@ -2,20 +2,27 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { findOrCreateFinalBillInvoice } from "@/lib/finance/invoice-helper";
+import { findOrCreateInvoiceForTransaction } from "@/lib/finance/invoice-helper";
 import { decideNextStatusAfterConsultation, VISIT_STATUS } from "@/lib/visits/status";
 
-// Helper: find or create the visit's consolidated FINAL- invoice (one
-// per visit, holds every non-consultation charge). See
-// `findOrCreateFinalBillInvoice` in lib/finance/invoice-helper.ts for the
-// rationale (single cashier-facing bill per visit, deterministic visit
-// completion transition).
-async function getOrCreateFinalBillInvoice(opts: {
+// Find or create the visit's per-section lab invoice (LABINV- prefix).
+// Per-section model: each lab order's line item lands on a lab-only invoice
+// (never bundled with radiology or pharmacy). The cashier settles each
+// section's invoice independently; the visit auto-completes when all
+// visit invoices (consultation + lab + radiology + pharmacy) are paid.
+async function getOrCreateLabInvoice(opts: {
     visitId: string;
     patientId: string;
     issuedById: string;
 }) {
-    return findOrCreateFinalBillInvoice(opts);
+    return findOrCreateInvoiceForTransaction({
+        visitId: opts.visitId,
+        patientId: opts.patientId,
+        issuedById: opts.issuedById,
+        category: 'Lab',
+        itemType: 'Lab',
+        numberPrefix: 'LABINV',
+    });
 }
 
 // Create Lab Order and Add to Billing
@@ -89,7 +96,7 @@ export async function POST(request: Request) {
                 // e.g. AAR Insurance with a 100000 copay on a 15000 CBC test.)
                 const finalUnitPrice = testInCatalog.price;
 
-                const invoice = await getOrCreateFinalBillInvoice({
+                const invoice = await getOrCreateLabInvoice({
                     visitId,
                     patientId,
                     issuedById: user?.id,
