@@ -8,7 +8,7 @@ import styles from "./layout.module.css";
 import { TenantProvider, useTenant } from "@/components/TenantContext";
 import {
     LayoutDashboard, Users, Calendar, Activity, Stethoscope, Pill, TestTube,
-    Scan, BedDouble, CreditCard, TrendingUp, Mail, BarChart3, User, Settings,
+    Scan, BedDouble, CreditCard, TrendingUp, BarChart3, User, Settings,
     LogOut, Menu
 } from "lucide-react";
 export default function DashboardLayout({
@@ -45,7 +45,6 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         '/dashboard/lab',
         '/dashboard/radiology',
         '/dashboard/billing',
-        '/dashboard/communication',
         '/dashboard/reports',
         '/dashboard/finance',
         '/dashboard/settings',
@@ -68,8 +67,6 @@ const navigation = [
     { name: 'Inpatient (IPD)', href: '/dashboard/ipd', icon: BedDouble, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'] },
     { name: 'Finance (Billing)', href: '/dashboard/billing', icon: CreditCard, roles: ['SUPER_ADMIN', 'ADMIN', 'CASHIER', 'ACCOUNTANT'] },
     { name: 'Finance & Accounting', href: '/dashboard/finance', icon: TrendingUp, roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { name: 'Messages', href: '/dashboard/communication', icon: Mail, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'] },
-    { name: 'Email', href: '/dashboard/email', icon: Mail, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST', 'ACCOUNTANT'] },
     { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, roles: ['SUPER_ADMIN', 'ADMIN'] },
     { name: 'User Profile', href: '/dashboard/profile', icon: User },
     { name: 'Admin Settings', href: '/dashboard/settings', icon: Settings, roles: ['SUPER_ADMIN', 'ADMIN'] },

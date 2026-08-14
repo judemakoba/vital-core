@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
     Settings as SettingsIcon, Save, Database, Download, Stethoscope, Info,
     Building2, Globe, Coins, Hash, Calendar, Pill, FlaskConical, ScanLine,
-    CreditCard, Calculator, Mail, ShieldCheck, Gauge, Wrench, Sparkles,
+    CreditCard, Calculator, ShieldCheck, Gauge, Wrench, Sparkles,
     Plus, Edit, Trash2, X, Upload, Image as ImageIcon, AlertTriangle,
 } from "lucide-react";
 import styles from "../page.module.css";
@@ -42,10 +42,9 @@ const CATEGORY_META: Record<string, { label: string; icon: React.ComponentType<a
     RADIOLOGY: { label: "Radiology", icon: ScanLine, description: "Templates, image retention" },
     BILLING: { label: "Billing & Insurance", icon: CreditCard, description: "Aging buckets, COGS" },
     FINANCE: { label: "Finance", icon: Calculator, description: "Fiscal year, tax defaults" },
-    COMMUNICATION: { label: "Communication", icon: Mail, description: "SMS, email, reminders" },
     SECURITY: { label: "Security", icon: ShieldCheck, description: "Passwords, sessions, lockout" },
     LIMITS: { label: "System Limits", icon: Gauge, description: "Page size, cache TTL" },
-    INTEGRATION: { label: "Integrations", icon: Wrench, description: "Nextcloud, SMTP" },
+    INTEGRATION: { label: "Integrations", icon: Wrench, description: "Nextcloud" },
     ADVANCED: { label: "Advanced", icon: Sparkles, description: "Escape hatch" },
 };
 

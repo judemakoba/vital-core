@@ -9,7 +9,6 @@ import DrugCategoriesTab from "./components/DrugCategoriesTab";
 import LabCategoriesTab from "./components/LabCategoriesTab";
 import LabConfigTab from "./components/LabConfigTab";
 import IPDSettingsTab from "./components/IPDSettingsTab";
-import EmailSettingsTab from "./components/EmailSettingsTab";
 import {
     Building2,
     Users,
@@ -18,10 +17,9 @@ import {
     FlaskConical,
     Microscope,
     BedDouble,
-    Mail,
 } from "lucide-react";
 
-type TabType = 'clinic' | 'users' | 'roles' | 'drugs' | 'labcats' | 'labs' | 'ipd' | 'email';
+type TabType = 'clinic' | 'users' | 'roles' | 'drugs' | 'labcats' | 'labs' | 'ipd';
 
 const TABS: { id: TabType; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
     { id: 'clinic',  label: 'Clinic',      icon: Building2 },
@@ -31,7 +29,6 @@ const TABS: { id: TabType; label: string; icon: React.ComponentType<{ size?: num
     { id: 'labcats', label: 'Lab Catalog', icon: Microscope },
     { id: 'labs',    label: 'Lab Config',  icon: FlaskConical },
     { id: 'ipd',     label: 'IPD',         icon: BedDouble },
-    { id: 'email',   label: 'Email',       icon: Mail },
 ];
 
 export default function SettingsPage() {
@@ -46,7 +43,6 @@ export default function SettingsPage() {
             case 'labcats': return <LabCategoriesTab />;
             case 'labs':    return <LabConfigTab />;
             case 'ipd':     return <IPDSettingsTab />;
-            case 'email':   return <EmailSettingsTab />;
             default:        return null;
         }
     };

@@ -1174,10 +1174,9 @@ model Tenant {
   createdAt                  DateTime  @default(now())
   updatedAt                  DateTime  @updatedAt
 
-  branches      Branch[]
-  settings      TenantSetting[]
-  users         User[]
-  emailAccounts EmailAccount[]
+  branches Branch[]
+  settings TenantSetting[]
+  users    User[]
 }
 
 model Branch {
@@ -1243,140 +1242,6 @@ model SystemSetting {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
-}
-
-// =============================================================================
-// Email Client — outbound SMTP + inbound IMAP/webhook
-// =============================================================================
-//
-// Per-tenant email accounts (a clinic can have multiple, e.g.
-// notifications@vitalcore.ug for patients,
-// staff@vitalcore.ug for internal). Each account has its own SMTP
-// (outbound) and optional IMAP (inbound) credentials.
-//
-// EmailMessage stores every email — inbound and outbound — with full
-// threading (inReplyToId + threadId), attachments, and FK links back to
-// the domain entity that triggered/relates to the message (patient,
-// visit, appointment, lab order).
-// =============================================================================
-
-enum EmailAccountPurpose {
-  NOTIFICATIONS // patient-facing (appointment reminders, results, statements)
-  STAFF // internal staff mailing list
-  INBOX // generic inbox (web contact form, info@)
-  SUPPORT // support / helpdesk
-  OTHER
-}
-
-enum EmailDirection {
-  INBOUND
-  OUTBOUND
-}
-
-enum EmailStatus {
-  DRAFT
-  QUEUED
-  SENT
-  DELIVERED
-  FAILED
-  BOUNCED
-  READ
-  ARCHIVED
-}
-
-model EmailAccount {
-  id            String              @id @default(cuid())
-  tenantId      String
-  email         String // full email address e.g. notifications@vitalcore.ug
-  displayName   String? // e.g. "VitalCore Clinic — Notifications"
-  purpose       EmailAccountPurpose @default(NOTIFICATIONS)
-  // SMTP (outbound)
-  smtpHost      String
-  smtpPort      Int                 @default(587)
-  smtpUser      String
-  smtpPassword  String // stored in DB; encrypt at rest in production
-  smtpSecure    Boolean             @default(false) // TLS on connect (rare; usually STARTTLS)
-  // IMAP (inbound) — optional
-  imapEnabled   Boolean             @default(false)
-  imapHost      String?
-  imapPort      Int?                @default(993)
-  imapUser      String?
-  imapPassword  String?
-  imapSecure    Boolean             @default(true)
-  // Routing
-  isDefault     Boolean             @default(false)
-  isActive      Boolean             @default(true)
-  // Sync state
-  lastSyncAt    DateTime?
-  lastSyncError String?
-  // Audit
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  messages      EmailMessage[]
-
-  @@unique([tenantId, email])
-  @@index([tenantId, purpose])
-}
-
-model EmailMessage {
-  id                 String         @id @default(cuid())
-  tenantId           String
-  accountId          String? // EmailAccount used to send / receive this
-  direction          EmailDirection
-  // Envelope
-  fromAddress        String
-  fromName           String?
-  toAddresses        String // comma-separated
-  ccAddresses        String?
-  bccAddresses       String?
-  replyTo            String?
-  // Content
-  subject            String
-  bodyHtml           String?
-  bodyText           String?
-  // Threading
-  threadId           String? // groups related emails together
-  inReplyToId        String? // points at the previous EmailMessage in the thread
-  externalMessageId  String? // RFC 822 Message-ID header
-  externalInReplyTo  String? // RFC 822 In-Reply-To header
-  externalReferences String? // RFC 822 References header
-  // Status
-  status             EmailStatus    @default(QUEUED)
-  sentAt             DateTime?
-  deliveredAt        DateTime?
-  receivedAt         DateTime?
-  readAt             DateTime?
-  failedAt           DateTime?
-  failureReason      String?
-  retryCount         Int            @default(0)
-  // Attachments — JSON: [{name, url, size, contentType}]
-  attachments        Json?
-  // FK links to domain entities
-  patientId          String?
-  visitId            String?
-  appointmentId      String?
-  labOrderId         String?
-  // Staff / sender / recipient
-  fromUserId         String? // internal user who sent it (if any)
-  toUserId           String? // internal user it's addressed to
-  // Provider
-  provider           String? // "smtp" | "postmark-inbound" | "sendgrid-inbound" | "imap"
-  externalId         String? // provider's ID for this message
-  // Audit
-  createdById        String?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-
-  account   EmailAccount?  @relation(fields: [accountId], references: [id])
-  inReplyTo EmailMessage?  @relation("EmailReplies", fields: [inReplyToId], references: [id])
-  replies   EmailMessage[] @relation("EmailReplies")
-
-  @@index([tenantId, direction, status])
-  @@index([tenantId, createdAt])
-  @@index([threadId])
-  @@index([patientId])
-  @@index([accountId, direction])
 }
 
 model ChartOfAccount {
