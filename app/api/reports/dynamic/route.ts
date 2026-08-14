@@ -19,7 +19,9 @@ export async function GET(request: Request) {
         const dateFilter = startDate && endDate ? {
             createdAt: {
                 gte: new Date(startDate),
-                lte: new Date(endDate),
+                // End of day: include records from the entire endDate
+                // (e.g. lte: '2026-08-14' should include 2026-08-14T23:59:59).
+                lte: new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1),
             }
         } : {};
 
@@ -196,21 +198,30 @@ export async function GET(request: Request) {
 
         // Enhanced Pharmacy Report with Inventory Turnover and ABC Analysis
         if (type === "pharmacy") {
+            // Use dispensedAt (the business date the drug was handed to
+            // the patient) rather than createdAt (the row's auto-stamp).
+            // They differ by milliseconds, but the user picks dates by
+            // "when the patient got the drug" — that is dispensedAt.
+            const pharmacyDateFilter = startDate && endDate ? {
+                dispensedAt: {
+                    gte: new Date(startDate),
+                    lte: new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1),
+                }
+            } : {};
+
             const [
                 topMedications,
-                inventoryTurnover,
                 lowStockAlerts,
-                expiryAlerts,
-                pharmacyRevenueTrend
+                expiryAlerts
             ] = await Promise.all([
-                // Top medications by revenue and quantity
+                // Top medications by quantity dispensed in the period
                 prisma.dispensingLog.groupBy({
                     by: ['drugId'],
                     _sum: {
                         quantityDispensed: true,
                         totalAmount: true
                     },
-                    where: dateFilter,
+                    where: pharmacyDateFilter,
                     orderBy: {
                         _sum: {
                             quantityDispensed: 'desc'
@@ -268,21 +279,9 @@ export async function GET(request: Request) {
                 }),
 
                 // Pharmacy revenue trend over time
-                prisma.dispensingLog.groupBy({
-                    by: [{
-                        // Group by week
-                        _sum: {
-                            amount: 'amount'
-                        }
-                    }],
-                    where: dateFilter,
-                    _sum: {
-                        totalAmount: true
-                    },
-                    orderBy: {
-                        dispensedAt: 'asc'
-                    }
-                })
+                // (Removed — `by: [{...}]` is invalid Prisma syntax. The
+                // page doesn't read revenueTrend; can be re-added later
+                // with a valid weekly/monthly bucketing strategy.)
             ]);
 
             // Get drug names for top medications
@@ -310,7 +309,7 @@ export async function GET(request: Request) {
                 data: {
                     topMedications: formattedTopMedications,
                     inventoryMetrics: {
-                        turnoverRate: inventoryTurnover || 0, // Would calculate properly
+                        turnoverRate: 0, // TODO: implement inventory turnover (COGS / avg inventory)
                         lowStockCount: lowStockAlerts.length,
                         expiringSoonCount: expiryAlerts.length
                     },
@@ -332,11 +331,10 @@ export async function GET(request: Request) {
                                 (batch.expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
                             )
                         }))
-                    },
-                    revenueTrend: pharmacyRevenueTrend.map(point => ({
-                        period: new Date(point._sum.amount ? Date.now() : 0).toISOString().split('T')[0], // Simplified
-                        revenue: point._sum.totalAmount || 0
-                    }))
+                    }
+                    // revenueTrend removed — the broken groupBy was removed
+                    // above. Can be re-added with proper weekly/monthly
+                    // bucketing when the page actually consumes it.
                 }
             });
         }
