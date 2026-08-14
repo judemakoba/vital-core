@@ -89,14 +89,11 @@ export async function GET() {
         }, 0);
 
         // Status breakdown
-        const [taxInvByStatus, legacyByStatus, claimsByStatus, claimsTotalPending, subBillByStatus] = await Promise.all([
+        const [taxInvByStatus, legacyByStatus, subBillByStatus] = await Promise.all([
             // Standalone TaxInvoices (counted in totals)
             prisma.taxInvoice.groupBy({ where: { parentInvoiceId: null }, by: ['paymentStatus'], _count: true }),
+            // Legacy invoices (per-section: INV-, LABINV-, RADINV-, PHARMINV-)
             prisma.invoice.groupBy({ by: ['status'], _count: true }),
-                where: { status: { in: ['DRAFT', 'SUBMITTED', 'ACKNOWLEDGED', 'APPROVED'] } },
-                _count: true,
-                _sum: { eligibleAmount: true },
-            }),
             // Sub-bill TaxInvoices (linked to a parent Invoice — not counted in totals)
             prisma.taxInvoice.groupBy({ where: { parentInvoiceId: { not: null } }, by: ['paymentStatus'], _count: true, _sum: { totalAmount: true, balanceDue: true } }),
         ]);
@@ -118,11 +115,6 @@ export async function GET() {
                 totalRevenue: Math.max(0, totalCollected),
                 totalCollected: Math.max(0, totalCollected),
                 totalOutstanding: Math.max(0, totalOutstanding),
-                claims: {
-                    byStatus: claimsByStatus.map(c => ({ status: c.status, count: c._count, totalAmount: c._sum.totalAmount ?? 0, eligibleAmount: c._sum.eligibleAmount ?? 0 })),
-                    pendingCount: claimsTotalPending._count,
-                    pendingEligible: claimsTotalPending._sum.eligibleAmount ?? 0,
-                },
                 // Audit: do journal-derived totals match the table totals?
                 reconciliation: {
                     totalInvoiced: { table: totalInvoiced, journals: Math.max(0, totalInvoicedFromJournals), match: Math.abs(totalInvoiced - totalInvoicedFromJournals) < 1 },
