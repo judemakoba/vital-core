@@ -9,7 +9,7 @@ import { TenantProvider, useTenant } from "@/components/TenantContext";
 import {
     LayoutDashboard, Users, Calendar, Activity, Stethoscope, Pill, TestTube,
     Scan, BedDouble, CreditCard, TrendingUp, BarChart3, User, Settings,
-    LogOut, Menu
+    LogOut, Menu, History
 } from "lucide-react";
 export default function DashboardLayout({
     children,
@@ -70,7 +70,8 @@ const navigation = [
     { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, roles: ['SUPER_ADMIN', 'ADMIN'] },
     { name: 'User Profile', href: '/dashboard/profile', icon: User },
     { name: 'Admin Settings', href: '/dashboard/settings', icon: Settings, roles: ['SUPER_ADMIN', 'ADMIN'] },
-    { name: 'Lab Catalog', href: '/dashboard/admin/lab-catalog', icon: TestTube, roles: ['SUPER_ADMIN', 'ADMIN'] }
+    { name: 'Lab Catalog', href: '/dashboard/admin/lab-catalog', icon: TestTube, roles: ['SUPER_ADMIN', 'ADMIN'] },
+    { name: 'Audit Log', href: '/dashboard/admin/audit', icon: History, roles: ['SUPER_ADMIN'] }
 ];
 
     // Improved Title Logic: Match most specific route first

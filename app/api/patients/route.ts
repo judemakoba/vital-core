@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { withAuth, requireRole } from "@/lib/errors";
 import { createPatientSchema, updatePatientSchema, paginationSchema, validateRequest } from "@/lib/validation";
 import { ApiError } from "@/lib/errors";
+import { recordAudit, AUDIT_ACTION, ENTITY } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -67,7 +68,7 @@ export const GET = withAuth(async (request) => {
 });
 
 // POST /api/patients - Create new patient
-export const POST = withAuth(async (request) => {
+export const POST = withAuth(async (request, _params, session) => {
   const body = await request.json();
   const data = validateRequest(createPatientSchema, body);
   
@@ -99,6 +100,25 @@ export const POST = withAuth(async (request) => {
     return p;
   });
   
+  // Audit — fire-and-forget, never blocks the response
+  void recordAudit({
+    userId: session.user.id,
+    action: AUDIT_ACTION.PATIENT_CREATE,
+    entityType: ENTITY.PATIENT,
+    entityId: patient.id,
+    changes: {
+      after: {
+        patientNumber: patient.patientNumber,
+        firstName:     patient.firstName,
+        lastName:      patient.lastName,
+        gender:        patient.gender,
+        dateOfBirth:   patient.dateOfBirth,
+        phone:         patient.phone,
+        email:         patient.email,
+      },
+    },
+  });
+
   return NextResponse.json(patient, { status: 201 });
 });
 

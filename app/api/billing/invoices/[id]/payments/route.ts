@@ -5,6 +5,7 @@ import { AccountingService } from "@/lib/finance/accounting-service";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { transitionInvoiceItemsToInProgress } from "@/lib/visits/substatus";
+import { recordAudit, AUDIT_ACTION, ENTITY } from "@/lib/audit";
 
 /**
  * Returns true when the visit's billing is fully settled — every invoice
@@ -263,6 +264,24 @@ export async function POST(
             console.error('Failed to sync TaxInvoice payment status:', syncError);
             // Non-critical — don't fail the whole payment
         }
+
+        // Audit — fire-and-forget. `result` contains the created payment
+        // and updated invoice. Log the new balance so the report shows
+        // the trajectory.
+        void recordAudit({
+            userId: session.user.id,
+            action: AUDIT_ACTION.INVOICE_PAYMENT,
+            entityType: ENTITY.INVOICE,
+            entityId: params.id,
+            changes: {
+                paymentId: result?.payment?.id,
+                amount: paymentAmount,
+                method: paymentMethod,
+                transactionId,
+                invoiceStatus: newStatus,
+                balanceAfter: newBalanceDue,
+            },
+        });
 
         return NextResponse.json(result);
     } catch (error) {

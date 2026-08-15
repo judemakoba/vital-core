@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { AccountingService } from '@/lib/finance/accounting-service';
+import { recordAudit, AUDIT_ACTION, ENTITY } from '@/lib/audit';
 // R50 (Option D): we now use transitionOrderSubStatus + ITEM_SUB_STATUS
 // in addition to markOrderFulfilled. The InProgress waypoint is
 // required by the state machine (AwaitingPayment → Fulfilled is
@@ -614,6 +615,27 @@ export async function POST(request: Request) {
                 unitsPerDose:  doseCalc.unitsPerDose,
             },
             logs: logs.map((l: any) => ({ id: l.id, quantityDispensed: l.quantityDispensed }))
+        });
+
+        // Audit — fire-and-forget. Log what was dispensed, to whom,
+        // and by which user. The `logs` array has the dispensing IDs;
+        // the prescription / drug are in scope from the transaction.
+        void recordAudit({
+            userId: session.user.id,
+            action: AUDIT_ACTION.DISPENSE,
+            entityType: ENTITY.DISPENSE,
+            entityId: logs[0]?.id ?? prescriptionId,
+            changes: {
+                prescriptionId,
+                patientId: prescription.patientId,
+                visitId:    prescription.visitId,
+                drugId:     drug.id,
+                drugName:   drug.name,
+                totalUnits: doseCalc.totalUnits,
+                unitPrice,
+                totalAmount: unitPrice * doseCalc.totalUnits,
+                source: doseCalc.source,
+            },
         });
 
     } catch (error: any) {
