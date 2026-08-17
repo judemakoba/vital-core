@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Users, Calendar, Pill, FlaskConical, DollarSign, UserCheck, ArrowUpRight } from "lucide-react";
+import { Users, Calendar, Pill, FlaskConical, Scan, DollarSign, UserCheck, ArrowUpRight } from "lucide-react";
 import styles from "./page.module.css";
 import { useFormatters } from "@/hooks/useFormatters";
 
@@ -12,6 +12,7 @@ interface LiveStats {
     appointmentsToday: number;
     pendingPrescriptions: number;
     pendingLabs: number;
+    pendingRadiology: number;
     todaysRevenue: number;
     canSeeRevenue: boolean;
 }
@@ -100,6 +101,19 @@ export default function DashboardLiveStats() {
             href: "/dashboard/lab",
             sublabel: stats.pendingLabs > 0 ? "⚠ Awaiting processing" : "All clear",
             attention: stats.pendingLabs > 0,
+        },
+        // R59: Radiology card — mirrors the Lab card above. Same "ordered"
+        // count semantics (RadiologyOrder.status defaults to "Ordered",
+        // same as LabOrder), same attention/sublabel copy, distinct icon
+        // and colour so the two adjacent cards read as a pair.
+        {
+            name: "Pending Radiology",
+            value: stats.pendingRadiology.toString(),
+            icon: Scan,
+            color: "#06b6d4",
+            href: "/dashboard/radiology",
+            sublabel: stats.pendingRadiology > 0 ? "⚠ Awaiting processing" : "All clear",
+            attention: stats.pendingRadiology > 0,
         },
         ...(stats.canSeeRevenue ? [{
             name: "Today's Revenue",

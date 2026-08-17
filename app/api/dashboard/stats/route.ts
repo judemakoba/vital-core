@@ -20,6 +20,7 @@ export async function GET() {
         appointmentsToday,
         pendingPrescriptions,
         pendingLabs,
+        pendingRadiology,
         todaysPayments,
     ] = await Promise.all([
         prisma.patient.count({ where: { isActive: true } }),
@@ -31,6 +32,11 @@ export async function GET() {
         }),
         prisma.prescription.count({ where: { status: "Pending" } }),
         prisma.labOrder.count({ where: { status: "Ordered" } }),
+        // R59: pending radiology orders — mirrors the lab count above so the
+        // dashboard's "Pending Radiology" card has live data. RadiologyOrder
+        // defaults to status "Ordered" (see schema.prisma line ~410), same
+        // as LabOrder, so we filter on the same value.
+        prisma.radiologyOrder.count({ where: { status: "Ordered" } }),
         prisma.payment.findMany({
             where: { createdAt: { gte: startOfDay, lte: endOfDay } },
             select: { amount: true },
@@ -45,6 +51,7 @@ export async function GET() {
         appointmentsToday,
         pendingPrescriptions,
         pendingLabs,
+        pendingRadiology,
         todaysRevenue,
         canSeeRevenue,
     });
