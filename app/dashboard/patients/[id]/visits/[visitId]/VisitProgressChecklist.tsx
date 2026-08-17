@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { CheckCircle, Circle, XCircle, Ban, AlertTriangle } from "lucide-react";
-import styles from "./visit.module.css";
+// R55d: was `import styles from ...` since the initial 4eb8cf9 release, but
+// the component body references `visitStyles` (19 occurrences). This was
+// masked by the earlier InsuranceValidationCard crash in page.tsx (now
+// fixed in 91e66f9); once the page actually rendered <VisitProgressChecklist>,
+// the undeclared `visitStyles` symbol threw a ReferenceError at the first
+// className={visitStyles.section} in the render. Renaming the import to
+// match the usage is the minimal fix.
+import visitStyles from "./visit.module.css";
 import { useSession } from "next-auth/react";
 
 interface LabOrder {
