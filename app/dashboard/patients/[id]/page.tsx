@@ -122,6 +122,12 @@ export default function PatientProfilePage() {
 
     return (
         <div className={styles.container}>
+            {/* R58b: small back link to the patients directory. Matches the
+                pattern on /dashboard/patients (which has its own back link
+                to /dashboard). */}
+            <Link href="/dashboard/patients" className={styles.backLink}>
+                <ArrowLeft size={16} /> Back to Patients
+            </Link>
             {/* Compact Header */}
             <div className={stylesProfile.profileHeader}>
                 <div className={stylesProfile.avatar}>{getInitials(patient.firstName, patient.lastName)}</div>

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
@@ -14,7 +15,8 @@ import {
     Lock,
     Bed,
     Scan,
-    ExternalLink
+    ExternalLink,
+    ArrowLeft
 } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -478,6 +480,13 @@ export default function ConsultationPage({ params }: { params: { visitId: string
     return (
         <div className={styles.container}>
             <header className={styles.header}>
+                {/* R58a: back to doctor waiting room. Uses a deterministic
+                    Link to /dashboard/doctor (not router.back()) so the
+                    target is always the doctor queue regardless of how the
+                    user arrived (direct URL, sidebar, etc.). */}
+                <Link href="/dashboard/doctor" className={styles.backLink}>
+                    <ArrowLeft size={16} /> Back to Waiting Room
+                </Link>
                 <div className={styles.patientInfo}>
                     <h1 className={styles.patientName}>
                         {visit.patient?.firstName} {visit.patient?.lastName}
