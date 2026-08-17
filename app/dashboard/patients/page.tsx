@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Plus, Eye, CalendarPlus, Trash2, X, Edit, Sparkles, Loader2 } from "lucide-react";
+import { Search, Plus, Eye, CalendarPlus, Trash2, X, Edit, Sparkles, Loader2, ArrowLeft } from "lucide-react";
 import styles from "./page.module.css";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -251,6 +251,14 @@ export default function PatientsPage() {
 
     return (
         <div className={styles.container}>
+            {/* R57: small back link to the dashboard home, matching the
+                pattern used on /dashboard/patients/new (back-to-directory
+                link in its own row above the page header). Uses a Link,
+                not router.back(), so it always lands on /dashboard even
+                if the user navigated here from somewhere unexpected. */}
+            <Link href="/dashboard" className={styles.backLink}>
+                <ArrowLeft size={16} /> Back to Dashboard
+            </Link>
             <div className={styles.header}>
                 <h1 className={styles.title}>Patients Directory</h1>
                 <Link href="/dashboard/patients/new" className={styles.addBtn}>
