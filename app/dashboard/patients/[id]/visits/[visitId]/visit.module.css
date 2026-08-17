@@ -703,3 +703,96 @@
     .soapGrid { grid-template-columns: 1fr 1fr; }
     .vitalsGrid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* R56: 2-column section grid (left: Diagnoses+Prescriptions, right:
+   Lab+Radiology). Defined as a class instead of inline style so the
+   @media print rules below can collapse it to a single column on paper. */
+.twoColGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+/* ── R56: Print support ─────────────────────────────────────────────────
+   Renders the full visit detail (vitals, SOAP notes, diagnoses, prescriptions,
+   lab/radiology orders, bills & payments) on paper via the browser's native
+   print dialog. UI chrome (back/print buttons, discontinue form, etc.) is
+   hidden; a print-only header with the clinic name appears at the top; the
+   2-column section grid collapses to a single column for readability. */
+
+/* Hide on screen, show only when printing. */
+.printOnly { display: none; }
+
+.printHeader {
+    padding: 0 0 0.75rem 0;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid #000;
+    color: #000;
+}
+
+.printHeaderClinic {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.printHeaderTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.printHeaderMeta {
+    font-size: 0.8rem;
+    color: #444;
+    margin-top: 2px;
+}
+
+@media print {
+    /* Note: Next.js CSS modules require "pure" selectors (at least one
+       local class or id per selector), so we drop the universal
+       `body, html` / `*, *::before, *::after` resets and rely on the
+       page-level background + the inline `background: #fff` on the
+       print header. The browser-default print background is fine. */
+
+    /* Hide every interactive control — paper shouldn't have buttons.
+       We scope to local classes only (the page's `.backBtn`, `.printHide`,
+       the discontinue form's `.discontinueBtn*`) because CSS modules
+       require a local class in every selector — a bare `button` tag
+       selector trips the "pure selectors" check. */
+    .backBtn, .printHide, .discontinueBtn, .discontinueBtnConfirm,
+    .discontinueBtnCancel, .discontinueForm { display: none !important; }
+
+    /* Single-column layout: collapse the 2-col section grid + the inner
+       columns (left: Diagnoses+Prescriptions, right: Lab+Radiology) so each
+       section starts on its own line. The page uses the .twoColGrid class
+       instead of an inline grid-template-columns style so we can target it
+       here (CSS modules reject bare attribute selectors and global
+       `body, html` resets). */
+    .twoColGrid { grid-template-columns: 1fr !important; }
+
+    /* Show the print-only header that was hidden on screen. */
+    .printOnly { display: block !important; }
+
+    /* Preserve badge backgrounds (status colours, balance pills) — by default
+       browsers strip background colour when printing. */
+    .badge, .balanceBadge, .drugStatus, .testStatus, .subStatusBadge,
+    .sectionCount, .soapLabel, .diagChip {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Each section card should stay together — avoid ugly mid-card breaks. */
+    .section, .invoiceBlock, .visitHeader, .soapCard, .orderSubRow,
+    .discontinueBanner {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Tighten the layout for paper. */
+    .visitHeader { padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; }
+    .section { margin-bottom: 0.5rem; padding: 0.5rem 0.75rem; }
+    .soapCard { padding: 0.5rem 0.75rem; }
+}

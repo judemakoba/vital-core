@@ -7,7 +7,7 @@ import {
     ArrowLeft, Stethoscope, FlaskConical, Pill, Scan,
     FileText, DollarSign, Activity, Heart, Thermometer,
     Droplets, Scale, Ruler, Clock, CheckCircle, XCircle,
-    CreditCard, User, Calendar
+    CreditCard, User, Calendar, Printer
 } from "lucide-react";
 import styles from "../../../page.module.css";
 import visitStyles from "./visit.module.css";
@@ -118,16 +118,45 @@ export default function VisitDetailPage() {
     return (
         <div className={styles.container}>
 
-            {/* Back button */}
+            {/* Back / Print toolbar */}
             <div className={visitStyles.backRow}>
                 <button onClick={() => router.back()} className={visitStyles.backBtn}>
                     <ArrowLeft size={15} /> Back
+                </button>
+                {/* R56: print the full visit details (vitals, SOAP, diagnoses,
+                    prescriptions, lab, radiology, bills). Uses the browser's
+                    native print dialog — no PDF generation in this MVP.
+                    The @media print rules in visit.module.css hide UI chrome
+                    and force a single-column layout for paper. */}
+                <button
+                    onClick={() => window.print()}
+                    className={`${visitStyles.backBtn} ${visitStyles.printHide}`}
+                    title="Print this visit"
+                    type="button"
+                >
+                    <Printer size={15} /> Print
                 </button>
                 <span style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
                     Patient: <Link href={`/dashboard/patients/${visit.patient.id}`} style={{ color: "var(--primary-color)", fontWeight: 500 }}>
                         {visit.patient.firstName} {visit.patient.lastName}
                     </Link>
                 </span>
+            </div>
+
+            {/* R56: print-only header — appears at the very top of the printed
+                page with the clinic name and a one-line visit summary so the
+                document is self-contained on paper. Hidden on screen via the
+                .printOnly class. */}
+            <div className={`${visitStyles.printHeader} ${visitStyles.printOnly}`}>
+                <div className={visitStyles.printHeaderClinic}>VitalCore Clinic</div>
+                <div className={visitStyles.printHeaderTitle}>
+                    Visit Summary — {visit.visitNumber}
+                </div>
+                <div className={visitStyles.printHeaderMeta}>
+                    <span>Patient: {visit.patient.firstName} {visit.patient.lastName}</span>
+                    <span> · #{visit.patient.patientNumber}</span>
+                    <span> · {new Date(visit.createdAt).toLocaleString()}</span>
+                </div>
             </div>
 
             {/* Visit header */}
@@ -232,8 +261,11 @@ export default function VisitDetailPage() {
                 </div>
             )}
 
-            {/* 2-column layout for sections */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", alignItems: "start" }}>
+            {/* 2-column layout for sections. R56: `twoColGrid` is a local
+                class so the @media print rules can collapse it to a single
+                column on paper (CSS modules forbid bare attribute selectors
+                and global `body, html` resets). */}
+            <div className={visitStyles.twoColGrid}>
 
                 {/* Left column */}
                 <div>
