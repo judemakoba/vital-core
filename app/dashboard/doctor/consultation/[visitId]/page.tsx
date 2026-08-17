@@ -479,14 +479,17 @@ export default function ConsultationPage({ params }: { params: { visitId: string
 
     return (
         <div className={styles.container}>
+            {/* R58a: back to doctor waiting room. Placed ABOVE the header
+                card (not inside it) so the small back link doesn't have
+                to share a flex row with the multi-line patient info block
+                — that's what made it look "squished" before. Uses a
+                deterministic Link to /dashboard/doctor (not router.back())
+                so the target is always the doctor queue regardless of how
+                the user arrived (direct URL, sidebar, etc.). */}
+            <Link href="/dashboard/doctor" className={styles.backLink}>
+                <ArrowLeft size={16} /> Back to Waiting Room
+            </Link>
             <header className={styles.header}>
-                {/* R58a: back to doctor waiting room. Uses a deterministic
-                    Link to /dashboard/doctor (not router.back()) so the
-                    target is always the doctor queue regardless of how the
-                    user arrived (direct URL, sidebar, etc.). */}
-                <Link href="/dashboard/doctor" className={styles.backLink}>
-                    <ArrowLeft size={16} /> Back to Waiting Room
-                </Link>
                 <div className={styles.patientInfo}>
                     <h1 className={styles.patientName}>
                         {visit.patient?.firstName} {visit.patient?.lastName}

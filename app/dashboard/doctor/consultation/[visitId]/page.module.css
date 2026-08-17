@@ -26,8 +26,11 @@
     min-width: 0;
 }
 
-/* R58a: back link to the doctor waiting room, sits at the top of the
-   consultation header. */
+/* R58a: back link to the doctor waiting room. Sits above the
+   consultation header card (not inside it — the header is a
+   space-between flex row that pairs the back link with a tall
+   multi-line patient info block, which made the link look
+   "squished" floating in the middle of nothing). */
 .backLink {
     display: inline-flex;
     align-items: center;
@@ -38,8 +41,6 @@
     transition: color var(--transition-fast);
     text-decoration: none;
     align-self: flex-start;
-    margin-bottom: 0.5rem;
-    width: max-content;
 }
 
 .backLink:hover {
