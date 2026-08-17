@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { Users, Calendar, Activity, ArrowRight, PlayCircle, CheckCircle2, X } from "lucide-react";
+import { Users, Calendar, Activity, ArrowRight, PlayCircle, CheckCircle2, X, Eye, Clock } from "lucide-react";
 import styles from "./page.module.css";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,6 +16,7 @@ function DoctorDashboardInner() {
     const [allWaitingPatients, setAllWaitingPatients] = useState<any[]>([]);
     const [waitingTab, setWaitingTab] = useState<"mine" | "all">("mine");
     const [schedule, setSchedule] = useState<any[]>([]);
+    const [completedToday, setCompletedToday] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -42,15 +43,17 @@ function DoctorDashboardInner() {
 
     const fetchData = async () => {
         try {
-            const [waitingRes, allWaitingRes, scheduleRes] = await Promise.all([
+            const [waitingRes, allWaitingRes, scheduleRes, completedRes] = await Promise.all([
                 fetch('/api/doctor/waiting-patients', { credentials: "include" }),
                 fetch('/api/doctor/waiting-patients?all=true', { credentials: "include" }),
-                fetch('/api/doctor/today-schedule', { credentials: "include" })
+                fetch('/api/doctor/today-schedule', { credentials: "include" }),
+                fetch('/api/doctor/completed-today', { credentials: "include" })
             ]);
 
             if (waitingRes.ok) setWaitingPatients(await waitingRes.json());
             if (allWaitingRes.ok) setAllWaitingPatients(await allWaitingRes.json());
             if (scheduleRes.ok) setSchedule(await scheduleRes.json());
+            if (completedRes.ok) setCompletedToday(await completedRes.json());
         } catch (error) {
             console.error("Error fetching doctor dashboard data", error);
         } finally {
@@ -159,7 +162,7 @@ function DoctorDashboardInner() {
                         <span className={styles.statLabel}>Completed Today</span>
                         <Activity size={20} color="var(--success-color)" />
                     </div>
-                    <span className={styles.statValue}>0</span> {/* Placeholder until stats API handles this */}
+                    <span className={styles.statValue}>{completedToday.length}</span>
                 </div>
             </div>
 
@@ -309,6 +312,90 @@ function DoctorDashboardInner() {
                             ))
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* ── Completed Today (R61) ───────────────────────────────
+                R61: doctor's "Completed Tasks" list. Visits the doctor
+                finished since local midnight, sorted most-recent first.
+                The list auto-empties at midnight — the API filters by
+                completedTime >= startOfToday, so no cron / cleanup is
+                required. Each entry links to the consultation page in
+                read-only mode (?readonly=1). */}
+            <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>
+                        <CheckCircle2 size={18} />
+                        Completed Today
+                    </h2>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                        {completedToday.length === 0
+                            ? "Nothing finished yet today."
+                            : `Cleared automatically at midnight — ${completedToday.length} task${completedToday.length === 1 ? "" : "s"} so far today.`}
+                    </span>
+                </div>
+
+                <div className={styles.list}>
+                    {completedToday.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            No completed consultations today. Once you click{" "}
+                            <strong>Finish Consultation</strong> on a patient, they'll appear here in read-only mode.
+                        </div>
+                    ) : (
+                        completedToday.map((visit) => {
+                            const completedAt = visit.completedTime ? new Date(visit.completedTime) : null;
+                            return (
+                                <div key={visit.id} className={styles.listItem}>
+                                    <div className={styles.patientInfo}>
+                                        <div className={styles.patientName}>
+                                            {visit.patient?.firstName} {visit.patient?.lastName}
+                                            <span style={{
+                                                fontSize: "0.7rem",
+                                                padding: "0.1rem 0.4rem",
+                                                borderRadius: "999px",
+                                                background: "rgba(34,197,94,0.12)",
+                                                color: "var(--success-color)",
+                                                fontWeight: 600,
+                                                marginLeft: "0.25rem"
+                                            }}>
+                                                Finished
+                                            </span>
+                                            <span style={{
+                                                fontSize: "0.7rem",
+                                                padding: "0.1rem 0.4rem",
+                                                borderRadius: "999px",
+                                                background: "rgba(99,102,241,0.12)",
+                                                color: "var(--primary-color)",
+                                                fontWeight: 600,
+                                                marginLeft: "0.25rem"
+                                            }}>
+                                                {visit.status}
+                                            </span>
+                                        </div>
+                                        <div className={styles.patientDetails}>
+                                            #{visit.patient?.patientNumber} • {visit.visitNumber} • {visit.type}
+                                        </div>
+                                        {visit.chiefComplaint && (
+                                            <div className={styles.reasonText}>"{visit.chiefComplaint}"</div>
+                                        )}
+                                    </div>
+                                    <div className={styles.actionArea}>
+                                        <div className={styles.time}>
+                                            <Clock size={12} style={{ verticalAlign: "middle", marginRight: 4 }} />
+                                            {completedAt ? formatTime(completedAt.toISOString()) : "--:--"}
+                                        </div>
+                                        <Link
+                                            href={`/dashboard/doctor/consultation/${visit.id}?readonly=1`}
+                                            className={styles.startBtn}
+                                        >
+                                            <Eye size={14} />
+                                            View
+                                        </Link>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             </div>
         </div>

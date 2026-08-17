@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
     Save,
@@ -16,7 +16,8 @@ import {
     Bed,
     Scan,
     ExternalLink,
-    ArrowLeft
+    ArrowLeft,
+    Eye
 } from "lucide-react";
 import styles from "./page.module.css";
 
@@ -66,7 +67,13 @@ interface Visit {
 
 export default function ConsultationPage({ params }: { params: { visitId: string } }) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { data: session, status: sessionStatus } = useSession();
+    // R61: ?readonly=1 renders the consultation in read-only mode for the
+    // doctor's "Completed Today" list. Disables all inputs + hides every
+    // mutating button. Tabs still work so the doctor can browse notes,
+    // diagnosis, prescriptions, lab, radiology.
+    const isReadOnly = searchParams.get('readonly') === '1';
     const [activeTab, setActiveTab] = useState("notes");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -333,6 +340,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
     // Uses notesRef to avoid stale closures — the setTimeout always reads current notes
     const autoSave = useCallback(() => {
         if (!isDirty) return;
+        if (isReadOnly) return; // R61: never persist in read-only view
         // Only auto-save while visit is still in the consultation phase. Once it has
         // been pushed to Pharmacy / Lab / Radiology the API will 400 the save (correct
         // behaviour to prevent regressing the visit status). The Finish Consultation
@@ -479,6 +487,22 @@ export default function ConsultationPage({ params }: { params: { visitId: string
 
     return (
         <div className={styles.container}>
+            {/* R61: read-only banner. Shown only when the page is opened from
+                the doctor's "Completed Today" list (?readonly=1). All inputs
+                on the page below become readOnly and every mutating button
+                is hidden via the .readOnlyHide class (see page.module.css). */}
+            {isReadOnly && (
+                <div className={styles.readOnlyBanner}>
+                    <Eye size={18} style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                        <strong>Read-only view</strong> — this consultation is finished and can no longer be edited.
+                        {visit && (visit as any).completedTime && (
+                            <> Completed at {new Date((visit as any).completedTime).toLocaleString()}.</>
+                        )}
+                    </div>
+                </div>
+            )}
+
             {/* R58a: back to doctor waiting room. Placed ABOVE the header
                 card (not inside it) so the small back link doesn't have
                 to share a flex row with the multi-line patient info block
@@ -595,7 +619,8 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         className={styles.textarea}
                                         value={notes.subjective}
                                         onChange={(e) => { setNotes({ ...notes, subjective: e.target.value }); setIsDirty(true); }}
-                                        placeholder="e.g. Headache for 3 days, low grade fever..."
+                                        readOnly={isReadOnly}
+                                        placeholder={isReadOnly ? "" : "e.g. Headache for 3 days, low grade fever..."}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
@@ -604,7 +629,8 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         className={styles.textarea}
                                         value={notes.objective}
                                         onChange={(e) => { setNotes({ ...notes, objective: e.target.value }); setIsDirty(true); }}
-                                        placeholder="e.g. Clear lungs, mild abdominal tenderness..."
+                                        readOnly={isReadOnly}
+                                        placeholder={isReadOnly ? "" : "e.g. Clear lungs, mild abdominal tenderness..."}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
@@ -613,7 +639,8 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         className={styles.textarea}
                                         value={notes.assessment}
                                         onChange={(e) => { setNotes({ ...notes, assessment: e.target.value }); setIsDirty(true); }}
-                                        placeholder="e.g. Likely malaria but need to rule out typhoid..."
+                                        readOnly={isReadOnly}
+                                        placeholder={isReadOnly ? "" : "e.g. Likely malaria but need to rule out typhoid..."}
                                     />
                                 </div>
                                 <div className={styles.formGroup}>
@@ -622,7 +649,8 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         className={styles.textarea}
                                         value={notes.treatmentPlan}
                                         onChange={(e) => { setNotes({ ...notes, treatmentPlan: e.target.value }); setIsDirty(true); }}
-                                        placeholder="e.g. Order RDT, start paracetamol, follow up in 2 days..."
+                                        readOnly={isReadOnly}
+                                        placeholder={isReadOnly ? "" : "e.g. Order RDT, start paracetamol, follow up in 2 days..."}
                                     />
                                 </div>
                             </div>
@@ -630,6 +658,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
 
                         {activeTab === "diagnosis" && (
                             <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+                                {!isReadOnly && (
                                 <div className={styles.formGroup} style={{ position: "relative", marginBottom: 0 }}>
                                     <label className={styles.label}>Search and Add Diagnosis (ICD-11 / ICD-10)</label>
                                     <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -758,6 +787,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         </ul>
                                     )}
                                 </div>
+                                )}
 
                                 <div className={styles.list}>
                                     {visit.diagnoses.map((d) => (
@@ -765,14 +795,14 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                             <div>
                                                 <strong>{d.name}</strong> {d.code && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>({d.icdVersion || "ICD-10"}: {d.code})</span>}
                                             </div>
-                                            {confirmingId === d.id ? (
+                                            {isReadOnly ? null : confirmingId === d.id ? (
                                                 <div className={styles.confirmGroup}>
                                                     <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--danger-color)' }}>Delete?</span>
                                                     <button type="button" className={styles.confirmButton} onClick={() => handleRemoveDiagnosis(d.id)}>Yes</button>
                                                     <button type="button" className={styles.cancelButton} onClick={() => setConfirmingId(null)}>No</button>
                                                 </div>
                                             ) : (
-                                                <button 
+                                                <button
                                                     type="button"
                                                     className={styles.dangerButton}
                                                     onClick={(e) => {
@@ -799,6 +829,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                 setConfirmingId={setConfirmingId}
                                 onAdd={(newP) => setVisit(prev => prev ? { ...prev, prescriptions: [...prev.prescriptions, newP] } : prev)}
                                 onCancel={handleCancelPrescription}
+                                readOnly={isReadOnly}
                             />
                         )}
 
@@ -816,6 +847,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         </button>
                                     </div>
                                 )}
+                                {!isReadOnly && (
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.75rem", alignItems: "flex-end" }}>
                                     <div className={styles.formGroup} style={{ marginBottom: 0, position: "relative" }}>
                                         <label className={styles.label}>Search Lab Test From Catalog</label>
@@ -932,6 +964,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         Order Test
                                     </button>
                                 </div>
+                                )}
 
                                 <div className={styles.list}>
                                     {(visit.labOrders || []).map((l) => (
@@ -980,7 +1013,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                                     </div>
                                                 )}
                                             </div>
-                                            {l.status !== "Completed" && (
+                                            {!isReadOnly && l.status !== "Completed" && (
                                                 confirmingId === l.id ? (
                                                     <div className={styles.confirmGroup}>
                                                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--danger-color)' }}>Cancel?</span>
@@ -1022,6 +1055,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         </button>
                                     </div>
                                 )}
+                                {!isReadOnly && (
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "0.75rem", alignItems: "flex-end" }}>
                                     <div className={styles.formGroup} style={{ marginBottom: 0, position: "relative" }}>
                                         <label className={styles.label}>Search Radiology Exam from Catalog</label>
@@ -1157,6 +1191,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                         Order Exam
                                     </button>
                                 </div>
+                                )}
 
                                 <div className={styles.list}>
                                     {(visit as any).radiologyOrders?.map((r: any) => (
@@ -1258,7 +1293,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                                     </div>
                                                 )}
                                             </div>
-                                            {r.status !== "Completed" && (
+                                            {!isReadOnly && r.status !== "Completed" && (
                                                 confirmingId === r.id ? (
                                                     <div className={styles.confirmGroup}>
                                                         <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--danger-color)" }}>Cancel?</span>
@@ -1293,7 +1328,33 @@ export default function ConsultationPage({ params }: { params: { visitId: string
 
                 <aside className={styles.sidebar}>
                     <div className={styles.sidebarCard}>
-                        <h2 className={styles.sidebarTitle}>Actions</h2>
+                        <h2 className={styles.sidebarTitle}>
+                            {isReadOnly ? "Status" : "Actions"}
+                        </h2>
+                        {isReadOnly ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                                <div style={{
+                                    display: "flex", alignItems: "center", gap: "0.5rem",
+                                    padding: "0.75rem",
+                                    background: "rgba(34,197,94,0.08)",
+                                    border: "1px solid rgba(34,197,94,0.25)",
+                                    borderRadius: "var(--radius-md)",
+                                    color: "var(--success-color)",
+                                    fontWeight: 600, fontSize: "0.85rem"
+                                }}>
+                                    <CheckCircle size={16} />
+                                    Consultation Finished
+                                </div>
+                                {(visit as any)?.completedTime && (
+                                    <div style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                                        <strong>Completed:</strong> {new Date((visit as any).completedTime).toLocaleString()}
+                                    </div>
+                                )}
+                                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                                    This visit is read-only. Switch tabs above to review the consultation.
+                                </div>
+                            </div>
+                        ) : (
                         <div className={styles.actions}>
                             <button
                                 className="btn-secondary"
@@ -1335,6 +1396,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                 Finish Consultation
                             </button>
                         </div>
+                        )}
                     </div>
 
                     <div className={styles.sidebarCard}>
@@ -1457,11 +1519,13 @@ interface PrescriptionFormProps {
     setConfirmingId: (id: string | null) => void;
     onAdd: (p: Prescription) => void;
     onCancel: (id: string) => void;
+    readOnly?: boolean;
 }
 
 function PrescriptionForm({
     visitId, patientId, prescriptions,
-    confirmingId, setConfirmingId, onAdd, onCancel
+    confirmingId, setConfirmingId, onAdd, onCancel,
+    readOnly = false
 }: PrescriptionFormProps) {
     const [form, setForm] = useState({
         medicationName: '',
@@ -1517,7 +1581,9 @@ function PrescriptionForm({
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* ── Form ── */}
+            {/* R61: hide the entire prescribe form in read-only mode; the
+                existing prescriptions list below still renders. */}
+            {!readOnly && (
             <div style={{ background: 'var(--bg-secondary, #f8fafc)', borderRadius: '10px', padding: '1.25rem', border: '1px solid var(--border-color, #e5e7eb)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
                     <div>
@@ -1604,6 +1670,7 @@ function PrescriptionForm({
                     {submitting ? 'Adding...' : 'Prescribe'}
                 </button>
             </div>
+            )}
 
             {/* ── List ── */}
             <div className={styles.list}>
@@ -1618,7 +1685,7 @@ function PrescriptionForm({
                                 {p.dosage} &bull; {p.frequency} &bull; {p.durationDays} days
                             </div>
                         </div>
-                        {confirmingId === p.id ? (
+                        {readOnly ? null : confirmingId === p.id ? (
                             <div className={styles.confirmGroup}>
                                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--danger-color)' }}>Cancel?</span>
                                 <button type="button" className={styles.confirmButton} onClick={() => onCancel(p.id)}>Yes</button>
