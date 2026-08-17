@@ -87,55 +87,13 @@ export default function VisitDetailPage() {
     const router = useRouter();
     const [visit, setVisit] = useState<Visit | null>(null);
     const [loading, setLoading] = useState(true);
-    // R49c: insurance feature flag. When OFF, the
-    // InsuranceValidationCard is hidden entirely (cash flow always) and
-    // the insurance-deferred banner is suppressed.
-    const [insuranceEnabled, setInsuranceEnabled] = useState(true);
 
     useEffect(() => {
         fetch(`/api/visits/${params.visitId}`, { credentials: "include" })
             .then(r => r.ok ? r.json() : null)
             .then(data => { setVisit(data); setLoading(false); })
             .catch(() => setLoading(false));
-        // R49c: load insurance feature flag in parallel
-        fetch("/api/insurance/enabled", { credentials: "include" })
-            .then(r => r.ok ? r.json() : { enabled: true })
-            .then(d => setInsuranceEnabled(d.enabled !== false))
-            .catch(() => setInsuranceEnabled(true));
     }, [params.visitId]);
-
-    // R46: insurance-deferred consultation fee detection. We don't store
-    // this flag on the visit directly — we infer it from "the visit has a
-    // consultation line item marked as deferred to claim" (or, if no
-    // orders have been placed yet, the visit was created with
-    // insuranceDeferConsult=true which is shown by the FINAL- invoice
-    // missing a separate consultation line). The simplest reliable
-    // signal: any invoice has a consultation line item with the
-    // "(deferred to claim)" suffix in its description.
-    //
-    // R49c: suppress this banner when insurance is disabled. Even
-    // if a visit has a leftover "(deferred to claim — AAR Insurance)"
-    // line item (from a time when insurance was ON), we don't want to
-    // show the "insurance-verified visit" banner when the clinic has
-    // since flipped the toggle to OFF.
-    const isInsuranceDefer = insuranceEnabled && !!(visit?.invoices ?? []).some((inv: any) =>
-        (inv.items ?? []).some((it: any) =>
-            it.itemType === 'Consultation' && typeof it.description === 'string' && it.description.includes('(deferred to claim')
-        )
-    );
-
-    // Try to pull the insurance name from the same line item description.
-    const insuranceNameFromLine: string | null = (() => {
-        for (const inv of (visit?.invoices ?? []) as any[]) {
-            for (const it of (inv.items ?? []) as any[]) {
-                if (it.itemType === 'Consultation' && typeof it.description === 'string' && it.description.includes('(deferred to claim — ')) {
-                    const m = it.description.match(/\(deferred to claim — ([^)]+)\)/);
-                    if (m) return m[1];
-                }
-            }
-        }
-        return null;
-    })();
 
     if (loading) return <div className={styles.container}><p style={{ color: "var(--text-muted)" }}>Loading visit details...</p></div>;
     if (!visit) return <div className={styles.container}><p style={{ color: "var(--danger-color)" }}>Visit not found.</p></div>;
@@ -214,37 +172,6 @@ export default function VisitDetailPage() {
                 discontinuedByName={visit.discontinuedBy?.name}
                 onDiscontinued={(newStatus) => setVisit({ ...visit, status: newStatus })}
             />
-
-            {/* R47: Insurance validation card (only renders if patient has
-                an active enrollment). When the visit is in
-                PendingInsuranceValidation, the card shows a big
-                "Validate Insurance" button that calls the third-party
-                verifier. The card also shows the verification history
-                for already-validated visits.
-                R49c: when the insurance feature is OFF, hide this card
-                entirely. The clinic has opted out of insurance — even
-                if a patient still has an active enrollment on file
-                (e.g. enrolled when insurance was ON, and the toggle
-                was flipped later), the visit cycle treats them as
-                cash and there's nothing to verify. */}
-            {insuranceEnabled && (
-                <InsuranceValidationCard
-                    visitId={visit.id}
-                    visitStatus={visit.status}
-                    enrollments={visit.patient?.insuranceEnrollments ?? []}
-                    verifications={visit.insuranceVerifications ?? []}
-                    onVerificationComplete={() => {
-                        // Refetch the visit to pick up the new status and any
-                        // consultation fee invoice that was created on denial
-                        setVisit(null);
-                        setLoading(true);
-                        fetch(`/api/visits/${params.visitId}`, { credentials: 'include' })
-                            .then(r => r.ok ? r.json() : null)
-                            .then(data => { setVisit(data); setLoading(false); })
-                            .catch(() => setLoading(false));
-                    }}
-                />
-            )}
 
             {/* Vitals — always visible */}
             {(visit.bloodPressure || visit.heartRate || visit.temperature || visit.weight || visit.height) && (
