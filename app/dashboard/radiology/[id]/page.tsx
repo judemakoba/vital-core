@@ -12,13 +12,13 @@ import {
     Printer,
     Edit3,
     Eye,
-    RefreshCw,
     Image as ImageIcon,
     Upload,
     ExternalLink,
     Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import styles from "./page.module.css";
 
 export default function RadiologyOrderDetails({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -100,10 +100,10 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
         fetchOrder();
     }, [params.id]);
 
-    const getPriorityColor = (priority: string) => {
-        if (priority === "Emergency" || priority === "STAT") return "var(--danger-color)";
-        if (priority === "Urgent") return "var(--warning-color)";
-        return "var(--primary-color)";
+    const getPriorityClass = (priority: string) => {
+        if (priority === "Emergency" || priority === "STAT") return styles.priorityEmergency;
+        if (priority === "Urgent") return styles.priorityUrgent;
+        return styles.priorityRoutine;
     };
 
     const doRender = useCallback(async (data: typeof formData) => {
@@ -260,159 +260,144 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
         return `${(n / 1024 / 1024).toFixed(2)} MB`;
     };
 
-    if (loading) return <div style={{ padding: "2rem", textAlign: "center" }}>Loading order details...</div>;
-    if (!order) return <div style={{ padding: "2rem", textAlign: "center" }}>Radiology Order not found.</div>;
+    if (loading) return <div className={styles.loadingState}>Loading order details…</div>;
+    if (!order) return <div className={styles.notFoundState}>Radiology Order not found.</div>;
 
     return (
-        <div className="container" style={{ maxWidth: "1100px", margin: "0 auto" }}>
-            <style>{`
-                @media print {
-                    body { background: white !important; }
-                    .no-print { display: none !important; }
-                }
-            `}</style>
-
-            <div style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }} className="no-print">
-                <Link href="/dashboard/radiology" style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+        <div className={styles.container}>
+            {/* ── Action bar (no-print) ── */}
+            <div className={`${styles.actionBar} ${styles.noPrint}`}>
+                <Link href="/dashboard/radiology" className={styles.backLink}>
                     <ArrowLeft size={16} /> Back to Radiology Dashboard
                 </Link>
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                <div className={styles.actionRight}>
                     {templateId && order.status === 'Completed' && (
-                        <div style={{ display: 'flex', background: 'rgba(99, 102, 241, 0.08)', borderRadius: '8px', padding: '2px' }}>
-                            <button onClick={() => setView('edit')} style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: 'none', background: view === 'edit' ? 'white' : 'transparent', color: view === 'edit' ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', boxShadow: view === 'edit' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>
+                        <div className={styles.viewToggle}>
+                            <button
+                                onClick={() => setView('edit')}
+                                className={`${styles.viewToggleBtn} ${view === 'edit' ? styles.viewToggleBtnActive : ''}`}
+                            >
                                 <Edit3 size={13} /> Edit
                             </button>
-                            <button onClick={() => setView('render')} style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: 'none', background: view === 'render' ? 'white' : 'transparent', color: view === 'render' ? 'var(--primary-color)' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', boxShadow: view === 'render' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>
+                            <button
+                                onClick={() => setView('render')}
+                                className={`${styles.viewToggleBtn} ${view === 'render' ? styles.viewToggleBtnActive : ''}`}
+                            >
                                 <Eye size={13} /> Report Preview
                             </button>
                         </div>
                     )}
-                    <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.4rem 0.8rem", borderRadius: "8px", background: "rgba(99, 102, 241, 0.1)", color: "var(--primary-color)", textTransform: "uppercase" }}>
+                    <span className={styles.statusPill}>
                         Status: {formData.status.replace(/([A-Z])/g, ' $1').trim()}
                     </span>
-                    <span style={{ fontSize: "0.75rem", fontWeight: 700, padding: "0.4rem 0.8rem", borderRadius: "8px", background: `color-mix(in srgb, ${getPriorityColor(order.priority)} 15%, transparent)`, color: getPriorityColor(order.priority), textTransform: "uppercase" }}>
+                    <span className={`${styles.priorityPill} ${getPriorityClass(order.priority)}`}>
                         Priority: {order.priority}
                     </span>
                 </div>
             </div>
 
-            <div className="glass-card" style={{ marginBottom: "1.5rem", overflow: "hidden" }}>
-                {/* Exam Header */}
-                <div style={{
-                    padding: "1.25rem 1.5rem",
-                    background: "rgba(99, 102, 241, 0.05)",
-                    borderBottom: "1px solid rgba(99, 102, 241, 0.1)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start"
-                }}>
+            {/* ── Exam header card ── */}
+            <div className={`${styles.examHeaderCard} ${styles.noPrint}`}>
+                <div className={styles.examHeaderTop}>
                     <div>
-                        <h2 style={{ fontSize: "1.25rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <h2 className={styles.examTitle}>
                             <Scan size={22} color="var(--primary-color)" /> {order.examName}
                         </h2>
-                        <div style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginTop: "0.25rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                        <div className={styles.examMeta}>
                             <span>Category: <strong>{order.category}</strong></span>
                             {order.turnaroundTime && <span>TAT: <strong>{order.turnaroundTime}</strong></span>}
                             <span>Visit: <strong style={{ color: "var(--primary-color)" }}>{order.visit?.visitNumber}</strong></span>
                             <span>By: <strong>Dr. {order.doctor?.name}</strong></span>
-                            {templateId && <span style={{ padding: '0.1rem 0.5rem', background: 'rgba(99,102,241,0.15)', color: 'var(--primary-color)', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>GMC TEMPLATE</span>}
+                            {templateId && <span className={styles.templateBadge}>GMC Template</span>}
                         </div>
                     </div>
                     {order.status === "Completed" && (
-                        <div style={{
-                            display: "flex", alignItems: "center", gap: "0.5rem",
-                            background: "rgba(34,197,94,0.1)", color: "var(--success-color)",
-                            padding: "0.5rem 1rem", borderRadius: "10px", fontWeight: 700, fontSize: "0.85rem"
-                        }}>
+                        <div className={styles.publishedBadge}>
                             <CheckCircle size={16} /> Report Published
                         </div>
                     )}
                 </div>
 
-                {/* Patient Details */}
-                <div style={{ padding: "1.5rem", background: "var(--bg-secondary)", borderRadius: "var(--radius-md)", margin: "0 1.5rem 1.5rem" }}>
-                    <h3 style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "var(--text-secondary)", letterSpacing: "1px", marginBottom: "1rem", fontWeight: 700 }}>
-                        Patient Details
-                    </h3>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem" }}>
-                        <div>
-                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Name</div>
-                            <div style={{ fontWeight: 600 }}>{order.patient?.firstName} {order.patient?.lastName}</div>
+                {/* Patient details card */}
+                <div className={styles.patientCard}>
+                    <div className={styles.patientHeaderLabel}>Patient Details</div>
+                    <div className={styles.patientGrid}>
+                        <div className={styles.patientField}>
+                            <div className={styles.patientLabel}>Name</div>
+                            <div className={styles.patientValue}>{order.patient?.firstName} {order.patient?.lastName}</div>
                         </div>
-                        <div>
-                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Patient ID</div>
-                            <div style={{ fontWeight: 600 }}>#{order.patient?.patientNumber}</div>
+                        <div className={styles.patientField}>
+                            <div className={styles.patientLabel}>Patient ID</div>
+                            <div className={styles.patientValue}>#{order.patient?.patientNumber}</div>
                         </div>
-                        <div>
-                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Gender & Age</div>
-                            <div style={{ fontWeight: 600 }}>
+                        <div className={styles.patientField}>
+                            <div className={styles.patientLabel}>Gender & Age</div>
+                            <div className={styles.patientValue}>
                                 {order.patient?.gender},{" "}
                                 {new Date().getFullYear() - new Date(order.patient?.dateOfBirth).getFullYear()} yrs
                             </div>
                         </div>
-                        <div>
-                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Phone</div>
-                            <div style={{ fontWeight: 600 }}>{order.patient?.phone || "N/A"}</div>
+                        <div className={styles.patientField}>
+                            <div className={styles.patientLabel}>Phone</div>
+                            <div className={styles.patientValue}>{order.patient?.phone || "N/A"}</div>
                         </div>
                     </div>
 
                     {order.clinicalNotes && (
-                        <div style={{ marginTop: "1.5rem", padding: "1rem", background: "rgba(239,68,68,0.05)", borderRadius: "var(--radius-sm)", borderLeft: "3px solid var(--danger-color)" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--danger-color)", fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>
+                        <div className={styles.clinicalBanner}>
+                            <div className={styles.clinicalBannerHeader}>
                                 <AlertCircle size={15} /> Clinical Notes / Indication
                             </div>
-                            <div style={{ fontSize: "0.875rem", color: "var(--text-primary)" }}>{order.clinicalNotes}</div>
+                            <div className={styles.clinicalBannerText}>{order.clinicalNotes}</div>
                         </div>
                     )}
 
                     {order.preparationInstructions && (
-                        <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(99,102,241,0.05)", borderRadius: "var(--radius-sm)", borderLeft: "3px solid var(--primary-color)" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--primary-color)", fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>
+                        <div className={styles.prepBanner}>
+                            <div className={styles.prepBannerHeader}>
                                 <FileText size={15} /> Preparation Instructions
                             </div>
-                            <div style={{ fontSize: "0.875rem", color: "var(--text-primary)" }}>{order.preparationInstructions}</div>
+                            <div className={styles.prepBannerText}>{order.preparationInstructions}</div>
                         </div>
                     )}
                 </div>
 
                 {formData.status === 'Completed' && (
-                    <div style={{ margin: '0 1.5rem 1rem', padding: '0.75rem 1rem', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--success-color)', borderRadius: '8px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+                    <div className={styles.publishedNotice}>
                         <CheckCircle size={16} /> <strong>Report published.</strong> You can edit and re-save if a correction is needed. Use "Report Preview" to see the formatted report.
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="no-print">
+                <form onSubmit={handleSubmit} className={styles.noPrint}>
                     {/* Structured Radiology fields */}
-                    <div style={{ padding: "0 1.5rem 1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                                <label style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                    Modality
-                                </label>
+                    <div className={styles.formBody}>
+                        <div className={styles.formRow}>
+                            <div className={styles.formField}>
+                                <label className={styles.formLabel}>Modality</label>
                                 <input
                                     type="text"
                                     value={formData.modality}
                                     onChange={(e) => setFormData({ ...formData, modality: e.target.value })}
                                     placeholder="e.g. X-Ray, CT, MRI, Ultrasound"
-                                    style={{ width: '100%', padding: '0.6rem 0.85rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.03)', color: 'var(--text-primary)', fontSize: '0.9rem' }}
+                                    className={styles.formInput}
                                 />
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', alignSelf: 'end', paddingBottom: '0.4rem' }}>
+                            <div className={styles.contrastRow}>
                                 <input
                                     type="checkbox"
                                     id="contrast"
                                     checked={formData.contrastUsed}
                                     onChange={(e) => setFormData({ ...formData, contrastUsed: e.target.checked })}
-                                    style={{ width: 18, height: 18, accentColor: 'var(--primary-color)' }}
+                                    className={styles.contrastCheckbox}
                                 />
-                                <label htmlFor="contrast" style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                <label htmlFor="contrast" className={styles.contrastLabel}>
                                     Contrast agent used
                                 </label>
                             </div>
                         </div>
 
-                        <div>
-                            <label style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <div className={styles.formField}>
+                            <label className={styles.formLabel}>
                                 <FileText size={14} /> Technique
                             </label>
                             <textarea
@@ -420,13 +405,13 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
                                 onChange={(e) => setFormData({ ...formData, technique: e.target.value })}
                                 placeholder="Describe the imaging technique, view, contrast (e.g. 'CT scan of the head, axial slices from skull base to vertex, with IV Iohexol 100ml')"
                                 rows={3}
-                                style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.03)', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontSize: '0.9rem', resize: 'vertical' }}
+                                className={styles.formTextarea}
                             />
                         </div>
 
-                        <div>
-                            <label style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                <FileText size={14} /> Findings <span style={{ color: 'var(--danger-color)' }}>*</span>
+                        <div className={styles.formField}>
+                            <label className={styles.formLabel}>
+                                <FileText size={14} /> Findings <span className={styles.formLabelRequired}>*</span>
                             </label>
                             <textarea
                                 value={formData.findings}
@@ -434,38 +419,38 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
                                 placeholder="Detailed observations — anatomy, pathology, measurements, comparisons, etc."
                                 rows={9}
                                 required={formData.status === "Completed"}
-                                style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.03)', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontSize: '0.9rem', resize: 'vertical' }}
+                                className={`${styles.formTextarea} ${styles.formTextareaLg}`}
                             />
                         </div>
 
-                        <div>
-                            <label style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                <FileText size={14} /> Impression <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(clinical conclusion)</span>
+                        <div className={styles.formField}>
+                            <label className={styles.formLabel}>
+                                <FileText size={14} /> Impression <span className={styles.formLabelOptional}>(clinical conclusion)</span>
                             </label>
                             <textarea
                                 value={formData.impression}
                                 onChange={(e) => setFormData({ ...formData, impression: e.target.value })}
                                 placeholder="Concise diagnostic impression — e.g. 'No acute intracranial pathology. No midline shift or hemorrhage.'"
                                 rows={4}
-                                style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.03)', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontSize: '0.9rem', resize: 'vertical', fontWeight: 500 }}
+                                className={`${styles.formTextarea} ${styles.formTextareaImpression}`}
                             />
                         </div>
 
-                        <div>
-                            <label style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                <FileText size={14} /> Recommendations <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span>
+                        <div className={styles.formField}>
+                            <label className={styles.formLabel}>
+                                <FileText size={14} /> Recommendations <span className={styles.formLabelOptional}>(optional)</span>
                             </label>
                             <textarea
                                 value={formData.recommendations}
                                 onChange={(e) => setFormData({ ...formData, recommendations: e.target.value })}
                                 placeholder="Follow-up recommendations, further imaging, clinical correlation advice..."
                                 rows={3}
-                                style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.03)', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontSize: '0.9rem', resize: 'vertical' }}
+                                className={styles.formTextarea}
                             />
                         </div>
 
-                        <details style={{ background: 'rgba(0,0,0,0.02)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.85rem' }}>
-                            <summary style={{ fontSize: '0.8rem', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 600 }}>
+                        <details className={styles.notesDisclosure}>
+                            <summary className={styles.notesSummary}>
                                 Internal radiologist notes (not printed)
                             </summary>
                             <textarea
@@ -473,195 +458,165 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
                                 onChange={(e) => setFormData({ ...formData, radiologistNotes: e.target.value })}
                                 placeholder="Notes for internal use only — not shown on printed report."
                                 rows={2}
-                                style={{ width: '100%', marginTop: '0.5rem', padding: '0.6rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', fontSize: '0.85rem', resize: 'vertical' }}
+                                className={styles.notesTextarea}
                             />
                         </details>
                     </div>
-
-                    {/* Scan Image Upload (Nextcloud) */}
-                    <div style={{ padding: '0 1.5rem 1rem' }}>
-                        <div style={{
-                            border: '1.5px dashed var(--border-color)',
-                            borderRadius: 'var(--radius-md)',
-                            padding: '1rem',
-                            background: 'rgba(0,0,0,0.015)',
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', gap: '1rem', flexWrap: 'wrap' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    <ImageIcon size={16} color="var(--primary-color)" />
-                                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                                        Scan Image Attachment
-                                    </span>
-                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', padding: '0.1rem 0.45rem', background: 'rgba(99,102,241,0.1)', color: 'var(--primary-color)', borderRadius: '4px', fontWeight: 600 }}>
-                                        NEXTCLOUD
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*,application/pdf,application/dicom"
-                                        onChange={handleFileChange}
-                                        style={{ display: 'none' }}
-                                    />
-                                    {order?.reportFileName ? (
-                                        <>
-                                            <button
-                                                type="button"
-                                                onClick={() => fileInputRef.current?.click()}
-                                                disabled={uploading}
-                                                className="btn-secondary"
-                                                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.8rem' }}
-                                            >
-                                                <Upload size={14} /> {uploading ? 'Uploading...' : 'Replace'}
-                                            </button>
-                                            <a
-                                                href={order.reportUrl || '#'}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="btn-secondary"
-                                                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.8rem', textDecoration: 'none' }}
-                                            >
-                                                <ExternalLink size={14} /> View in Nextcloud
-                                            </a>
-                                            <button
-                                                type="button"
-                                                onClick={handleDeleteImage}
-                                                disabled={uploading}
-                                                className="btn-secondary"
-                                                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.8rem', color: 'var(--danger-color)' }}
-                                            >
-                                                <Trash2 size={14} /> Remove
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            disabled={uploading || ncConfigured === false}
-                                            className="btn-primary"
-                                            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.9rem', fontSize: '0.8rem', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: (uploading || ncConfigured === false) ? 'not-allowed' : 'pointer', opacity: (uploading || ncConfigured === false) ? 0.5 : 1 }}
-                                        >
-                                            <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload Scan Image'}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            {ncConfigured === false && (
-                                <div style={{ padding: '0.6rem 0.85rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: 'var(--radius-sm)', color: '#92400e', fontSize: '0.78rem' }}>
-                                    <strong>Nextcloud not configured.</strong> Set <code>NEXTCLOUD_URL</code>, <code>NEXTCLOUD_USERNAME</code>, and <code>NEXTCLOUD_PASSWORD</code> in the server <code>.env</code> file to enable image uploads.
-                                </div>
-                            )}
-
-                            {uploadError && (
-                                <div style={{ marginTop: '0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(220, 38, 38, 0.08)', border: '1px solid rgba(220, 38, 38, 0.25)', borderRadius: 'var(--radius-sm)', color: '#991b1b', fontSize: '0.78rem' }}>
-                                    <strong>Upload error:</strong> {uploadError}
-                                </div>
-                            )}
-
-                            {order?.reportFileName ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                                    <div
-                                        onClick={() => isImage(order.reportMimeType) && setImagePreviewOpen(true)}
-                                        style={{
-                                            width: 80, height: 80, flexShrink: 0,
-                                            background: '#f3f4f6', border: '1px solid var(--border-color)',
-                                            borderRadius: 'var(--radius-sm)', overflow: 'hidden',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            cursor: isImage(order.reportMimeType) ? 'pointer' : 'default',
-                                        }}
-                                    >
-                                        {isImage(order.reportMimeType) && order.reportUrl ? (
-                                            <img
-                                                src={order.reportUrl}
-                                                alt={order.reportFileName}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            />
-                                        ) : (
-                                            <FileText size={28} color="var(--text-muted)" />
-                                        )}
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {order.reportFileName}
-                                        </div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-                                            {order.reportMimeType || 'unknown'} • {formatBytes(order.reportFileSize)}
-                                            {order.reportUploadedAt && ` • uploaded ${new Date(order.reportUploadedAt).toLocaleString()}`}
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                                    {ncConfigured !== false ? (
-                                        <>JPG, PNG, PDF, or DICOM. Max 50&nbsp;MB. Stored in <strong>VitalCore/Radiology/&lt;patient&gt;/&lt;exam&gt;</strong>.</>
-                                    ) : null}
-                                </div>
-                            )}
-
-                            {imagePreviewOpen && isImage(order?.reportMimeType) && order?.reportUrl && (
-                                <div
-                                    onClick={() => setImagePreviewOpen(false)}
-                                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, cursor: 'zoom-out' }}
-                                >
-                                    <img src={order.reportUrl} alt={order.reportFileName} style={{ maxWidth: '90%', maxHeight: '90%', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }} />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", padding: "1rem 1.5rem 1.5rem", borderTop: "1px solid var(--border-color)" }}>
-                        <button type="button" className="btn-secondary" onClick={() => router.back()} style={{ padding: "0.75rem 1.75rem" }}>
-                            Cancel
-                        </button>
-                        {renderedHtml && formData.status === "Completed" && (
-                            <button type="button" onClick={handlePrint} className="btn-secondary" style={{ padding: "0.75rem 1.5rem", display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                <Printer size={16} /> Print Report
-                            </button>
-                        )}
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            style={{
-                                padding: "0.75rem 2rem",
-                                background: "var(--success-color)",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "var(--radius-md)",
-                                fontWeight: 700,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                cursor: submitting ? "not-allowed" : "pointer",
-                                opacity: submitting ? 0.6 : 1,
-                                transition: "all 0.2s"
-                            }}
-                        >
-                            <Save size={16} />
-                            {submitting ? "Publishing..." : (formData.status === "Completed" ? (order?.findings || order?.result ? "Update Published Report" : "Publish Report") : "Save Update")}
-                        </button>
-                    </div>
                 </form>
 
-                {/* Read-only print view for completed orders */}
-                {formData.status === "Completed" && !submitting && view === 'render' && renderedHtml && (
-                    <div style={{ padding: "1.5rem", borderTop: "1px solid var(--border-color)" }} className="no-print">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Final Report</h3>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button onClick={() => setView('edit')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <Edit3 size={14} /> Edit
+                {/* Action footer */}
+                <div className={`${styles.actionFooter} ${styles.noPrint}`}>
+                    <button type="button" className={styles.btnSecondary} onClick={() => router.back()}>
+                        Cancel
+                    </button>
+                    {renderedHtml && formData.status === "Completed" && (
+                        <button type="button" onClick={handlePrint} className={styles.btnSecondary}>
+                            <Printer size={16} /> Print Report
+                        </button>
+                    )}
+                    <button
+                        type="submit"
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                        className={styles.btnPublish}
+                    >
+                        <Save size={16} />
+                        {submitting ? "Publishing..." : (formData.status === "Completed" ? (order?.findings || order?.result ? "Update Published Report" : "Publish Report") : "Save Update")}
+                    </button>
+                </div>
+            </div>
+
+            {/* ── Scan Image Upload card ── */}
+            <div className={`${styles.uploadCard} ${styles.noPrint}`}>
+                <div className={styles.uploadDropzone}>
+                    <div className={styles.uploadHeader}>
+                        <div className={styles.uploadHeaderLeft}>
+                            <span className={styles.uploadTitle}>
+                                <ImageIcon size={16} color="var(--primary-color)" /> Scan Image Attachment
+                            </span>
+                            <span className={styles.uploadSourceTag}>Nextcloud</span>
+                        </div>
+                        <div className={styles.uploadActions}>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*,application/pdf,application/dicom"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
+                            />
+                            {order?.reportFileName ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={uploading}
+                                        className={styles.uploadBtnSecondary}
+                                    >
+                                        <Upload size={14} /> {uploading ? 'Uploading...' : 'Replace'}
+                                    </button>
+                                    <a
+                                        href={order.reportUrl || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.uploadBtnSecondary}
+                                    >
+                                        <ExternalLink size={14} /> View in Nextcloud
+                                    </a>
+                                    <button
+                                        type="button"
+                                        onClick={handleDeleteImage}
+                                        disabled={uploading}
+                                        className={`${styles.uploadBtnSecondary} ${styles.uploadBtnDanger}`}
+                                    >
+                                        <Trash2 size={14} /> Remove
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploading || ncConfigured === false}
+                                    className={styles.uploadBtnPrimary}
+                                >
+                                    <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload Scan Image'}
                                 </button>
-                                <button onClick={handlePrint} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--primary-color)', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', fontWeight: 700, cursor: 'pointer' }}>
-                                    <Printer size={16} /> Print
-                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {ncConfigured === false && (
+                        <div className={`${styles.uploadNotice} ${styles.uploadNoticeWarn}`}>
+                            <strong>Nextcloud not configured.</strong> Set <code>NEXTCLOUD_URL</code>, <code>NEXTCLOUD_USERNAME</code>, and <code>NEXTCLOUD_PASSWORD</code> in the server <code>.env</code> file to enable image uploads.
+                        </div>
+                    )}
+
+                    {uploadError && (
+                        <div className={`${styles.uploadNotice} ${styles.uploadNoticeError}`}>
+                            <strong>Upload error:</strong> {uploadError}
+                        </div>
+                    )}
+
+                    {order?.reportFileName ? (
+                        <div className={styles.uploadFileRow}>
+                            <div
+                                onClick={() => isImage(order.reportMimeType) && setImagePreviewOpen(true)}
+                                className={styles.uploadThumb}
+                                style={{ cursor: isImage(order.reportMimeType) ? 'pointer' : 'default' }}
+                            >
+                                {isImage(order.reportMimeType) && order.reportUrl ? (
+                                    <img
+                                        src={order.reportUrl}
+                                        alt={order.reportFileName}
+                                        className={styles.uploadThumbImg}
+                                    />
+                                ) : (
+                                    <FileText size={28} color="var(--text-muted)" />
+                                )}
+                            </div>
+                            <div className={styles.uploadFileMeta}>
+                                <div className={styles.uploadFileName}>{order.reportFileName}</div>
+                                <div className={styles.uploadFileDetails}>
+                                    {order.reportMimeType || 'unknown'} • {formatBytes(order.reportFileSize)}
+                                    {order.reportUploadedAt && ` • uploaded ${new Date(order.reportUploadedAt).toLocaleString()}`}
+                                </div>
                             </div>
                         </div>
-                        <div style={{ background: 'white', borderRadius: '8px', padding: '1.5rem', border: '1px solid var(--border-color)' }} dangerouslySetInnerHTML={{ __html: renderedHtml }} />
-                    </div>
-                )}
+                    ) : (
+                        <div className={styles.uploadHelp}>
+                            {ncConfigured !== false ? (
+                                <>JPG, PNG, PDF, or DICOM. Max 50&nbsp;MB. Stored in <span className={styles.uploadHint}>VitalCore/Radiology/&lt;patient&gt;/&lt;exam&gt;</span>.</>
+                            ) : null}
+                        </div>
+                    )}
+
+                    {imagePreviewOpen && isImage(order?.reportMimeType) && order?.reportUrl && (
+                        <div
+                            onClick={() => setImagePreviewOpen(false)}
+                            className={styles.uploadPreviewOverlay}
+                        >
+                            <img src={order.reportUrl} alt={order.reportFileName} className={styles.uploadPreviewImg} />
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* Read-only print view for completed orders */}
+            {formData.status === "Completed" && !submitting && view === 'render' && renderedHtml && (
+                <div className={`${styles.formCard} ${styles.noPrint}`}>
+                    <div className={styles.reportHeader}>
+                        <h3 className={styles.reportTitle}>Final Report</h3>
+                        <div className={styles.reportActions}>
+                            <button onClick={() => setView('edit')} className={styles.btnSecondary}>
+                                <Edit3 size={14} /> Edit
+                            </button>
+                            <button onClick={handlePrint} className={styles.btnPublish}>
+                                <Printer size={16} /> Print
+                            </button>
+                        </div>
+                    </div>
+                    <div className={styles.reportBody} dangerouslySetInnerHTML={{ __html: renderedHtml }} />
+                </div>
+            )}
         </div>
     );
 }

@@ -1,0 +1,374 @@
+/* ── R60: Radiology Department Dashboard ──
+   Styles for the /dashboard/radiology list page. Refactored from
+   inline styles to a proper CSS module. Layout:
+     1. Back link + page title
+     2. Refresh button (right side of header)
+     3. Status filter tabs (3 pills: Pending / In Progress / Completed)
+     4. Search input
+     5. Orders table
+*/
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: fadeIn var(--transition-normal) forwards;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.headerLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    align-self: flex-start;
+}
+
+.backLink:hover {
+    color: var(--primary-color);
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+}
+
+.titleIcon {
+    color: #06b6d4; /* cyan — radiology's brand colour */
+    background: rgba(6, 182, 212, 0.12);
+    padding: 6px;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.refreshBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.refreshBtn:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* ── Filter tabs ── */
+.filterBar {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.filterTab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filterTab:hover {
+    background: rgba(99, 102, 241, 0.05);
+    color: var(--primary-color);
+}
+
+.filterTabActive {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.filterTabActive:hover {
+    background: var(--primary-hover);
+    color: white;
+}
+
+.filterBadge {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    border-radius: 999px;
+    padding: 0 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 22px;
+    text-align: center;
+}
+
+.filterTab:not(.filterTabActive) .filterBadge {
+    background: var(--primary-color);
+    color: white;
+}
+
+.filterBadgeGreen { background: var(--success-color); color: white; }
+.filterBadgeAmber { background: var(--warning-color); color: white; }
+
+/* ── Search ── */
+.searchBox {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.55rem 0.6rem 0.55rem 2.4rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color var(--transition-fast);
+    box-sizing: border-box;
+}
+
+.searchInput:focus {
+    border-color: var(--primary-color);
+}
+
+/* ── Empty state ── */
+.empty {
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.emptyIcon {
+    color: rgba(6, 182, 212, 0.3);
+    margin: 0 auto 1rem;
+    display: block;
+}
+
+.emptyTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.emptySub {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* ── Table cell content ── */
+.patientName {
+    font-weight: 600;
+}
+
+.patientNumber {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.examName {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.examCategory {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.visitNumber {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.priorityChip {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 15%, transparent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.priorityEmergency { color: var(--danger-color); }
+.priorityUrgent { color: var(--warning-color); }
+.priorityRoutine { color: var(--primary-color); }
+
+.statusBadge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: inline-block;
+}
+
+.statusBadgeOrdered {
+    background: rgba(6, 182, 212, 0.12);
+    color: #06b6d4;
+}
+
+.statusBadgeInProgress {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
+.statusBadgeCompleted {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--success-color);
+}
+
+.orderedAt {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.actionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background var(--transition-fast);
+    border: none;
+    cursor: pointer;
+}
+
+.actionBtn:hover {
+    background: var(--primary-hover);
+}
+
+.actionBtnComplete {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success-color);
+}
+
+.actionBtnComplete:hover {
+    background: rgba(34, 197, 94, 0.18);
+    color: var(--success-color);
+}
+
+/* ── Table wrapper + cells ── */
+.tableWrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.th {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background var(--transition-fast);
+}
+
+.tr:last-child {
+    border-bottom: none;
+}
+
+.tr:hover {
+    background: rgba(6, 182, 212, 0.04);
+}
+
+.td {
+    padding: 0.85rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+/* Sticky first column on small screens (patient name) */
+@media (max-width: 768px) {
+    .tableWrap {
+        overflow-x: auto;
+    }
+    .table {
+        min-width: 720px;
+    }
+}
+
+/* ── Spin animation for refresh button ── */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}

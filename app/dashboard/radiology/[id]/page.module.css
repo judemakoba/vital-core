@@ -1,0 +1,743 @@
+/* ── Radiology Order Detail Page ──
+   R60: refactored from ~250 lines of inline styles to a proper CSS
+   module. Layout is organised into clearly-labelled sections:
+     1. Action bar       (back link + view toggle + status/priority badges)
+     2. Exam header      (cyan accent — radiology's colour)
+     3. Patient details  (grid + clinical/prep banners)
+     4. Form fields      (modality → technique → findings → impression → recs → notes)
+     5. Image upload     (Nextcloud attachment area)
+     6. Action footer    (cancel / print / publish)
+   All page chrome (back link, view toggle, badges, action buttons)
+   is hidden in print via the .noPrint class — same approach the
+   file had inline. */
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Loading / not-found state */
+.loadingState {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.95rem;
+}
+
+.notFoundState {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* ── 1. Action bar ───────────────────────────────────────────── */
+.actionBar {
+    margin-bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+    color: var(--primary-color);
+}
+
+.actionRight {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Edit / Report Preview pill toggle (visible only when a template is set) */
+.viewToggle {
+    display: flex;
+    background: rgba(99, 102, 241, 0.08);
+    border-radius: 8px;
+    padding: 2px;
+}
+
+.viewToggleBtn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.viewToggleBtnActive {
+    background: white;
+    color: var(--primary-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statusPill {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.priorityPill {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    background: color-mix(in srgb, currentColor 15%, transparent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.priorityEmergency { color: var(--danger-color); }
+.priorityUrgent { color: var(--warning-color); }
+.priorityRoutine { color: var(--primary-color); }
+
+/* ── 2. Exam header card ─────────────────────────────────────── */
+.examHeaderCard {
+    margin-bottom: 0;
+    overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.examHeaderTop {
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(180deg, rgba(6, 182, 212, 0.06), transparent);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.examTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.examMeta {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-top: 0.4rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.templateBadge {
+    padding: 0.1rem 0.5rem;
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--primary-color);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.publishedBadge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success-color);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* ── 3. Patient details ─────────────────────────────────────── */
+.patientCard {
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin: 1.25rem 1.5rem 0;
+}
+
+.patientHeaderLabel {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.patientGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .patientGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.patientField {
+    min-width: 0;
+}
+
+.patientLabel {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+}
+
+.patientValue {
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.clinicalBanner {
+    margin-top: 1.25rem;
+    padding: 0.85rem 1rem;
+    background: rgba(239, 68, 68, 0.05);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--danger-color);
+}
+
+.clinicalBannerHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--danger-color);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+
+.clinicalBannerText {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+.prepBanner {
+    margin-top: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary-color);
+}
+
+.prepBannerHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+}
+
+.prepBannerText {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+/* ── 3.5. Report-published notice ─────────────────────────── */
+.publishedNotice {
+    margin: 1.25rem 1.5rem 0;
+    padding: 0.75rem 1rem;
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success-color);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* ── 4. Form fields ─────────────────────────────────────────── */
+.formCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.formBody {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: end;
+}
+
+@media (max-width: 640px) {
+    .formRow { grid-template-columns: 1fr; }
+}
+
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.formLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.formLabelRequired {
+    color: var(--danger-color);
+    margin-left: 0.15rem;
+}
+
+.formLabelOptional {
+    color: var(--text-muted);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.formInput,
+.formTextarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.025);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    box-sizing: border-box;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    background: var(--bg-card);
+}
+
+.formTextarea {
+    resize: vertical;
+    min-height: 76px;
+}
+
+.formTextareaLg {
+    min-height: 180px;
+}
+
+.formTextareaImpression {
+    font-weight: 500;
+    min-height: 92px;
+}
+
+.contrastRow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    align-self: end;
+    padding-bottom: 0.5rem;
+    height: fit-content;
+}
+
+.contrastCheckbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.contrastLabel {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+/* Internal notes disclosure — secondary form area */
+.notesDisclosure {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-md);
+    padding: 0.6rem 0.85rem;
+}
+
+.notesSummary {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+}
+
+.notesSummary::-webkit-details-marker { display: none; }
+
+.notesDisclosure[open] .notesSummary { margin-bottom: 0.5rem; }
+
+.notesTextarea {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.85rem;
+    resize: vertical;
+    min-height: 60px;
+    box-sizing: border-box;
+}
+
+.notesTextarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: var(--bg-card);
+}
+
+/* ── 5. Image upload area ─────────────────────────────────── */
+.uploadCard {
+    padding: 1.25rem 1.5rem 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.uploadDropzone {
+    border: 1.5px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.015);
+}
+
+.uploadHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.uploadHeaderLeft {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.uploadTitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.uploadSourceTag {
+    font-size: 0.7rem;
+    color: var(--primary-color);
+    padding: 0.1rem 0.45rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.uploadActions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.uploadBtnPrimary {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.uploadBtnPrimary:hover { background: var(--primary-hover); }
+.uploadBtnPrimary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.uploadBtnSecondary {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8rem;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.uploadBtnSecondary:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.uploadBtnDanger {
+    color: var(--danger-color) !important;
+}
+
+.uploadBtnDanger:hover {
+    color: white !important;
+    background: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
+}
+
+.uploadNotice {
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    margin-top: 0.5rem;
+}
+
+.uploadNoticeWarn {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: #92400e;
+}
+
+.uploadNoticeError {
+    background: rgba(220, 38, 38, 0.08);
+    border: 1px solid rgba(220, 38, 38, 0.25);
+    color: #991b1b;
+}
+
+.uploadFileRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.uploadThumb {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    background: #f3f4f6;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.uploadThumbImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.uploadFileMeta {
+    flex: 1;
+    min-width: 0;
+}
+
+.uploadFileName {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.uploadFileDetails {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+.uploadHelp {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.uploadHint {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.uploadPreviewOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    cursor: zoom-out;
+}
+
+.uploadPreviewImg {
+    max-width: 90%;
+    max-height: 90%;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ── 6. Action footer ─────────────────────────────────────── */
+.actionFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-card);
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+}
+
+.btnSecondary {
+    padding: 0.65rem 1.5rem;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.btnSecondary:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btnPublish {
+    padding: 0.7rem 2rem;
+    background: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btnPublish:hover { background: #16a34a; }
+.btnPublish:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── 7. Final report view (rendered HTML) ─────────────────── */
+.reportHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.reportTitle {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.reportActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.reportBody {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+/* ── 8. Print styles ──────────────────────────────────────── */
+@media print {
+    /* The .noPrint class is local-scoped and hides every action bar,
+       form, upload area, and view-toggle in print. The page's own
+       background inherits from the document — no body reset needed
+       (and CSS modules reject bare `body` selectors without
+       :global() anyway). */
+    .noPrint { display: none !important; }
+}
