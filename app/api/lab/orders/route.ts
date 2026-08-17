@@ -3,7 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { findOrCreateInvoiceForTransaction } from "@/lib/finance/invoice-helper";
-import { decideNextStatusAfterConsultation, VISIT_STATUS } from "@/lib/visits/status";
+// R55b: the order-creation route no longer touches the visit status —
+// see the rationale block below. The visit stays in InConsultation /
+// Consultation (or whatever pre-consultation state it was in) until the
+// doctor explicitly clicks "Finish Consultation" in the consultation
+// PUT route, which is the only place the visit is now advanced out of
+// the active-consultation state.
 
 // Find or create the visit's per-section lab invoice (LABINV- prefix).
 // Per-section model: each lab order's line item lands on a lab-only invoice
@@ -67,16 +72,17 @@ export async function POST(request: Request) {
             },
         });
 
-        // Consolidated visit cycle spec (R45): when the doctor places an
-        // order, the visit moves into PendingOrders (was Laboratory).
-        // PendingOrders means "1+ orders queued, each carries its own
-        // SubStatus". When all orders are Fulfilled/Unfulfilled, the visit
-        // advances to FinalBilling.
-        const newVisitStatus = await decideNextStatusAfterConsultation(prisma, visitId);
-        await prisma.visit.update({
-            where: { id: visitId },
-            data: { status: newVisitStatus },
-        });
+        // R45/R55b: while the doctor is still actively consulting
+        // (InConsultation / Consultation / Triaged / Laboratory / Radiology
+        // / Pharmacy), adding an order does NOT move the visit forward.
+        // The visit only transitions to PendingOrders (or FinalBilling if
+        // no orders) when the doctor explicitly clicks "Finish
+        // Consultation" in the consultation PUT route.
+        //
+        // Rationale: if we move the visit to PendingOrders here, and the
+        // lab completes the order quickly, the visit auto-promotes to
+        // FinalBilling and disappears from the doctor's waiting room while
+        // the doctor is still on the consultation page.
 
         // Billing is non-critical — fire-and-forget
         (async () => {

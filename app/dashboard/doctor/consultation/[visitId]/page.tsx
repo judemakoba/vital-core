@@ -335,8 +335,11 @@ export default function ConsultationPage({ params }: { params: { visitId: string
         // been pushed to Pharmacy / Lab / Radiology the API will 400 the save (correct
         // behaviour to prevent regressing the visit status). The Finish Consultation
         // button handles the close path.
+        //
+        // R55b: include "InConsultation" (new canonical) alongside the legacy
+        // alias "Consultation".
         const currentVisitStatus = visit?.status;
-        if (currentVisitStatus && !["Triaged", "Consultation"].includes(currentVisitStatus)) {
+        if (currentVisitStatus && !["Triaged", "InConsultation", "Consultation"].includes(currentVisitStatus)) {
             return;
         }
         const currentNotes = notesRef.current;

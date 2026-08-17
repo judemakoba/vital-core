@@ -258,7 +258,10 @@ function DoctorDashboardInner() {
                                             Since {visit.checkInTime ? formatTime(visit.checkInTime) : "--:--"}
                                         </div>
                                         {visit.assignedDoctorId === (session?.user as any)?.id ? (
-                                            visit.status === "Consultation" ? (
+                                            // R55b: visit may be in the new-canonical "InConsultation"
+                                            // or the legacy "Consultation" status — both mean
+                                            // "doctor is mid-consultation, can finish".
+                                            (visit.status === "Consultation" || visit.status === "InConsultation") ? (
                                                 <button onClick={() => startConsultation(visit.id)} className={styles.resumeBtn}>
                                                     <PlayCircle size={14} />
                                                     Resume / Complete

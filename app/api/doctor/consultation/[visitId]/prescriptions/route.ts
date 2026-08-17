@@ -164,26 +164,25 @@ export async function POST(
                 },
             });
 
-            // Consolidated visit cycle spec (R45): when the doctor places an
-            // order, the visit moves into PendingOrders (was Pharmacy). We use
-            // decideNextStatusAfterConsultation to honor the rule:
-            //   - 1+ orders queued → PendingOrders
-            //   - 0 orders queued  → FinalBilling
-            // The function is conservative: if the visit is already in a
-            // post-consultation state (PendingOrders, FinalBilling, etc.),
-            // it returns "PendingOrders" if any non-terminal orders exist.
-            const { decideNextStatusAfterConsultation } = await import("@/lib/visits/status");
-            const newVisitStatus = await decideNextStatusAfterConsultation(tx, params.visitId);
-            const visit = await tx.visit.findUnique({
-                where: { id: params.visitId },
-                select: { status: true }
-            });
-            if (visit && visit.status !== newVisitStatus) {
-                await tx.visit.update({
-                    where: { id: params.visitId },
-                    data: { status: newVisitStatus }
-                });
-            }
+            // Visit-status rule (R45, R55b): while the doctor is still
+            // actively consulting (InConsultation / Consultation / Triaged /
+            // Laboratory / Radiology / Pharmacy), adding an order does NOT
+            // move the visit forward. The visit only transitions to
+            // PendingOrders (or FinalBilling if no orders) when the doctor
+            // explicitly clicks "Finish Consultation" in the PUT route.
+            //
+            // WHY: if we move the visit to PendingOrders here, and the
+            // downstream service (pharmacy / lab / radiology) fulfills the
+            // order fast, `maybeAdvanceVisitAfterItemStatusChange` will
+            // promote the visit to FinalBilling and it DISAPPEARS from the
+            // doctor's waiting room even though the doctor is still on the
+            // consultation page typing notes / adding more orders.
+            //
+            // (If the visit is already past InConsultation — e.g. the doctor
+            // already clicked "Finish Consultation" once and the visit is in
+            // PendingOrders — the visit stays in PendingOrders. The decide-
+            // NextStatusAfterConsultation result is therefore a no-op for
+            // any non-terminal post-consultation state.)
 
             return { prescription: created, formularyDrug };
         });

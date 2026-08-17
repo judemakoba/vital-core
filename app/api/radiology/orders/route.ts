@@ -3,7 +3,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { decideNextStatusAfterConsultation } from '@/lib/visits/status';
+// R55b: the order-creation route no longer touches the visit status —
+// see the rationale block below. The visit stays in InConsultation /
+// Consultation (or whatever pre-consultation state it was in) until the
+// doctor explicitly clicks "Finish Consultation" in the consultation
+// PUT route, which is the only place the visit is now advanced out of
+// the active-consultation state.
 
 // GET /api/radiology/orders - List all orders (optionally filtered by visitId or patientId)
 export async function GET(request: Request) {
@@ -81,16 +86,18 @@ export async function POST(request: Request) {
             },
         });
 
-        // Consolidated visit cycle spec (R45): when the doctor places an
-        // order, the visit moves into PendingOrders (was Radiology).
-        // PendingOrders means "1+ orders queued, each carries its own
-        // SubStatus". When all orders are Fulfilled/Unfulfilled, the visit
-        // advances to FinalBilling.
-        const newVisitStatus = await decideNextStatusAfterConsultation(prisma, visitId);
-        await prisma.visit.update({
-            where: { id: visitId },
-            data: { status: newVisitStatus }
-        });
+        // R45/R55b: while the doctor is still actively consulting
+        // (InConsultation / Consultation / Triaged / Laboratory / Radiology
+        // / Pharmacy), adding an order does NOT move the visit forward.
+        // The visit only transitions to PendingOrders (or FinalBilling if
+        // no orders) when the doctor explicitly clicks "Finish
+        // Consultation" in the consultation PUT route.
+        //
+        // Rationale: if we move the visit to PendingOrders here, and the
+        // radiology tech completes the order quickly, the visit
+        // auto-promotes to FinalBilling and disappears from the doctor's
+        // waiting room while the doctor is still on the consultation
+        // page.
 
         // Billing is non-critical — run async so it never blocks the response
         (async () => {

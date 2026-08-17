@@ -80,7 +80,15 @@ export async function PUT(
             || body?.finishing === true;
 
         if (!isClosing) {
-            const allowedStatuses = ["Triaged", "Consultation", "Laboratory", "Radiology", "Pharmacy"];
+            // Allowed pre-consultation / active-consultation statuses.
+            // R55b: include "InConsultation" (the new canonical per the
+            // consolidated visit-cycle spec) alongside the legacy alias
+            // "Consultation", so that any code path that writes the new
+            // status doesn't immediately 400 the doctor's save.
+            const allowedStatuses = [
+                "Triaged", "InConsultation", "Consultation",
+                "Laboratory", "Radiology", "Pharmacy",
+            ];
             if (!allowedStatuses.includes(visit.status)) {
                 return NextResponse.json(
                     { error: `Cannot start consultation for visit in "${visit.status}" status. Patient must complete payment and triage first.` },
