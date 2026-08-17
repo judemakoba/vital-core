@@ -1472,11 +1472,14 @@ function PrescriptionForm({
     });
     const [submitting, setSubmitting] = useState(false);
 
-    const totalQty = calcTotalQty(form.frequency, form.durationDays);
     const freqMeta = FREQUENCIES.find(f => f.value === form.frequency);
 
     const handleSubmit = async () => {
         if (!form.medicationName.trim()) return;
+        // Coerce durationDays to a number — the field can be '' while the
+        // user is mid-edit, so the API must never see a string.
+        const durationDays = parseInt(form.durationDays, 10);
+        const safeDuration = Number.isFinite(durationDays) && durationDays >= 1 ? durationDays : 1;
         setSubmitting(true);
         try {
             const res = await fetch(`/api/doctor/consultation/${visitId}/prescriptions`, {
@@ -1487,8 +1490,8 @@ function PrescriptionForm({
                     medicationName: form.medicationName,
                     dosage: form.dosage,
                     frequency: form.frequency,
-                    durationDays: form.durationDays,
-                    quantity: totalQty,
+                    durationDays: safeDuration,
+                    quantity: calcTotalQty(form.frequency, safeDuration),
                     instructions: form.instructions,
                     patientId,
                     // Structured dose fields for auto-quantity calculation
@@ -1554,10 +1557,30 @@ function PrescriptionForm({
                         <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: 'var(--text-secondary, #4b5563)' }}>Duration (Days)</label>
                         <input
                             type="number"
-                            className={styles.input}
+                            inputMode="numeric"
+                            className={`${styles.input} ${styles.numberInput}`}
                             min={1}
+                            max={365}
                             value={form.durationDays}
-                            onChange={e => setForm({ ...form, durationDays: parseInt(e.target.value) || 1 })}
+                            onChange={e => {
+                                const raw = e.target.value;
+                                // Allow the field to be cleared while typing —
+                                // snap back to '' instead of jumping to 1.
+                                if (raw === '') {
+                                    setForm({ ...form, durationDays: '' as any });
+                                } else {
+                                    const n = parseInt(raw, 10);
+                                    setForm({ ...form, durationDays: Number.isFinite(n) ? n : 1 });
+                                }
+                            }}
+                            onBlur={e => {
+                                // On blur, ensure a sensible default so submit
+                                // never sends 0 / NaN.
+                                const n = parseInt(e.target.value, 10);
+                                if (!Number.isFinite(n) || n < 1) {
+                                    setForm({ ...form, durationDays: 1 });
+                                }
+                            }}
                         />
                     </div>
                 </div>

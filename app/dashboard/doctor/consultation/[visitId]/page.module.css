@@ -235,6 +235,20 @@
     width: 100%;
 }
 
+/* Hide native number-input spinner arrows so the field is purely
+   typeable. Keyboard arrows + scroll-wheel still work (they go through
+   the number-input semantics, not the spinner UI). */
+.numberInput::-webkit-outer-spin-button,
+.numberInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.numberInput {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 .dangerButton {
     background-color: rgba(244, 63, 94, 0.1);
     color: var(--danger-color);
