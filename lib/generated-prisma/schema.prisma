@@ -28,6 +28,7 @@ model User {
   accounts                  Account[]
   closedPeriods             AccountingPeriod[]
   admissions                Admission[]               @relation("AdmittingDoctor")
+  admissionsCancelled       Admission[]               @relation("AdmissionCanceller")
   ipdRequestsRequested      IpdRequest[]              @relation("IpdRequestRequester")
   ipdRequestsReviewed       IpdRequest[]              @relation("IpdRequestReviewer")
   appointments              Appointment[]
@@ -1523,29 +1524,38 @@ model Bed {
 }
 
 model Admission {
-  id                String               @id @default(cuid())
-  admissionNumber   String               @unique
-  patientId         String
-  visitId           String?              @unique
-  wardId            String?
-  bedId             String?
-  admittingDoctorId String
-  admissionDate     DateTime             @default(now())
-  dischargeDate     DateTime?
-  status            String               @default("ADMITTED")
-  type              String
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  admittingDoctor   User                 @relation("AdmittingDoctor", fields: [admittingDoctorId], references: [id])
-  bed               Bed?                 @relation(fields: [bedId], references: [id])
-  patient           Patient              @relation(fields: [patientId], references: [id])
-  visit             Visit?               @relation(fields: [visitId], references: [id])
-  ward              Ward?                @relation(fields: [wardId], references: [id])
-  dailySummaries    DailyChargeSummary[]
-  floorStockUsages  FloorStockUsage[]
-  charges           InpatientCharge[]
-  deposits          InpatientDeposit[]
-  ipdRequest        IpdRequest?          @relation("IpdRequestAdmission")
+  id                 String               @id @default(cuid())
+  admissionNumber    String               @unique
+  patientId          String
+  visitId            String?              @unique
+  wardId             String?
+  bedId              String?
+  admittingDoctorId  String
+  admissionDate      DateTime             @default(now())
+  dischargeDate      DateTime?
+  status             String               @default("ADMITTED")
+  type               String
+  notes              String?
+  // R63: admin-override / termination audit trail
+  // dischargeDate is set for both DISCHARGED and CANCELLED.
+  // For CANCELLED, cancelledAt/cancelledById/cancellationReason hold
+  // the admin action and the reason for the audit log.
+  cancelledAt        DateTime?
+  cancelledById      String?
+  cancellationReason String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  admittingDoctor    User                 @relation("AdmittingDoctor", fields: [admittingDoctorId], references: [id])
+  cancelledBy        User?                @relation("AdmissionCanceller", fields: [cancelledById], references: [id])
+  bed                Bed?                 @relation(fields: [bedId], references: [id])
+  patient            Patient              @relation(fields: [patientId], references: [id])
+  visit              Visit?               @relation(fields: [visitId], references: [id])
+  ward               Ward?                @relation(fields: [wardId], references: [id])
+  dailySummaries     DailyChargeSummary[]
+  floorStockUsages   FloorStockUsage[]
+  charges            InpatientCharge[]
+  deposits           InpatientDeposit[]
+  ipdRequest         IpdRequest?          @relation("IpdRequestAdmission")
 }
 
 // ============================================================================
