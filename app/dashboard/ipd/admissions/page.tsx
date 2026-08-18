@@ -612,12 +612,17 @@ function DeleteModal({ admission, onCancel, onSuccess }: {
     onSuccess: (msg: string) => void;
 }) {
     const [reason, setReason] = useState("");
+    const [confirmText, setConfirmText] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const onSubmit = async () => {
         if (reason.trim().length < 5) {
             setError("Reason must be at least 5 characters.");
+            return;
+        }
+        if (confirmText.trim() !== "DELETE") {
+            setError('Type DELETE (uppercase) in the confirmation field to proceed.');
             return;
         }
         setSubmitting(true);
@@ -627,10 +632,19 @@ function DeleteModal({ admission, onCancel, onSuccess }: {
                 method: "DELETE",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ reason: reason.trim() }),
+                body: JSON.stringify({ reason: reason.trim(), confirm: "DELETE" }),
             });
             if (res.ok) {
-                onSuccess(`✓ Admission ${admission.admissionNumber} permanently deleted.`);
+                const data = await res.json();
+                const c = data.cascade || {};
+                const parts: string[] = [];
+                if (c.inpatientCharges)        parts.push(`${c.inpatientCharges} charge(s)`);
+                if (c.inpatientDeposits)       parts.push(`${c.inpatientDeposits} deposit(s)`);
+                if (c.dailyChargeSummaries)    parts.push(`${c.dailyChargeSummaries} daily summary(ies)`);
+                if (c.depositApplications)     parts.push(`${c.depositApplications} deposit application(s)`);
+                if (c.floorStockUsages)        parts.push(`${c.floorStockUsages} floor stock usage(s)`);
+                const cascadeText = parts.length > 0 ? ` Cascaded: ${parts.join(", ")}.` : "";
+                onSuccess(`✓ Admission ${admission.admissionNumber} permanently deleted.${cascadeText}`);
             } else {
                 const err = await res.json();
                 setError(err.error);
@@ -648,7 +662,9 @@ function DeleteModal({ admission, onCancel, onSuccess }: {
             <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: 8, padding: "0.75rem", marginBottom: "1rem", display: "flex", gap: 8, fontSize: "0.8rem", color: "#991b1b" }}>
                 <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
                 <div>
-                    <strong>Permanent delete.</strong> This removes the admission record entirely. The server will refuse if the admission has any charges, deposits, daily summaries, or floor-stock usage records — settle or void those first. The originating IpdRequest (if any) is preserved with admissionId nulled and status set to CANCELLED.
+                    <strong>Permanent delete with cascade (R64).</strong> This removes the admission record AND every record attached to it: inpatient charges, deposits, daily charge summaries, deposit applications, and floor stock usages. The originating IpdRequest (if any) is preserved with admissionId nulled and status set to CANCELLED. The bed is released back to AVAILABLE. The visit is reverted to OPD type.
+                    <br /><br />
+                    <strong>This is irreversible.</strong> Use only for records that should never have existed.
                 </div>
             </div>
             <Field label="Reason for deletion (>= 5 chars, required for audit log)" required>
@@ -658,6 +674,16 @@ function DeleteModal({ admission, onCancel, onSuccess }: {
                     rows={3}
                     placeholder="e.g. Created in error during training; patient never actually admitted"
                     style={{ ...inputStyle, fontFamily: "inherit", resize: "vertical" }}
+                />
+            </Field>
+            <Field label={`Type DELETE in uppercase to confirm`} required>
+                <input
+                    type="text"
+                    value={confirmText}
+                    onChange={e => setConfirmText(e.target.value)}
+                    placeholder="DELETE"
+                    autoComplete="off"
+                    style={{ ...inputStyle, fontFamily: "ui-monospace, monospace", fontWeight: 600, letterSpacing: "0.1em" }}
                 />
             </Field>
             {error && (

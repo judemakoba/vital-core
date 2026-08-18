@@ -153,14 +153,32 @@ export async function PATCH(
 
 /**
  * DELETE /api/ipd/admissions/[id]
- * Hard-delete an admission. Admin only. Requires a `reason` in the body
- * for the audit log. Refuses if there are downstream records
- * (charges, deposits, daily summaries, floor-stock usages) — those
- * should be settled / cleaned up first via the discharge workflow,
- * not silently destroyed.
+ * R64: hard-delete an admission AND cascade through all attached
+ * records. Admin only. Requires a `reason` in the body for the audit
+ * log, and (for safety on this destructive action) the body must also
+ * include `confirm: "DELETE"` — the UI sends this from the modal.
  *
- * IpdRequest back-relation has a unique admissionId; we null it
- * before deleting so the FK doesn't block the delete.
+ * The cascade order matters because the foreign keys default to
+ * NO ACTION (RESTRICT) — the rows have to be deleted in an order
+ * that never tries to leave an orphan:
+ *
+ *   1. FloorStockUsage      (children of admission AND of charge)
+ *   2. DepositApplication   (children of deposit AND of charge)
+ *   3. InpatientCharge      (children of admission, summary, etc.)
+ *   4. DailyChargeSummary   (children of admission)
+ *   5. InpatientDeposit     (children of admission)
+ *
+ * FloorStock.quantityOnHand is NOT auto-reverted — the drug was
+ * actually consumed, and a separate manual inventory adjustment
+ * should reverse the physical stock if the use is being unwound.
+ *
+ * The originating IpdRequest (if any) is preserved with admissionId
+ * nulled and status set to CANCELLED for the audit trail. The bed
+ * is released back to AVAILABLE and the visit is reverted to OPD
+ * type (status is left as-is so the doctor can decide next steps).
+ *
+ * The response includes a `cascade` object with the counts of each
+ * record type removed — useful for the audit log and the UI toast.
  */
 export async function DELETE(
     request: Request,
@@ -181,6 +199,7 @@ export async function DELETE(
 
         const body = await request.json().catch(() => ({}));
         const reason = (body.reason || "").trim();
+        const confirm = (body.confirm || "").trim();
         if (!reason) {
             return NextResponse.json(
                 { error: "A reason is required when deleting an admission. This is recorded for the audit log." },
@@ -190,6 +209,14 @@ export async function DELETE(
         if (reason.length < 5) {
             return NextResponse.json(
                 { error: "Reason must be at least 5 characters — please describe why this record needs to be removed." },
+                { status: 400 }
+            );
+        }
+        // R64: explicit confirmation string. Prevents an accidental click
+        // or a stale browser tab from firing the cascade.
+        if (confirm !== "DELETE") {
+            return NextResponse.json(
+                { error: "Confirmation required: send `confirm: \"DELETE\"` in the request body to proceed." },
                 { status: 400 }
             );
         }
@@ -212,28 +239,75 @@ export async function DELETE(
             return NextResponse.json({ error: "Admission not found" }, { status: 404 });
         }
 
-        const downstreamCount =
-            admission._count.charges +
-            admission._count.deposits +
-            admission._count.dailySummaries +
-            admission._count.floorStockUsages;
-        if (downstreamCount > 0) {
-            return NextResponse.json(
-                {
-                    error:
-                        `This admission has ${downstreamCount} downstream record(s) (charges / deposits / summaries / floor-stock usage). ` +
-                        `Discharge the patient first (or settle/void the records) before deleting.`,
-                    counts: admission._count,
-                },
-                { status: 409 }
-            );
-        }
+        // Pre-count so the audit log has a full picture even if any
+        // step in the transaction fails partway (we'd return the partial
+        // counts in the error response too).
+        const initialCounts = admission._count;
 
-        await prisma.$transaction(async (tx) => {
-            // 1. Detach the originating IpdRequest so its FK doesn't block
-            //    the delete. The IpdRequest itself remains for the audit trail
-            //    (admissionId becomes null) — we set the request status to
-            //    CANCELLED so it's clear what happened.
+        // R64: cascade. We delete downstream records explicitly in the
+        // right order so the foreign keys (default NO ACTION) don't
+        // block the final admission.delete().
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. FloorStockUsage — children of admission AND of any of its charges.
+            //    We delete the ones linked directly to the admission here. The
+            //    ones linked via chargeId are deleted in step 2.
+            const usageByAdmission = await tx.floorStockUsage.deleteMany({
+                where: { admissionId: admissionId },
+            });
+
+            // 2. DepositApplication — children of deposit (this admission) AND
+            //    of charge (this admission). Find the charge IDs first so we
+            //    can clean up deposit apps pointing at them too.
+            const chargeIds = (await tx.inpatientCharge.findMany({
+                where: { admissionId: admissionId },
+                select: { id: true },
+            })).map(c => c.id);
+            const depositIds = (await tx.inpatientDeposit.findMany({
+                where: { admissionId: admissionId },
+                select: { id: true },
+            })).map(d => d.id);
+
+            const depositApps = await tx.depositApplication.deleteMany({
+                where: {
+                    OR: [
+                        { depositId: { in: depositIds } },
+                        { chargeId: { in: chargeIds } },
+                    ],
+                },
+            });
+
+            // Any FloorStockUsage that linked to those charges (chargeId)
+            // — also delete. These are the ones from step 1 that pointed
+            // to a charge rather than the admission directly.
+            const usageByCharge = chargeIds.length > 0
+                ? await tx.floorStockUsage.deleteMany({
+                    where: { chargeId: { in: chargeIds } },
+                })
+                : { count: 0 };
+
+            // 3. InpatientCharge — children of admission, summary, etc.
+            const charges = await tx.inpatientCharge.deleteMany({
+                where: { admissionId: admissionId },
+            });
+
+            // 4. DailyChargeSummary — children of admission. After this step,
+            //    any InpatientCharge that referenced a daily summary has
+            //    already been deleted (step 3), so no orphan FKs to worry
+            //    about for summaries.
+            const summaries = await tx.dailyChargeSummary.deleteMany({
+                where: { admissionId: admissionId },
+            });
+
+            // 5. InpatientDeposit — children of admission.
+            const deposits = await tx.inpatientDeposit.deleteMany({
+                where: { admissionId: admissionId },
+            });
+
+            // 6. Detach the originating IpdRequest so its FK doesn't block
+            //    the final admission.delete(). The IpdRequest itself
+            //    remains for the audit trail (admissionId becomes null) —
+            //    we set the request status to CANCELLED so it's clear
+            //    what happened.
             await tx.ipdRequest.updateMany({
                 where: { admissionId: admissionId },
                 data: {
@@ -242,26 +316,44 @@ export async function DELETE(
                     reviewNotes: `[deleted] ${reason}`,
                 },
             });
-            // 2. Release the bed (back to AVAILABLE)
+
+            // 7. Release the bed (back to AVAILABLE).
             if (admission.bedId) {
                 await tx.bed.update({ where: { id: admission.bedId }, data: { status: "AVAILABLE" } });
             }
-            // 3. Revert the visit so it doesn't stay as INPATIENT/Admitted
-            //    when the admission it tied to is gone.
+
+            // 8. Revert the visit so it doesn't stay as INPATIENT/Admitted
+            //    when the admission it tied to is gone. Leave Visit.status
+            //    alone — admin can decide next step.
             if (admission.visitId) {
                 await tx.visit.update({
                     where: { id: admission.visitId },
                     data: { type: "OPD" },
-                    // Leave Visit.status alone — admin can decide next step.
                 });
             }
-            // 4. Delete the admission. Cascade will sweep related records
-            //    (the counts check above guarantees there are no charges /
-            //    deposits / summaries / floor-stock rows to lose).
+
+            // 9. Finally, delete the admission itself.
             await tx.admission.delete({ where: { id: admissionId } });
+
+            return {
+                cascade: {
+                    floorStockUsages: usageByAdmission.count + usageByCharge.count,
+                    depositApplications: depositApps.count,
+                    inpatientCharges: charges.count,
+                    dailyChargeSummaries: summaries.count,
+                    inpatientDeposits: deposits.count,
+                },
+                initialCounts,
+            };
         });
 
-        return NextResponse.json({ success: true, deleted: admissionId, reason });
+        return NextResponse.json({
+            success: true,
+            deleted: admissionId,
+            reason,
+            initialCounts,
+            cascade: result.cascade,
+        });
     } catch (error) {
         console.error("Failed to delete admission:", error);
         return NextResponse.json({ error: "Failed to delete admission" }, { status: 500 });
