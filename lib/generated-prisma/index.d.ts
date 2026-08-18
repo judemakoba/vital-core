@@ -319,6 +319,11 @@ export type Bed = $Result.DefaultSelection<Prisma.$BedPayload>
  */
 export type Admission = $Result.DefaultSelection<Prisma.$AdmissionPayload>
 /**
+ * Model IpdRequest
+ * 
+ */
+export type IpdRequest = $Result.DefaultSelection<Prisma.$IpdRequestPayload>
+/**
  * Model BillableItem
  * 
  */
@@ -379,7 +384,8 @@ export namespace $Enums {
   OTHER: 'OTHER',
   LAB_ONLY: 'LAB_ONLY',
   RADIOLOGY_ONLY: 'RADIOLOGY_ONLY',
-  PRESCRIPTION_ONLY: 'PRESCRIPTION_ONLY'
+  PRESCRIPTION_ONLY: 'PRESCRIPTION_ONLY',
+  INPATIENT: 'INPATIENT'
 };
 
 export type VisitType = (typeof VisitType)[keyof typeof VisitType]
@@ -1758,6 +1764,16 @@ export class PrismaClient<
   get admission(): Prisma.AdmissionDelegate<ExtArgs>;
 
   /**
+   * `prisma.ipdRequest`: Exposes CRUD operations for the **IpdRequest** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more IpdRequests
+    * const ipdRequests = await prisma.ipdRequest.findMany()
+    * ```
+    */
+  get ipdRequest(): Prisma.IpdRequestDelegate<ExtArgs>;
+
+  /**
    * `prisma.billableItem`: Exposes CRUD operations for the **BillableItem** model.
     * Example usage:
     * ```ts
@@ -2348,6 +2364,7 @@ export namespace Prisma {
     Ward: 'Ward',
     Bed: 'Bed',
     Admission: 'Admission',
+    IpdRequest: 'IpdRequest',
     BillableItem: 'BillableItem',
     InpatientCharge: 'InpatientCharge',
     DailyChargeSummary: 'DailyChargeSummary',
@@ -2372,7 +2389,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "role" | "permission" | "patient" | "visit" | "appointment" | "diagnosis" | "iCD11Code" | "prescription" | "labOrder" | "radiologyCategory" | "radiologyCatalog" | "radiologyResultTemplate" | "radiologyOrder" | "orderWriteOff" | "drugCategory" | "drug" | "drugBatch" | "drugPrice" | "drugPriceAudit" | "drugInteraction" | "drugDosageGuideline" | "drugImage" | "supplier" | "purchaseOrder" | "purchaseOrderItem" | "goodsReceipt" | "goodsReceiptItem" | "dispensingLog" | "stockMovement" | "stockAdjustment" | "stockTake" | "labCategory" | "labTestCatalog" | "labResultTemplate" | "invoice" | "invoiceItem" | "payment" | "expense" | "notification" | "tenant" | "branch" | "tenantSetting" | "systemSetting" | "chartOfAccount" | "taxRate" | "fiscalYear" | "accountingPeriod" | "journalEntry" | "journalEntryLine" | "taxInvoice" | "invoiceLine" | "paymentAllocation" | "budget" | "budgetLine" | "ward" | "bed" | "admission" | "billableItem" | "inpatientCharge" | "dailyChargeSummary" | "inpatientDeposit" | "depositApplication" | "floorStock" | "floorStockUsage" | "auditLog" | "counter"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "role" | "permission" | "patient" | "visit" | "appointment" | "diagnosis" | "iCD11Code" | "prescription" | "labOrder" | "radiologyCategory" | "radiologyCatalog" | "radiologyResultTemplate" | "radiologyOrder" | "orderWriteOff" | "drugCategory" | "drug" | "drugBatch" | "drugPrice" | "drugPriceAudit" | "drugInteraction" | "drugDosageGuideline" | "drugImage" | "supplier" | "purchaseOrder" | "purchaseOrderItem" | "goodsReceipt" | "goodsReceiptItem" | "dispensingLog" | "stockMovement" | "stockAdjustment" | "stockTake" | "labCategory" | "labTestCatalog" | "labResultTemplate" | "invoice" | "invoiceItem" | "payment" | "expense" | "notification" | "tenant" | "branch" | "tenantSetting" | "systemSetting" | "chartOfAccount" | "taxRate" | "fiscalYear" | "accountingPeriod" | "journalEntry" | "journalEntryLine" | "taxInvoice" | "invoiceLine" | "paymentAllocation" | "budget" | "budgetLine" | "ward" | "bed" | "admission" | "ipdRequest" | "billableItem" | "inpatientCharge" | "dailyChargeSummary" | "inpatientDeposit" | "depositApplication" | "floorStock" | "floorStockUsage" | "auditLog" | "counter"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -6646,6 +6663,76 @@ export namespace Prisma {
           }
         }
       }
+      IpdRequest: {
+        payload: Prisma.$IpdRequestPayload<ExtArgs>
+        fields: Prisma.IpdRequestFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.IpdRequestFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.IpdRequestFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>
+          }
+          findFirst: {
+            args: Prisma.IpdRequestFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.IpdRequestFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>
+          }
+          findMany: {
+            args: Prisma.IpdRequestFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>[]
+          }
+          create: {
+            args: Prisma.IpdRequestCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>
+          }
+          createMany: {
+            args: Prisma.IpdRequestCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.IpdRequestCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>[]
+          }
+          delete: {
+            args: Prisma.IpdRequestDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>
+          }
+          update: {
+            args: Prisma.IpdRequestUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>
+          }
+          deleteMany: {
+            args: Prisma.IpdRequestDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.IpdRequestUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.IpdRequestUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpdRequestPayload>
+          }
+          aggregate: {
+            args: Prisma.IpdRequestAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateIpdRequest>
+          }
+          groupBy: {
+            args: Prisma.IpdRequestGroupByArgs<ExtArgs>
+            result: $Utils.Optional<IpdRequestGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.IpdRequestCountArgs<ExtArgs>
+            result: $Utils.Optional<IpdRequestCountAggregateOutputType> | number
+          }
+        }
+      }
       BillableItem: {
         payload: Prisma.$BillableItemPayload<ExtArgs>
         fields: Prisma.BillableItemFieldRefs
@@ -7440,6 +7527,8 @@ export namespace Prisma {
     accounts: number
     closedPeriods: number
     admissions: number
+    ipdRequestsRequested: number
+    ipdRequestsReviewed: number
     appointments: number
     createdBudgets: number
     finalizedDailySummaries: number
@@ -7483,6 +7572,8 @@ export namespace Prisma {
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs
     closedPeriods?: boolean | UserCountOutputTypeCountClosedPeriodsArgs
     admissions?: boolean | UserCountOutputTypeCountAdmissionsArgs
+    ipdRequestsRequested?: boolean | UserCountOutputTypeCountIpdRequestsRequestedArgs
+    ipdRequestsReviewed?: boolean | UserCountOutputTypeCountIpdRequestsReviewedArgs
     appointments?: boolean | UserCountOutputTypeCountAppointmentsArgs
     createdBudgets?: boolean | UserCountOutputTypeCountCreatedBudgetsArgs
     finalizedDailySummaries?: boolean | UserCountOutputTypeCountFinalizedDailySummariesArgs
@@ -7552,6 +7643,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountAdmissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AdmissionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountIpdRequestsRequestedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IpdRequestWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountIpdRequestsReviewedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IpdRequestWhereInput
   }
 
   /**
@@ -8011,6 +8116,7 @@ export namespace Prisma {
    */
 
   export type VisitCountOutputType = {
+    ipdRequests: number
     diagnoses: number
     dispensingLogs: number
     invoices: number
@@ -8022,6 +8128,7 @@ export namespace Prisma {
   }
 
   export type VisitCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ipdRequests?: boolean | VisitCountOutputTypeCountIpdRequestsArgs
     diagnoses?: boolean | VisitCountOutputTypeCountDiagnosesArgs
     dispensingLogs?: boolean | VisitCountOutputTypeCountDispensingLogsArgs
     invoices?: boolean | VisitCountOutputTypeCountInvoicesArgs
@@ -8041,6 +8148,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the VisitCountOutputType
      */
     select?: VisitCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * VisitCountOutputType without action
+   */
+  export type VisitCountOutputTypeCountIpdRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IpdRequestWhereInput
   }
 
   /**
@@ -9140,12 +9254,14 @@ export namespace Prisma {
 
   export type WardCountOutputType = {
     admissions: number
+    ipdRequests: number
     beds: number
     floorStocks: number
   }
 
   export type WardCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     admissions?: boolean | WardCountOutputTypeCountAdmissionsArgs
+    ipdRequests?: boolean | WardCountOutputTypeCountIpdRequestsArgs
     beds?: boolean | WardCountOutputTypeCountBedsArgs
     floorStocks?: boolean | WardCountOutputTypeCountFloorStocksArgs
   }
@@ -9166,6 +9282,13 @@ export namespace Prisma {
    */
   export type WardCountOutputTypeCountAdmissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AdmissionWhereInput
+  }
+
+  /**
+   * WardCountOutputType without action
+   */
+  export type WardCountOutputTypeCountIpdRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IpdRequestWhereInput
   }
 
   /**
@@ -9688,6 +9811,8 @@ export namespace Prisma {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     closedPeriods?: boolean | User$closedPeriodsArgs<ExtArgs>
     admissions?: boolean | User$admissionsArgs<ExtArgs>
+    ipdRequestsRequested?: boolean | User$ipdRequestsRequestedArgs<ExtArgs>
+    ipdRequestsReviewed?: boolean | User$ipdRequestsReviewedArgs<ExtArgs>
     appointments?: boolean | User$appointmentsArgs<ExtArgs>
     createdBudgets?: boolean | User$createdBudgetsArgs<ExtArgs>
     finalizedDailySummaries?: boolean | User$finalizedDailySummariesArgs<ExtArgs>
@@ -9772,6 +9897,8 @@ export namespace Prisma {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     closedPeriods?: boolean | User$closedPeriodsArgs<ExtArgs>
     admissions?: boolean | User$admissionsArgs<ExtArgs>
+    ipdRequestsRequested?: boolean | User$ipdRequestsRequestedArgs<ExtArgs>
+    ipdRequestsReviewed?: boolean | User$ipdRequestsReviewedArgs<ExtArgs>
     appointments?: boolean | User$appointmentsArgs<ExtArgs>
     createdBudgets?: boolean | User$createdBudgetsArgs<ExtArgs>
     finalizedDailySummaries?: boolean | User$finalizedDailySummariesArgs<ExtArgs>
@@ -9824,6 +9951,8 @@ export namespace Prisma {
       accounts: Prisma.$AccountPayload<ExtArgs>[]
       closedPeriods: Prisma.$AccountingPeriodPayload<ExtArgs>[]
       admissions: Prisma.$AdmissionPayload<ExtArgs>[]
+      ipdRequestsRequested: Prisma.$IpdRequestPayload<ExtArgs>[]
+      ipdRequestsReviewed: Prisma.$IpdRequestPayload<ExtArgs>[]
       appointments: Prisma.$AppointmentPayload<ExtArgs>[]
       createdBudgets: Prisma.$BudgetPayload<ExtArgs>[]
       finalizedDailySummaries: Prisma.$DailyChargeSummaryPayload<ExtArgs>[]
@@ -10247,6 +10376,8 @@ export namespace Prisma {
     accounts<T extends User$accountsArgs<ExtArgs> = {}>(args?: Subset<T, User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany"> | Null>
     closedPeriods<T extends User$closedPeriodsArgs<ExtArgs> = {}>(args?: Subset<T, User$closedPeriodsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountingPeriodPayload<ExtArgs>, T, "findMany"> | Null>
     admissions<T extends User$admissionsArgs<ExtArgs> = {}>(args?: Subset<T, User$admissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdmissionPayload<ExtArgs>, T, "findMany"> | Null>
+    ipdRequestsRequested<T extends User$ipdRequestsRequestedArgs<ExtArgs> = {}>(args?: Subset<T, User$ipdRequestsRequestedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findMany"> | Null>
+    ipdRequestsReviewed<T extends User$ipdRequestsReviewedArgs<ExtArgs> = {}>(args?: Subset<T, User$ipdRequestsReviewedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findMany"> | Null>
     appointments<T extends User$appointmentsArgs<ExtArgs> = {}>(args?: Subset<T, User$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany"> | Null>
     createdBudgets<T extends User$createdBudgetsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdBudgetsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findMany"> | Null>
     finalizedDailySummaries<T extends User$finalizedDailySummariesArgs<ExtArgs> = {}>(args?: Subset<T, User$finalizedDailySummariesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyChargeSummaryPayload<ExtArgs>, T, "findMany"> | Null>
@@ -10719,6 +10850,46 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AdmissionScalarFieldEnum | AdmissionScalarFieldEnum[]
+  }
+
+  /**
+   * User.ipdRequestsRequested
+   */
+  export type User$ipdRequestsRequestedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    where?: IpdRequestWhereInput
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    cursor?: IpdRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: IpdRequestScalarFieldEnum | IpdRequestScalarFieldEnum[]
+  }
+
+  /**
+   * User.ipdRequestsReviewed
+   */
+  export type User$ipdRequestsReviewedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    where?: IpdRequestWhereInput
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    cursor?: IpdRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: IpdRequestScalarFieldEnum | IpdRequestScalarFieldEnum[]
   }
 
   /**
@@ -18160,6 +18331,7 @@ export namespace Prisma {
     discontinuationById?: boolean
     linkedPriorVisitId?: boolean
     admission?: boolean | Visit$admissionArgs<ExtArgs>
+    ipdRequests?: boolean | Visit$ipdRequestsArgs<ExtArgs>
     diagnoses?: boolean | Visit$diagnosesArgs<ExtArgs>
     dispensingLogs?: boolean | Visit$dispensingLogsArgs<ExtArgs>
     invoices?: boolean | Visit$invoicesArgs<ExtArgs>
@@ -18265,6 +18437,7 @@ export namespace Prisma {
 
   export type VisitInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     admission?: boolean | Visit$admissionArgs<ExtArgs>
+    ipdRequests?: boolean | Visit$ipdRequestsArgs<ExtArgs>
     diagnoses?: boolean | Visit$diagnosesArgs<ExtArgs>
     dispensingLogs?: boolean | Visit$dispensingLogsArgs<ExtArgs>
     invoices?: boolean | Visit$invoicesArgs<ExtArgs>
@@ -18296,6 +18469,7 @@ export namespace Prisma {
     name: "Visit"
     objects: {
       admission: Prisma.$AdmissionPayload<ExtArgs> | null
+      ipdRequests: Prisma.$IpdRequestPayload<ExtArgs>[]
       diagnoses: Prisma.$DiagnosisPayload<ExtArgs>[]
       dispensingLogs: Prisma.$DispensingLogPayload<ExtArgs>[]
       invoices: Prisma.$InvoicePayload<ExtArgs>[]
@@ -18714,6 +18888,7 @@ export namespace Prisma {
   export interface Prisma__VisitClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     admission<T extends Visit$admissionArgs<ExtArgs> = {}>(args?: Subset<T, Visit$admissionArgs<ExtArgs>>): Prisma__AdmissionClient<$Result.GetResult<Prisma.$AdmissionPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    ipdRequests<T extends Visit$ipdRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Visit$ipdRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findMany"> | Null>
     diagnoses<T extends Visit$diagnosesArgs<ExtArgs> = {}>(args?: Subset<T, Visit$diagnosesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DiagnosisPayload<ExtArgs>, T, "findMany"> | Null>
     dispensingLogs<T extends Visit$dispensingLogsArgs<ExtArgs> = {}>(args?: Subset<T, Visit$dispensingLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DispensingLogPayload<ExtArgs>, T, "findMany"> | Null>
     invoices<T extends Visit$invoicesArgs<ExtArgs> = {}>(args?: Subset<T, Visit$invoicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany"> | Null>
@@ -19124,6 +19299,26 @@ export namespace Prisma {
      */
     include?: AdmissionInclude<ExtArgs> | null
     where?: AdmissionWhereInput
+  }
+
+  /**
+   * Visit.ipdRequests
+   */
+  export type Visit$ipdRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    where?: IpdRequestWhereInput
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    cursor?: IpdRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: IpdRequestScalarFieldEnum | IpdRequestScalarFieldEnum[]
   }
 
   /**
@@ -76438,6 +76633,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     admissions?: boolean | Ward$admissionsArgs<ExtArgs>
+    ipdRequests?: boolean | Ward$ipdRequestsArgs<ExtArgs>
     beds?: boolean | Ward$bedsArgs<ExtArgs>
     floorStocks?: boolean | Ward$floorStocksArgs<ExtArgs>
     _count?: boolean | WardCountOutputTypeDefaultArgs<ExtArgs>
@@ -76465,6 +76661,7 @@ export namespace Prisma {
 
   export type WardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     admissions?: boolean | Ward$admissionsArgs<ExtArgs>
+    ipdRequests?: boolean | Ward$ipdRequestsArgs<ExtArgs>
     beds?: boolean | Ward$bedsArgs<ExtArgs>
     floorStocks?: boolean | Ward$floorStocksArgs<ExtArgs>
     _count?: boolean | WardCountOutputTypeDefaultArgs<ExtArgs>
@@ -76475,6 +76672,7 @@ export namespace Prisma {
     name: "Ward"
     objects: {
       admissions: Prisma.$AdmissionPayload<ExtArgs>[]
+      ipdRequests: Prisma.$IpdRequestPayload<ExtArgs>[]
       beds: Prisma.$BedPayload<ExtArgs>[]
       floorStocks: Prisma.$FloorStockPayload<ExtArgs>[]
     }
@@ -76851,6 +77049,7 @@ export namespace Prisma {
   export interface Prisma__WardClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     admissions<T extends Ward$admissionsArgs<ExtArgs> = {}>(args?: Subset<T, Ward$admissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdmissionPayload<ExtArgs>, T, "findMany"> | Null>
+    ipdRequests<T extends Ward$ipdRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Ward$ipdRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findMany"> | Null>
     beds<T extends Ward$bedsArgs<ExtArgs> = {}>(args?: Subset<T, Ward$bedsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BedPayload<ExtArgs>, T, "findMany"> | Null>
     floorStocks<T extends Ward$floorStocksArgs<ExtArgs> = {}>(args?: Subset<T, Ward$floorStocksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FloorStockPayload<ExtArgs>, T, "findMany"> | Null>
     /**
@@ -77220,6 +77419,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AdmissionScalarFieldEnum | AdmissionScalarFieldEnum[]
+  }
+
+  /**
+   * Ward.ipdRequests
+   */
+  export type Ward$ipdRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    where?: IpdRequestWhereInput
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    cursor?: IpdRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: IpdRequestScalarFieldEnum | IpdRequestScalarFieldEnum[]
   }
 
   /**
@@ -78555,6 +78774,7 @@ export namespace Prisma {
     floorStockUsages?: boolean | Admission$floorStockUsagesArgs<ExtArgs>
     charges?: boolean | Admission$chargesArgs<ExtArgs>
     deposits?: boolean | Admission$depositsArgs<ExtArgs>
+    ipdRequest?: boolean | Admission$ipdRequestArgs<ExtArgs>
     _count?: boolean | AdmissionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["admission"]>
 
@@ -78605,6 +78825,7 @@ export namespace Prisma {
     floorStockUsages?: boolean | Admission$floorStockUsagesArgs<ExtArgs>
     charges?: boolean | Admission$chargesArgs<ExtArgs>
     deposits?: boolean | Admission$depositsArgs<ExtArgs>
+    ipdRequest?: boolean | Admission$ipdRequestArgs<ExtArgs>
     _count?: boolean | AdmissionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AdmissionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -78627,6 +78848,7 @@ export namespace Prisma {
       floorStockUsages: Prisma.$FloorStockUsagePayload<ExtArgs>[]
       charges: Prisma.$InpatientChargePayload<ExtArgs>[]
       deposits: Prisma.$InpatientDepositPayload<ExtArgs>[]
+      ipdRequest: Prisma.$IpdRequestPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -79015,6 +79237,7 @@ export namespace Prisma {
     floorStockUsages<T extends Admission$floorStockUsagesArgs<ExtArgs> = {}>(args?: Subset<T, Admission$floorStockUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FloorStockUsagePayload<ExtArgs>, T, "findMany"> | Null>
     charges<T extends Admission$chargesArgs<ExtArgs> = {}>(args?: Subset<T, Admission$chargesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InpatientChargePayload<ExtArgs>, T, "findMany"> | Null>
     deposits<T extends Admission$depositsArgs<ExtArgs> = {}>(args?: Subset<T, Admission$depositsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InpatientDepositPayload<ExtArgs>, T, "findMany"> | Null>
+    ipdRequest<T extends Admission$ipdRequestArgs<ExtArgs> = {}>(args?: Subset<T, Admission$ipdRequestArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -79500,6 +79723,21 @@ export namespace Prisma {
   }
 
   /**
+   * Admission.ipdRequest
+   */
+  export type Admission$ipdRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    where?: IpdRequestWhereInput
+  }
+
+  /**
    * Admission without action
    */
   export type AdmissionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -79511,6 +79749,1164 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: AdmissionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model IpdRequest
+   */
+
+  export type AggregateIpdRequest = {
+    _count: IpdRequestCountAggregateOutputType | null
+    _min: IpdRequestMinAggregateOutputType | null
+    _max: IpdRequestMaxAggregateOutputType | null
+  }
+
+  export type IpdRequestMinAggregateOutputType = {
+    id: string | null
+    requestNumber: string | null
+    visitId: string | null
+    requestedById: string | null
+    reasonForAdmission: string | null
+    admittingDiagnosis: string | null
+    urgency: string | null
+    preferredWardId: string | null
+    preferredBedType: string | null
+    clinicalNotes: string | null
+    status: string | null
+    reviewedById: string | null
+    reviewedAt: Date | null
+    reviewNotes: string | null
+    fulfilledAt: Date | null
+    admissionId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type IpdRequestMaxAggregateOutputType = {
+    id: string | null
+    requestNumber: string | null
+    visitId: string | null
+    requestedById: string | null
+    reasonForAdmission: string | null
+    admittingDiagnosis: string | null
+    urgency: string | null
+    preferredWardId: string | null
+    preferredBedType: string | null
+    clinicalNotes: string | null
+    status: string | null
+    reviewedById: string | null
+    reviewedAt: Date | null
+    reviewNotes: string | null
+    fulfilledAt: Date | null
+    admissionId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type IpdRequestCountAggregateOutputType = {
+    id: number
+    requestNumber: number
+    visitId: number
+    requestedById: number
+    reasonForAdmission: number
+    admittingDiagnosis: number
+    urgency: number
+    preferredWardId: number
+    preferredBedType: number
+    clinicalNotes: number
+    status: number
+    reviewedById: number
+    reviewedAt: number
+    reviewNotes: number
+    fulfilledAt: number
+    admissionId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type IpdRequestMinAggregateInputType = {
+    id?: true
+    requestNumber?: true
+    visitId?: true
+    requestedById?: true
+    reasonForAdmission?: true
+    admittingDiagnosis?: true
+    urgency?: true
+    preferredWardId?: true
+    preferredBedType?: true
+    clinicalNotes?: true
+    status?: true
+    reviewedById?: true
+    reviewedAt?: true
+    reviewNotes?: true
+    fulfilledAt?: true
+    admissionId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type IpdRequestMaxAggregateInputType = {
+    id?: true
+    requestNumber?: true
+    visitId?: true
+    requestedById?: true
+    reasonForAdmission?: true
+    admittingDiagnosis?: true
+    urgency?: true
+    preferredWardId?: true
+    preferredBedType?: true
+    clinicalNotes?: true
+    status?: true
+    reviewedById?: true
+    reviewedAt?: true
+    reviewNotes?: true
+    fulfilledAt?: true
+    admissionId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type IpdRequestCountAggregateInputType = {
+    id?: true
+    requestNumber?: true
+    visitId?: true
+    requestedById?: true
+    reasonForAdmission?: true
+    admittingDiagnosis?: true
+    urgency?: true
+    preferredWardId?: true
+    preferredBedType?: true
+    clinicalNotes?: true
+    status?: true
+    reviewedById?: true
+    reviewedAt?: true
+    reviewNotes?: true
+    fulfilledAt?: true
+    admissionId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type IpdRequestAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IpdRequest to aggregate.
+     */
+    where?: IpdRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpdRequests to fetch.
+     */
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: IpdRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpdRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpdRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned IpdRequests
+    **/
+    _count?: true | IpdRequestCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: IpdRequestMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: IpdRequestMaxAggregateInputType
+  }
+
+  export type GetIpdRequestAggregateType<T extends IpdRequestAggregateArgs> = {
+        [P in keyof T & keyof AggregateIpdRequest]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateIpdRequest[P]>
+      : GetScalarType<T[P], AggregateIpdRequest[P]>
+  }
+
+
+
+
+  export type IpdRequestGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IpdRequestWhereInput
+    orderBy?: IpdRequestOrderByWithAggregationInput | IpdRequestOrderByWithAggregationInput[]
+    by: IpdRequestScalarFieldEnum[] | IpdRequestScalarFieldEnum
+    having?: IpdRequestScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: IpdRequestCountAggregateInputType | true
+    _min?: IpdRequestMinAggregateInputType
+    _max?: IpdRequestMaxAggregateInputType
+  }
+
+  export type IpdRequestGroupByOutputType = {
+    id: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis: string | null
+    urgency: string
+    preferredWardId: string | null
+    preferredBedType: string | null
+    clinicalNotes: string | null
+    status: string
+    reviewedById: string | null
+    reviewedAt: Date | null
+    reviewNotes: string | null
+    fulfilledAt: Date | null
+    admissionId: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: IpdRequestCountAggregateOutputType | null
+    _min: IpdRequestMinAggregateOutputType | null
+    _max: IpdRequestMaxAggregateOutputType | null
+  }
+
+  type GetIpdRequestGroupByPayload<T extends IpdRequestGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<IpdRequestGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof IpdRequestGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], IpdRequestGroupByOutputType[P]>
+            : GetScalarType<T[P], IpdRequestGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type IpdRequestSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    requestNumber?: boolean
+    visitId?: boolean
+    requestedById?: boolean
+    reasonForAdmission?: boolean
+    admittingDiagnosis?: boolean
+    urgency?: boolean
+    preferredWardId?: boolean
+    preferredBedType?: boolean
+    clinicalNotes?: boolean
+    status?: boolean
+    reviewedById?: boolean
+    reviewedAt?: boolean
+    reviewNotes?: boolean
+    fulfilledAt?: boolean
+    admissionId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    visit?: boolean | VisitDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    reviewedBy?: boolean | IpdRequest$reviewedByArgs<ExtArgs>
+    preferredWard?: boolean | IpdRequest$preferredWardArgs<ExtArgs>
+    admission?: boolean | IpdRequest$admissionArgs<ExtArgs>
+  }, ExtArgs["result"]["ipdRequest"]>
+
+  export type IpdRequestSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    requestNumber?: boolean
+    visitId?: boolean
+    requestedById?: boolean
+    reasonForAdmission?: boolean
+    admittingDiagnosis?: boolean
+    urgency?: boolean
+    preferredWardId?: boolean
+    preferredBedType?: boolean
+    clinicalNotes?: boolean
+    status?: boolean
+    reviewedById?: boolean
+    reviewedAt?: boolean
+    reviewNotes?: boolean
+    fulfilledAt?: boolean
+    admissionId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    visit?: boolean | VisitDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    reviewedBy?: boolean | IpdRequest$reviewedByArgs<ExtArgs>
+    preferredWard?: boolean | IpdRequest$preferredWardArgs<ExtArgs>
+    admission?: boolean | IpdRequest$admissionArgs<ExtArgs>
+  }, ExtArgs["result"]["ipdRequest"]>
+
+  export type IpdRequestSelectScalar = {
+    id?: boolean
+    requestNumber?: boolean
+    visitId?: boolean
+    requestedById?: boolean
+    reasonForAdmission?: boolean
+    admittingDiagnosis?: boolean
+    urgency?: boolean
+    preferredWardId?: boolean
+    preferredBedType?: boolean
+    clinicalNotes?: boolean
+    status?: boolean
+    reviewedById?: boolean
+    reviewedAt?: boolean
+    reviewNotes?: boolean
+    fulfilledAt?: boolean
+    admissionId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type IpdRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    visit?: boolean | VisitDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    reviewedBy?: boolean | IpdRequest$reviewedByArgs<ExtArgs>
+    preferredWard?: boolean | IpdRequest$preferredWardArgs<ExtArgs>
+    admission?: boolean | IpdRequest$admissionArgs<ExtArgs>
+  }
+  export type IpdRequestIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    visit?: boolean | VisitDefaultArgs<ExtArgs>
+    requestedBy?: boolean | UserDefaultArgs<ExtArgs>
+    reviewedBy?: boolean | IpdRequest$reviewedByArgs<ExtArgs>
+    preferredWard?: boolean | IpdRequest$preferredWardArgs<ExtArgs>
+    admission?: boolean | IpdRequest$admissionArgs<ExtArgs>
+  }
+
+  export type $IpdRequestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "IpdRequest"
+    objects: {
+      visit: Prisma.$VisitPayload<ExtArgs>
+      requestedBy: Prisma.$UserPayload<ExtArgs>
+      reviewedBy: Prisma.$UserPayload<ExtArgs> | null
+      preferredWard: Prisma.$WardPayload<ExtArgs> | null
+      admission: Prisma.$AdmissionPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      requestNumber: string
+      visitId: string
+      requestedById: string
+      reasonForAdmission: string
+      admittingDiagnosis: string | null
+      urgency: string
+      preferredWardId: string | null
+      preferredBedType: string | null
+      clinicalNotes: string | null
+      status: string
+      reviewedById: string | null
+      reviewedAt: Date | null
+      reviewNotes: string | null
+      fulfilledAt: Date | null
+      admissionId: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["ipdRequest"]>
+    composites: {}
+  }
+
+  type IpdRequestGetPayload<S extends boolean | null | undefined | IpdRequestDefaultArgs> = $Result.GetResult<Prisma.$IpdRequestPayload, S>
+
+  type IpdRequestCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<IpdRequestFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: IpdRequestCountAggregateInputType | true
+    }
+
+  export interface IpdRequestDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['IpdRequest'], meta: { name: 'IpdRequest' } }
+    /**
+     * Find zero or one IpdRequest that matches the filter.
+     * @param {IpdRequestFindUniqueArgs} args - Arguments to find a IpdRequest
+     * @example
+     * // Get one IpdRequest
+     * const ipdRequest = await prisma.ipdRequest.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends IpdRequestFindUniqueArgs>(args: SelectSubset<T, IpdRequestFindUniqueArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one IpdRequest that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {IpdRequestFindUniqueOrThrowArgs} args - Arguments to find a IpdRequest
+     * @example
+     * // Get one IpdRequest
+     * const ipdRequest = await prisma.ipdRequest.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends IpdRequestFindUniqueOrThrowArgs>(args: SelectSubset<T, IpdRequestFindUniqueOrThrowArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first IpdRequest that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpdRequestFindFirstArgs} args - Arguments to find a IpdRequest
+     * @example
+     * // Get one IpdRequest
+     * const ipdRequest = await prisma.ipdRequest.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends IpdRequestFindFirstArgs>(args?: SelectSubset<T, IpdRequestFindFirstArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first IpdRequest that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpdRequestFindFirstOrThrowArgs} args - Arguments to find a IpdRequest
+     * @example
+     * // Get one IpdRequest
+     * const ipdRequest = await prisma.ipdRequest.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends IpdRequestFindFirstOrThrowArgs>(args?: SelectSubset<T, IpdRequestFindFirstOrThrowArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more IpdRequests that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpdRequestFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all IpdRequests
+     * const ipdRequests = await prisma.ipdRequest.findMany()
+     * 
+     * // Get first 10 IpdRequests
+     * const ipdRequests = await prisma.ipdRequest.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const ipdRequestWithIdOnly = await prisma.ipdRequest.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends IpdRequestFindManyArgs>(args?: SelectSubset<T, IpdRequestFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a IpdRequest.
+     * @param {IpdRequestCreateArgs} args - Arguments to create a IpdRequest.
+     * @example
+     * // Create one IpdRequest
+     * const IpdRequest = await prisma.ipdRequest.create({
+     *   data: {
+     *     // ... data to create a IpdRequest
+     *   }
+     * })
+     * 
+     */
+    create<T extends IpdRequestCreateArgs>(args: SelectSubset<T, IpdRequestCreateArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many IpdRequests.
+     * @param {IpdRequestCreateManyArgs} args - Arguments to create many IpdRequests.
+     * @example
+     * // Create many IpdRequests
+     * const ipdRequest = await prisma.ipdRequest.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends IpdRequestCreateManyArgs>(args?: SelectSubset<T, IpdRequestCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many IpdRequests and returns the data saved in the database.
+     * @param {IpdRequestCreateManyAndReturnArgs} args - Arguments to create many IpdRequests.
+     * @example
+     * // Create many IpdRequests
+     * const ipdRequest = await prisma.ipdRequest.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many IpdRequests and only return the `id`
+     * const ipdRequestWithIdOnly = await prisma.ipdRequest.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends IpdRequestCreateManyAndReturnArgs>(args?: SelectSubset<T, IpdRequestCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a IpdRequest.
+     * @param {IpdRequestDeleteArgs} args - Arguments to delete one IpdRequest.
+     * @example
+     * // Delete one IpdRequest
+     * const IpdRequest = await prisma.ipdRequest.delete({
+     *   where: {
+     *     // ... filter to delete one IpdRequest
+     *   }
+     * })
+     * 
+     */
+    delete<T extends IpdRequestDeleteArgs>(args: SelectSubset<T, IpdRequestDeleteArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one IpdRequest.
+     * @param {IpdRequestUpdateArgs} args - Arguments to update one IpdRequest.
+     * @example
+     * // Update one IpdRequest
+     * const ipdRequest = await prisma.ipdRequest.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends IpdRequestUpdateArgs>(args: SelectSubset<T, IpdRequestUpdateArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more IpdRequests.
+     * @param {IpdRequestDeleteManyArgs} args - Arguments to filter IpdRequests to delete.
+     * @example
+     * // Delete a few IpdRequests
+     * const { count } = await prisma.ipdRequest.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends IpdRequestDeleteManyArgs>(args?: SelectSubset<T, IpdRequestDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IpdRequests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpdRequestUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many IpdRequests
+     * const ipdRequest = await prisma.ipdRequest.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends IpdRequestUpdateManyArgs>(args: SelectSubset<T, IpdRequestUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one IpdRequest.
+     * @param {IpdRequestUpsertArgs} args - Arguments to update or create a IpdRequest.
+     * @example
+     * // Update or create a IpdRequest
+     * const ipdRequest = await prisma.ipdRequest.upsert({
+     *   create: {
+     *     // ... data to create a IpdRequest
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the IpdRequest we want to update
+     *   }
+     * })
+     */
+    upsert<T extends IpdRequestUpsertArgs>(args: SelectSubset<T, IpdRequestUpsertArgs<ExtArgs>>): Prisma__IpdRequestClient<$Result.GetResult<Prisma.$IpdRequestPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of IpdRequests.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpdRequestCountArgs} args - Arguments to filter IpdRequests to count.
+     * @example
+     * // Count the number of IpdRequests
+     * const count = await prisma.ipdRequest.count({
+     *   where: {
+     *     // ... the filter for the IpdRequests we want to count
+     *   }
+     * })
+    **/
+    count<T extends IpdRequestCountArgs>(
+      args?: Subset<T, IpdRequestCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], IpdRequestCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a IpdRequest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpdRequestAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends IpdRequestAggregateArgs>(args: Subset<T, IpdRequestAggregateArgs>): Prisma.PrismaPromise<GetIpdRequestAggregateType<T>>
+
+    /**
+     * Group by IpdRequest.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpdRequestGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends IpdRequestGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: IpdRequestGroupByArgs['orderBy'] }
+        : { orderBy?: IpdRequestGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, IpdRequestGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetIpdRequestGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the IpdRequest model
+   */
+  readonly fields: IpdRequestFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for IpdRequest.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__IpdRequestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    visit<T extends VisitDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VisitDefaultArgs<ExtArgs>>): Prisma__VisitClient<$Result.GetResult<Prisma.$VisitPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    requestedBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    reviewedBy<T extends IpdRequest$reviewedByArgs<ExtArgs> = {}>(args?: Subset<T, IpdRequest$reviewedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    preferredWard<T extends IpdRequest$preferredWardArgs<ExtArgs> = {}>(args?: Subset<T, IpdRequest$preferredWardArgs<ExtArgs>>): Prisma__WardClient<$Result.GetResult<Prisma.$WardPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    admission<T extends IpdRequest$admissionArgs<ExtArgs> = {}>(args?: Subset<T, IpdRequest$admissionArgs<ExtArgs>>): Prisma__AdmissionClient<$Result.GetResult<Prisma.$AdmissionPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the IpdRequest model
+   */ 
+  interface IpdRequestFieldRefs {
+    readonly id: FieldRef<"IpdRequest", 'String'>
+    readonly requestNumber: FieldRef<"IpdRequest", 'String'>
+    readonly visitId: FieldRef<"IpdRequest", 'String'>
+    readonly requestedById: FieldRef<"IpdRequest", 'String'>
+    readonly reasonForAdmission: FieldRef<"IpdRequest", 'String'>
+    readonly admittingDiagnosis: FieldRef<"IpdRequest", 'String'>
+    readonly urgency: FieldRef<"IpdRequest", 'String'>
+    readonly preferredWardId: FieldRef<"IpdRequest", 'String'>
+    readonly preferredBedType: FieldRef<"IpdRequest", 'String'>
+    readonly clinicalNotes: FieldRef<"IpdRequest", 'String'>
+    readonly status: FieldRef<"IpdRequest", 'String'>
+    readonly reviewedById: FieldRef<"IpdRequest", 'String'>
+    readonly reviewedAt: FieldRef<"IpdRequest", 'DateTime'>
+    readonly reviewNotes: FieldRef<"IpdRequest", 'String'>
+    readonly fulfilledAt: FieldRef<"IpdRequest", 'DateTime'>
+    readonly admissionId: FieldRef<"IpdRequest", 'String'>
+    readonly createdAt: FieldRef<"IpdRequest", 'DateTime'>
+    readonly updatedAt: FieldRef<"IpdRequest", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * IpdRequest findUnique
+   */
+  export type IpdRequestFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which IpdRequest to fetch.
+     */
+    where: IpdRequestWhereUniqueInput
+  }
+
+  /**
+   * IpdRequest findUniqueOrThrow
+   */
+  export type IpdRequestFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which IpdRequest to fetch.
+     */
+    where: IpdRequestWhereUniqueInput
+  }
+
+  /**
+   * IpdRequest findFirst
+   */
+  export type IpdRequestFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which IpdRequest to fetch.
+     */
+    where?: IpdRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpdRequests to fetch.
+     */
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IpdRequests.
+     */
+    cursor?: IpdRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpdRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpdRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IpdRequests.
+     */
+    distinct?: IpdRequestScalarFieldEnum | IpdRequestScalarFieldEnum[]
+  }
+
+  /**
+   * IpdRequest findFirstOrThrow
+   */
+  export type IpdRequestFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which IpdRequest to fetch.
+     */
+    where?: IpdRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpdRequests to fetch.
+     */
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IpdRequests.
+     */
+    cursor?: IpdRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpdRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpdRequests.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IpdRequests.
+     */
+    distinct?: IpdRequestScalarFieldEnum | IpdRequestScalarFieldEnum[]
+  }
+
+  /**
+   * IpdRequest findMany
+   */
+  export type IpdRequestFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * Filter, which IpdRequests to fetch.
+     */
+    where?: IpdRequestWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpdRequests to fetch.
+     */
+    orderBy?: IpdRequestOrderByWithRelationInput | IpdRequestOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing IpdRequests.
+     */
+    cursor?: IpdRequestWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpdRequests from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpdRequests.
+     */
+    skip?: number
+    distinct?: IpdRequestScalarFieldEnum | IpdRequestScalarFieldEnum[]
+  }
+
+  /**
+   * IpdRequest create
+   */
+  export type IpdRequestCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * The data needed to create a IpdRequest.
+     */
+    data: XOR<IpdRequestCreateInput, IpdRequestUncheckedCreateInput>
+  }
+
+  /**
+   * IpdRequest createMany
+   */
+  export type IpdRequestCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many IpdRequests.
+     */
+    data: IpdRequestCreateManyInput | IpdRequestCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IpdRequest createManyAndReturn
+   */
+  export type IpdRequestCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many IpdRequests.
+     */
+    data: IpdRequestCreateManyInput | IpdRequestCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * IpdRequest update
+   */
+  export type IpdRequestUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * The data needed to update a IpdRequest.
+     */
+    data: XOR<IpdRequestUpdateInput, IpdRequestUncheckedUpdateInput>
+    /**
+     * Choose, which IpdRequest to update.
+     */
+    where: IpdRequestWhereUniqueInput
+  }
+
+  /**
+   * IpdRequest updateMany
+   */
+  export type IpdRequestUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update IpdRequests.
+     */
+    data: XOR<IpdRequestUpdateManyMutationInput, IpdRequestUncheckedUpdateManyInput>
+    /**
+     * Filter which IpdRequests to update
+     */
+    where?: IpdRequestWhereInput
+  }
+
+  /**
+   * IpdRequest upsert
+   */
+  export type IpdRequestUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * The filter to search for the IpdRequest to update in case it exists.
+     */
+    where: IpdRequestWhereUniqueInput
+    /**
+     * In case the IpdRequest found by the `where` argument doesn't exist, create a new IpdRequest with this data.
+     */
+    create: XOR<IpdRequestCreateInput, IpdRequestUncheckedCreateInput>
+    /**
+     * In case the IpdRequest was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<IpdRequestUpdateInput, IpdRequestUncheckedUpdateInput>
+  }
+
+  /**
+   * IpdRequest delete
+   */
+  export type IpdRequestDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
+    /**
+     * Filter which IpdRequest to delete.
+     */
+    where: IpdRequestWhereUniqueInput
+  }
+
+  /**
+   * IpdRequest deleteMany
+   */
+  export type IpdRequestDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IpdRequests to delete
+     */
+    where?: IpdRequestWhereInput
+  }
+
+  /**
+   * IpdRequest.reviewedBy
+   */
+  export type IpdRequest$reviewedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * IpdRequest.preferredWard
+   */
+  export type IpdRequest$preferredWardArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ward
+     */
+    select?: WardSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WardInclude<ExtArgs> | null
+    where?: WardWhereInput
+  }
+
+  /**
+   * IpdRequest.admission
+   */
+  export type IpdRequest$admissionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Admission
+     */
+    select?: AdmissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdmissionInclude<ExtArgs> | null
+    where?: AdmissionWhereInput
+  }
+
+  /**
+   * IpdRequest without action
+   */
+  export type IpdRequestDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpdRequest
+     */
+    select?: IpdRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: IpdRequestInclude<ExtArgs> | null
   }
 
 
@@ -90738,6 +92134,30 @@ export namespace Prisma {
   export type AdmissionScalarFieldEnum = (typeof AdmissionScalarFieldEnum)[keyof typeof AdmissionScalarFieldEnum]
 
 
+  export const IpdRequestScalarFieldEnum: {
+    id: 'id',
+    requestNumber: 'requestNumber',
+    visitId: 'visitId',
+    requestedById: 'requestedById',
+    reasonForAdmission: 'reasonForAdmission',
+    admittingDiagnosis: 'admittingDiagnosis',
+    urgency: 'urgency',
+    preferredWardId: 'preferredWardId',
+    preferredBedType: 'preferredBedType',
+    clinicalNotes: 'clinicalNotes',
+    status: 'status',
+    reviewedById: 'reviewedById',
+    reviewedAt: 'reviewedAt',
+    reviewNotes: 'reviewNotes',
+    fulfilledAt: 'fulfilledAt',
+    admissionId: 'admissionId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type IpdRequestScalarFieldEnum = (typeof IpdRequestScalarFieldEnum)[keyof typeof IpdRequestScalarFieldEnum]
+
+
   export const BillableItemScalarFieldEnum: {
     id: 'id',
     itemCode: 'itemCode',
@@ -91595,6 +93015,8 @@ export namespace Prisma {
     accounts?: AccountListRelationFilter
     closedPeriods?: AccountingPeriodListRelationFilter
     admissions?: AdmissionListRelationFilter
+    ipdRequestsRequested?: IpdRequestListRelationFilter
+    ipdRequestsReviewed?: IpdRequestListRelationFilter
     appointments?: AppointmentListRelationFilter
     createdBudgets?: BudgetListRelationFilter
     finalizedDailySummaries?: DailyChargeSummaryListRelationFilter
@@ -91655,6 +93077,8 @@ export namespace Prisma {
     accounts?: AccountOrderByRelationAggregateInput
     closedPeriods?: AccountingPeriodOrderByRelationAggregateInput
     admissions?: AdmissionOrderByRelationAggregateInput
+    ipdRequestsRequested?: IpdRequestOrderByRelationAggregateInput
+    ipdRequestsReviewed?: IpdRequestOrderByRelationAggregateInput
     appointments?: AppointmentOrderByRelationAggregateInput
     createdBudgets?: BudgetOrderByRelationAggregateInput
     finalizedDailySummaries?: DailyChargeSummaryOrderByRelationAggregateInput
@@ -91718,6 +93142,8 @@ export namespace Prisma {
     accounts?: AccountListRelationFilter
     closedPeriods?: AccountingPeriodListRelationFilter
     admissions?: AdmissionListRelationFilter
+    ipdRequestsRequested?: IpdRequestListRelationFilter
+    ipdRequestsReviewed?: IpdRequestListRelationFilter
     appointments?: AppointmentListRelationFilter
     createdBudgets?: BudgetListRelationFilter
     finalizedDailySummaries?: DailyChargeSummaryListRelationFilter
@@ -92340,6 +93766,7 @@ export namespace Prisma {
     discontinuationById?: StringNullableFilter<"Visit"> | string | null
     linkedPriorVisitId?: StringNullableFilter<"Visit"> | string | null
     admission?: XOR<AdmissionNullableRelationFilter, AdmissionWhereInput> | null
+    ipdRequests?: IpdRequestListRelationFilter
     diagnoses?: DiagnosisListRelationFilter
     dispensingLogs?: DispensingLogListRelationFilter
     invoices?: InvoiceListRelationFilter
@@ -92395,6 +93822,7 @@ export namespace Prisma {
     discontinuationById?: SortOrderInput | SortOrder
     linkedPriorVisitId?: SortOrderInput | SortOrder
     admission?: AdmissionOrderByWithRelationInput
+    ipdRequests?: IpdRequestOrderByRelationAggregateInput
     diagnoses?: DiagnosisOrderByRelationAggregateInput
     dispensingLogs?: DispensingLogOrderByRelationAggregateInput
     invoices?: InvoiceOrderByRelationAggregateInput
@@ -92453,6 +93881,7 @@ export namespace Prisma {
     discontinuationById?: StringNullableFilter<"Visit"> | string | null
     linkedPriorVisitId?: StringNullableFilter<"Visit"> | string | null
     admission?: XOR<AdmissionNullableRelationFilter, AdmissionWhereInput> | null
+    ipdRequests?: IpdRequestListRelationFilter
     diagnoses?: DiagnosisListRelationFilter
     dispensingLogs?: DispensingLogListRelationFilter
     invoices?: InvoiceListRelationFilter
@@ -98312,6 +99741,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Ward"> | Date | string
     updatedAt?: DateTimeFilter<"Ward"> | Date | string
     admissions?: AdmissionListRelationFilter
+    ipdRequests?: IpdRequestListRelationFilter
     beds?: BedListRelationFilter
     floorStocks?: FloorStockListRelationFilter
   }
@@ -98325,6 +99755,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     admissions?: AdmissionOrderByRelationAggregateInput
+    ipdRequests?: IpdRequestOrderByRelationAggregateInput
     beds?: BedOrderByRelationAggregateInput
     floorStocks?: FloorStockOrderByRelationAggregateInput
   }
@@ -98341,6 +99772,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Ward"> | Date | string
     updatedAt?: DateTimeFilter<"Ward"> | Date | string
     admissions?: AdmissionListRelationFilter
+    ipdRequests?: IpdRequestListRelationFilter
     beds?: BedListRelationFilter
     floorStocks?: FloorStockListRelationFilter
   }, "id">
@@ -98479,6 +99911,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageListRelationFilter
     charges?: InpatientChargeListRelationFilter
     deposits?: InpatientDepositListRelationFilter
+    ipdRequest?: XOR<IpdRequestNullableRelationFilter, IpdRequestWhereInput> | null
   }
 
   export type AdmissionOrderByWithRelationInput = {
@@ -98504,6 +99937,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageOrderByRelationAggregateInput
     charges?: InpatientChargeOrderByRelationAggregateInput
     deposits?: InpatientDepositOrderByRelationAggregateInput
+    ipdRequest?: IpdRequestOrderByWithRelationInput
   }
 
   export type AdmissionWhereUniqueInput = Prisma.AtLeast<{
@@ -98532,6 +99966,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageListRelationFilter
     charges?: InpatientChargeListRelationFilter
     deposits?: InpatientDepositListRelationFilter
+    ipdRequest?: XOR<IpdRequestNullableRelationFilter, IpdRequestWhereInput> | null
   }, "id" | "admissionNumber" | "visitId">
 
   export type AdmissionOrderByWithAggregationInput = {
@@ -98570,6 +100005,138 @@ export namespace Prisma {
     type?: StringWithAggregatesFilter<"Admission"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Admission"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Admission"> | Date | string
+  }
+
+  export type IpdRequestWhereInput = {
+    AND?: IpdRequestWhereInput | IpdRequestWhereInput[]
+    OR?: IpdRequestWhereInput[]
+    NOT?: IpdRequestWhereInput | IpdRequestWhereInput[]
+    id?: StringFilter<"IpdRequest"> | string
+    requestNumber?: StringFilter<"IpdRequest"> | string
+    visitId?: StringFilter<"IpdRequest"> | string
+    requestedById?: StringFilter<"IpdRequest"> | string
+    reasonForAdmission?: StringFilter<"IpdRequest"> | string
+    admittingDiagnosis?: StringNullableFilter<"IpdRequest"> | string | null
+    urgency?: StringFilter<"IpdRequest"> | string
+    preferredWardId?: StringNullableFilter<"IpdRequest"> | string | null
+    preferredBedType?: StringNullableFilter<"IpdRequest"> | string | null
+    clinicalNotes?: StringNullableFilter<"IpdRequest"> | string | null
+    status?: StringFilter<"IpdRequest"> | string
+    reviewedById?: StringNullableFilter<"IpdRequest"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"IpdRequest"> | Date | string | null
+    reviewNotes?: StringNullableFilter<"IpdRequest"> | string | null
+    fulfilledAt?: DateTimeNullableFilter<"IpdRequest"> | Date | string | null
+    admissionId?: StringNullableFilter<"IpdRequest"> | string | null
+    createdAt?: DateTimeFilter<"IpdRequest"> | Date | string
+    updatedAt?: DateTimeFilter<"IpdRequest"> | Date | string
+    visit?: XOR<VisitRelationFilter, VisitWhereInput>
+    requestedBy?: XOR<UserRelationFilter, UserWhereInput>
+    reviewedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    preferredWard?: XOR<WardNullableRelationFilter, WardWhereInput> | null
+    admission?: XOR<AdmissionNullableRelationFilter, AdmissionWhereInput> | null
+  }
+
+  export type IpdRequestOrderByWithRelationInput = {
+    id?: SortOrder
+    requestNumber?: SortOrder
+    visitId?: SortOrder
+    requestedById?: SortOrder
+    reasonForAdmission?: SortOrder
+    admittingDiagnosis?: SortOrderInput | SortOrder
+    urgency?: SortOrder
+    preferredWardId?: SortOrderInput | SortOrder
+    preferredBedType?: SortOrderInput | SortOrder
+    clinicalNotes?: SortOrderInput | SortOrder
+    status?: SortOrder
+    reviewedById?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewNotes?: SortOrderInput | SortOrder
+    fulfilledAt?: SortOrderInput | SortOrder
+    admissionId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    visit?: VisitOrderByWithRelationInput
+    requestedBy?: UserOrderByWithRelationInput
+    reviewedBy?: UserOrderByWithRelationInput
+    preferredWard?: WardOrderByWithRelationInput
+    admission?: AdmissionOrderByWithRelationInput
+  }
+
+  export type IpdRequestWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    requestNumber?: string
+    admissionId?: string
+    AND?: IpdRequestWhereInput | IpdRequestWhereInput[]
+    OR?: IpdRequestWhereInput[]
+    NOT?: IpdRequestWhereInput | IpdRequestWhereInput[]
+    visitId?: StringFilter<"IpdRequest"> | string
+    requestedById?: StringFilter<"IpdRequest"> | string
+    reasonForAdmission?: StringFilter<"IpdRequest"> | string
+    admittingDiagnosis?: StringNullableFilter<"IpdRequest"> | string | null
+    urgency?: StringFilter<"IpdRequest"> | string
+    preferredWardId?: StringNullableFilter<"IpdRequest"> | string | null
+    preferredBedType?: StringNullableFilter<"IpdRequest"> | string | null
+    clinicalNotes?: StringNullableFilter<"IpdRequest"> | string | null
+    status?: StringFilter<"IpdRequest"> | string
+    reviewedById?: StringNullableFilter<"IpdRequest"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"IpdRequest"> | Date | string | null
+    reviewNotes?: StringNullableFilter<"IpdRequest"> | string | null
+    fulfilledAt?: DateTimeNullableFilter<"IpdRequest"> | Date | string | null
+    createdAt?: DateTimeFilter<"IpdRequest"> | Date | string
+    updatedAt?: DateTimeFilter<"IpdRequest"> | Date | string
+    visit?: XOR<VisitRelationFilter, VisitWhereInput>
+    requestedBy?: XOR<UserRelationFilter, UserWhereInput>
+    reviewedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    preferredWard?: XOR<WardNullableRelationFilter, WardWhereInput> | null
+    admission?: XOR<AdmissionNullableRelationFilter, AdmissionWhereInput> | null
+  }, "id" | "requestNumber" | "admissionId">
+
+  export type IpdRequestOrderByWithAggregationInput = {
+    id?: SortOrder
+    requestNumber?: SortOrder
+    visitId?: SortOrder
+    requestedById?: SortOrder
+    reasonForAdmission?: SortOrder
+    admittingDiagnosis?: SortOrderInput | SortOrder
+    urgency?: SortOrder
+    preferredWardId?: SortOrderInput | SortOrder
+    preferredBedType?: SortOrderInput | SortOrder
+    clinicalNotes?: SortOrderInput | SortOrder
+    status?: SortOrder
+    reviewedById?: SortOrderInput | SortOrder
+    reviewedAt?: SortOrderInput | SortOrder
+    reviewNotes?: SortOrderInput | SortOrder
+    fulfilledAt?: SortOrderInput | SortOrder
+    admissionId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: IpdRequestCountOrderByAggregateInput
+    _max?: IpdRequestMaxOrderByAggregateInput
+    _min?: IpdRequestMinOrderByAggregateInput
+  }
+
+  export type IpdRequestScalarWhereWithAggregatesInput = {
+    AND?: IpdRequestScalarWhereWithAggregatesInput | IpdRequestScalarWhereWithAggregatesInput[]
+    OR?: IpdRequestScalarWhereWithAggregatesInput[]
+    NOT?: IpdRequestScalarWhereWithAggregatesInput | IpdRequestScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"IpdRequest"> | string
+    requestNumber?: StringWithAggregatesFilter<"IpdRequest"> | string
+    visitId?: StringWithAggregatesFilter<"IpdRequest"> | string
+    requestedById?: StringWithAggregatesFilter<"IpdRequest"> | string
+    reasonForAdmission?: StringWithAggregatesFilter<"IpdRequest"> | string
+    admittingDiagnosis?: StringNullableWithAggregatesFilter<"IpdRequest"> | string | null
+    urgency?: StringWithAggregatesFilter<"IpdRequest"> | string
+    preferredWardId?: StringNullableWithAggregatesFilter<"IpdRequest"> | string | null
+    preferredBedType?: StringNullableWithAggregatesFilter<"IpdRequest"> | string | null
+    clinicalNotes?: StringNullableWithAggregatesFilter<"IpdRequest"> | string | null
+    status?: StringWithAggregatesFilter<"IpdRequest"> | string
+    reviewedById?: StringNullableWithAggregatesFilter<"IpdRequest"> | string | null
+    reviewedAt?: DateTimeNullableWithAggregatesFilter<"IpdRequest"> | Date | string | null
+    reviewNotes?: StringNullableWithAggregatesFilter<"IpdRequest"> | string | null
+    fulfilledAt?: DateTimeNullableWithAggregatesFilter<"IpdRequest"> | Date | string | null
+    admissionId?: StringNullableWithAggregatesFilter<"IpdRequest"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"IpdRequest"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"IpdRequest"> | Date | string
   }
 
   export type BillableItemWhereInput = {
@@ -99543,6 +101110,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -99602,6 +101171,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -99659,6 +101230,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -99718,6 +101291,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -100419,6 +101994,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -100474,6 +102050,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -100515,6 +102092,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -100570,6 +102148,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -107244,6 +108823,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     admissions?: AdmissionCreateNestedManyWithoutWardInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutPreferredWardInput
     beds?: BedCreateNestedManyWithoutWardInput
     floorStocks?: FloorStockCreateNestedManyWithoutWardInput
   }
@@ -107257,6 +108837,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     admissions?: AdmissionUncheckedCreateNestedManyWithoutWardInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutPreferredWardInput
     beds?: BedUncheckedCreateNestedManyWithoutWardInput
     floorStocks?: FloorStockUncheckedCreateNestedManyWithoutWardInput
   }
@@ -107270,6 +108851,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admissions?: AdmissionUpdateManyWithoutWardNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutPreferredWardNestedInput
     beds?: BedUpdateManyWithoutWardNestedInput
     floorStocks?: FloorStockUpdateManyWithoutWardNestedInput
   }
@@ -107283,6 +108865,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admissions?: AdmissionUncheckedUpdateManyWithoutWardNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutPreferredWardNestedInput
     beds?: BedUncheckedUpdateManyWithoutWardNestedInput
     floorStocks?: FloorStockUncheckedUpdateManyWithoutWardNestedInput
   }
@@ -107422,6 +109005,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateInput = {
@@ -107442,6 +109026,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUpdateInput = {
@@ -107462,6 +109047,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateInput = {
@@ -107482,6 +109068,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionCreateManyInput = {
@@ -107523,6 +109110,148 @@ export namespace Prisma {
     dischargeDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestCreateInput = {
+    id?: string
+    requestNumber: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    visit: VisitCreateNestedOneWithoutIpdRequestsInput
+    requestedBy: UserCreateNestedOneWithoutIpdRequestsRequestedInput
+    reviewedBy?: UserCreateNestedOneWithoutIpdRequestsReviewedInput
+    preferredWard?: WardCreateNestedOneWithoutIpdRequestsInput
+    admission?: AdmissionCreateNestedOneWithoutIpdRequestInput
+  }
+
+  export type IpdRequestUncheckedCreateInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    visit?: VisitUpdateOneRequiredWithoutIpdRequestsNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutIpdRequestsRequestedNestedInput
+    reviewedBy?: UserUpdateOneWithoutIpdRequestsReviewedNestedInput
+    preferredWard?: WardUpdateOneWithoutIpdRequestsNestedInput
+    admission?: AdmissionUpdateOneWithoutIpdRequestNestedInput
+  }
+
+  export type IpdRequestUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestCreateManyInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -108652,6 +110381,12 @@ export namespace Prisma {
     none?: AdmissionWhereInput
   }
 
+  export type IpdRequestListRelationFilter = {
+    every?: IpdRequestWhereInput
+    some?: IpdRequestWhereInput
+    none?: IpdRequestWhereInput
+  }
+
   export type AppointmentListRelationFilter = {
     every?: AppointmentWhereInput
     some?: AppointmentWhereInput
@@ -108839,6 +110574,10 @@ export namespace Prisma {
   }
 
   export type AdmissionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type IpdRequestOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -114036,6 +115775,11 @@ export namespace Prisma {
     isNot?: WardWhereInput | null
   }
 
+  export type IpdRequestNullableRelationFilter = {
+    is?: IpdRequestWhereInput | null
+    isNot?: IpdRequestWhereInput | null
+  }
+
   export type AdmissionCountOrderByAggregateInput = {
     id?: SortOrder
     admissionNumber?: SortOrder
@@ -114080,6 +115824,69 @@ export namespace Prisma {
     dischargeDate?: SortOrder
     status?: SortOrder
     type?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type IpdRequestCountOrderByAggregateInput = {
+    id?: SortOrder
+    requestNumber?: SortOrder
+    visitId?: SortOrder
+    requestedById?: SortOrder
+    reasonForAdmission?: SortOrder
+    admittingDiagnosis?: SortOrder
+    urgency?: SortOrder
+    preferredWardId?: SortOrder
+    preferredBedType?: SortOrder
+    clinicalNotes?: SortOrder
+    status?: SortOrder
+    reviewedById?: SortOrder
+    reviewedAt?: SortOrder
+    reviewNotes?: SortOrder
+    fulfilledAt?: SortOrder
+    admissionId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type IpdRequestMaxOrderByAggregateInput = {
+    id?: SortOrder
+    requestNumber?: SortOrder
+    visitId?: SortOrder
+    requestedById?: SortOrder
+    reasonForAdmission?: SortOrder
+    admittingDiagnosis?: SortOrder
+    urgency?: SortOrder
+    preferredWardId?: SortOrder
+    preferredBedType?: SortOrder
+    clinicalNotes?: SortOrder
+    status?: SortOrder
+    reviewedById?: SortOrder
+    reviewedAt?: SortOrder
+    reviewNotes?: SortOrder
+    fulfilledAt?: SortOrder
+    admissionId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type IpdRequestMinOrderByAggregateInput = {
+    id?: SortOrder
+    requestNumber?: SortOrder
+    visitId?: SortOrder
+    requestedById?: SortOrder
+    reasonForAdmission?: SortOrder
+    admittingDiagnosis?: SortOrder
+    urgency?: SortOrder
+    preferredWardId?: SortOrder
+    preferredBedType?: SortOrder
+    clinicalNotes?: SortOrder
+    status?: SortOrder
+    reviewedById?: SortOrder
+    reviewedAt?: SortOrder
+    reviewNotes?: SortOrder
+    fulfilledAt?: SortOrder
+    admissionId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -114779,6 +116586,20 @@ export namespace Prisma {
     connect?: AdmissionWhereUniqueInput | AdmissionWhereUniqueInput[]
   }
 
+  export type IpdRequestCreateNestedManyWithoutRequestedByInput = {
+    create?: XOR<IpdRequestCreateWithoutRequestedByInput, IpdRequestUncheckedCreateWithoutRequestedByInput> | IpdRequestCreateWithoutRequestedByInput[] | IpdRequestUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutRequestedByInput | IpdRequestCreateOrConnectWithoutRequestedByInput[]
+    createMany?: IpdRequestCreateManyRequestedByInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+  }
+
+  export type IpdRequestCreateNestedManyWithoutReviewedByInput = {
+    create?: XOR<IpdRequestCreateWithoutReviewedByInput, IpdRequestUncheckedCreateWithoutReviewedByInput> | IpdRequestCreateWithoutReviewedByInput[] | IpdRequestUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutReviewedByInput | IpdRequestCreateOrConnectWithoutReviewedByInput[]
+    createMany?: IpdRequestCreateManyReviewedByInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+  }
+
   export type AppointmentCreateNestedManyWithoutDoctorInput = {
     create?: XOR<AppointmentCreateWithoutDoctorInput, AppointmentUncheckedCreateWithoutDoctorInput> | AppointmentCreateWithoutDoctorInput[] | AppointmentUncheckedCreateWithoutDoctorInput[]
     connectOrCreate?: AppointmentCreateOrConnectWithoutDoctorInput | AppointmentCreateOrConnectWithoutDoctorInput[]
@@ -115063,6 +116884,20 @@ export namespace Prisma {
     connectOrCreate?: AdmissionCreateOrConnectWithoutAdmittingDoctorInput | AdmissionCreateOrConnectWithoutAdmittingDoctorInput[]
     createMany?: AdmissionCreateManyAdmittingDoctorInputEnvelope
     connect?: AdmissionWhereUniqueInput | AdmissionWhereUniqueInput[]
+  }
+
+  export type IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput = {
+    create?: XOR<IpdRequestCreateWithoutRequestedByInput, IpdRequestUncheckedCreateWithoutRequestedByInput> | IpdRequestCreateWithoutRequestedByInput[] | IpdRequestUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutRequestedByInput | IpdRequestCreateOrConnectWithoutRequestedByInput[]
+    createMany?: IpdRequestCreateManyRequestedByInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+  }
+
+  export type IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput = {
+    create?: XOR<IpdRequestCreateWithoutReviewedByInput, IpdRequestUncheckedCreateWithoutReviewedByInput> | IpdRequestCreateWithoutReviewedByInput[] | IpdRequestUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutReviewedByInput | IpdRequestCreateOrConnectWithoutReviewedByInput[]
+    createMany?: IpdRequestCreateManyReviewedByInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
   }
 
   export type AppointmentUncheckedCreateNestedManyWithoutDoctorInput = {
@@ -115394,6 +117229,34 @@ export namespace Prisma {
     update?: AdmissionUpdateWithWhereUniqueWithoutAdmittingDoctorInput | AdmissionUpdateWithWhereUniqueWithoutAdmittingDoctorInput[]
     updateMany?: AdmissionUpdateManyWithWhereWithoutAdmittingDoctorInput | AdmissionUpdateManyWithWhereWithoutAdmittingDoctorInput[]
     deleteMany?: AdmissionScalarWhereInput | AdmissionScalarWhereInput[]
+  }
+
+  export type IpdRequestUpdateManyWithoutRequestedByNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutRequestedByInput, IpdRequestUncheckedCreateWithoutRequestedByInput> | IpdRequestCreateWithoutRequestedByInput[] | IpdRequestUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutRequestedByInput | IpdRequestCreateOrConnectWithoutRequestedByInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutRequestedByInput | IpdRequestUpsertWithWhereUniqueWithoutRequestedByInput[]
+    createMany?: IpdRequestCreateManyRequestedByInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutRequestedByInput | IpdRequestUpdateWithWhereUniqueWithoutRequestedByInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutRequestedByInput | IpdRequestUpdateManyWithWhereWithoutRequestedByInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
+  }
+
+  export type IpdRequestUpdateManyWithoutReviewedByNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutReviewedByInput, IpdRequestUncheckedCreateWithoutReviewedByInput> | IpdRequestCreateWithoutReviewedByInput[] | IpdRequestUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutReviewedByInput | IpdRequestCreateOrConnectWithoutReviewedByInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutReviewedByInput | IpdRequestUpsertWithWhereUniqueWithoutReviewedByInput[]
+    createMany?: IpdRequestCreateManyReviewedByInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutReviewedByInput | IpdRequestUpdateWithWhereUniqueWithoutReviewedByInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutReviewedByInput | IpdRequestUpdateManyWithWhereWithoutReviewedByInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
   }
 
   export type AppointmentUpdateManyWithoutDoctorNestedInput = {
@@ -115964,6 +117827,34 @@ export namespace Prisma {
     update?: AdmissionUpdateWithWhereUniqueWithoutAdmittingDoctorInput | AdmissionUpdateWithWhereUniqueWithoutAdmittingDoctorInput[]
     updateMany?: AdmissionUpdateManyWithWhereWithoutAdmittingDoctorInput | AdmissionUpdateManyWithWhereWithoutAdmittingDoctorInput[]
     deleteMany?: AdmissionScalarWhereInput | AdmissionScalarWhereInput[]
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutRequestedByInput, IpdRequestUncheckedCreateWithoutRequestedByInput> | IpdRequestCreateWithoutRequestedByInput[] | IpdRequestUncheckedCreateWithoutRequestedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutRequestedByInput | IpdRequestCreateOrConnectWithoutRequestedByInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutRequestedByInput | IpdRequestUpsertWithWhereUniqueWithoutRequestedByInput[]
+    createMany?: IpdRequestCreateManyRequestedByInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutRequestedByInput | IpdRequestUpdateWithWhereUniqueWithoutRequestedByInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutRequestedByInput | IpdRequestUpdateManyWithWhereWithoutRequestedByInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutReviewedByInput, IpdRequestUncheckedCreateWithoutReviewedByInput> | IpdRequestCreateWithoutReviewedByInput[] | IpdRequestUncheckedCreateWithoutReviewedByInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutReviewedByInput | IpdRequestCreateOrConnectWithoutReviewedByInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutReviewedByInput | IpdRequestUpsertWithWhereUniqueWithoutReviewedByInput[]
+    createMany?: IpdRequestCreateManyReviewedByInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutReviewedByInput | IpdRequestUpdateWithWhereUniqueWithoutReviewedByInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutReviewedByInput | IpdRequestUpdateManyWithWhereWithoutReviewedByInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
   }
 
   export type AppointmentUncheckedUpdateManyWithoutDoctorNestedInput = {
@@ -117106,6 +118997,13 @@ export namespace Prisma {
     connect?: AdmissionWhereUniqueInput
   }
 
+  export type IpdRequestCreateNestedManyWithoutVisitInput = {
+    create?: XOR<IpdRequestCreateWithoutVisitInput, IpdRequestUncheckedCreateWithoutVisitInput> | IpdRequestCreateWithoutVisitInput[] | IpdRequestUncheckedCreateWithoutVisitInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutVisitInput | IpdRequestCreateOrConnectWithoutVisitInput[]
+    createMany?: IpdRequestCreateManyVisitInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+  }
+
   export type DiagnosisCreateNestedManyWithoutVisitInput = {
     create?: XOR<DiagnosisCreateWithoutVisitInput, DiagnosisUncheckedCreateWithoutVisitInput> | DiagnosisCreateWithoutVisitInput[] | DiagnosisUncheckedCreateWithoutVisitInput[]
     connectOrCreate?: DiagnosisCreateOrConnectWithoutVisitInput | DiagnosisCreateOrConnectWithoutVisitInput[]
@@ -117210,6 +119108,13 @@ export namespace Prisma {
     connect?: AdmissionWhereUniqueInput
   }
 
+  export type IpdRequestUncheckedCreateNestedManyWithoutVisitInput = {
+    create?: XOR<IpdRequestCreateWithoutVisitInput, IpdRequestUncheckedCreateWithoutVisitInput> | IpdRequestCreateWithoutVisitInput[] | IpdRequestUncheckedCreateWithoutVisitInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutVisitInput | IpdRequestCreateOrConnectWithoutVisitInput[]
+    createMany?: IpdRequestCreateManyVisitInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+  }
+
   export type DiagnosisUncheckedCreateNestedManyWithoutVisitInput = {
     create?: XOR<DiagnosisCreateWithoutVisitInput, DiagnosisUncheckedCreateWithoutVisitInput> | DiagnosisCreateWithoutVisitInput[] | DiagnosisUncheckedCreateWithoutVisitInput[]
     connectOrCreate?: DiagnosisCreateOrConnectWithoutVisitInput | DiagnosisCreateOrConnectWithoutVisitInput[]
@@ -117286,6 +119191,20 @@ export namespace Prisma {
     delete?: AdmissionWhereInput | boolean
     connect?: AdmissionWhereUniqueInput
     update?: XOR<XOR<AdmissionUpdateToOneWithWhereWithoutVisitInput, AdmissionUpdateWithoutVisitInput>, AdmissionUncheckedUpdateWithoutVisitInput>
+  }
+
+  export type IpdRequestUpdateManyWithoutVisitNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutVisitInput, IpdRequestUncheckedCreateWithoutVisitInput> | IpdRequestCreateWithoutVisitInput[] | IpdRequestUncheckedCreateWithoutVisitInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutVisitInput | IpdRequestCreateOrConnectWithoutVisitInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutVisitInput | IpdRequestUpsertWithWhereUniqueWithoutVisitInput[]
+    createMany?: IpdRequestCreateManyVisitInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutVisitInput | IpdRequestUpdateWithWhereUniqueWithoutVisitInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutVisitInput | IpdRequestUpdateManyWithWhereWithoutVisitInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
   }
 
   export type DiagnosisUpdateManyWithoutVisitNestedInput = {
@@ -117476,6 +119395,20 @@ export namespace Prisma {
     delete?: AdmissionWhereInput | boolean
     connect?: AdmissionWhereUniqueInput
     update?: XOR<XOR<AdmissionUpdateToOneWithWhereWithoutVisitInput, AdmissionUpdateWithoutVisitInput>, AdmissionUncheckedUpdateWithoutVisitInput>
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutVisitNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutVisitInput, IpdRequestUncheckedCreateWithoutVisitInput> | IpdRequestCreateWithoutVisitInput[] | IpdRequestUncheckedCreateWithoutVisitInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutVisitInput | IpdRequestCreateOrConnectWithoutVisitInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutVisitInput | IpdRequestUpsertWithWhereUniqueWithoutVisitInput[]
+    createMany?: IpdRequestCreateManyVisitInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutVisitInput | IpdRequestUpdateWithWhereUniqueWithoutVisitInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutVisitInput | IpdRequestUpdateManyWithWhereWithoutVisitInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
   }
 
   export type DiagnosisUncheckedUpdateManyWithoutVisitNestedInput = {
@@ -122119,6 +124052,13 @@ export namespace Prisma {
     connect?: AdmissionWhereUniqueInput | AdmissionWhereUniqueInput[]
   }
 
+  export type IpdRequestCreateNestedManyWithoutPreferredWardInput = {
+    create?: XOR<IpdRequestCreateWithoutPreferredWardInput, IpdRequestUncheckedCreateWithoutPreferredWardInput> | IpdRequestCreateWithoutPreferredWardInput[] | IpdRequestUncheckedCreateWithoutPreferredWardInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutPreferredWardInput | IpdRequestCreateOrConnectWithoutPreferredWardInput[]
+    createMany?: IpdRequestCreateManyPreferredWardInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+  }
+
   export type BedCreateNestedManyWithoutWardInput = {
     create?: XOR<BedCreateWithoutWardInput, BedUncheckedCreateWithoutWardInput> | BedCreateWithoutWardInput[] | BedUncheckedCreateWithoutWardInput[]
     connectOrCreate?: BedCreateOrConnectWithoutWardInput | BedCreateOrConnectWithoutWardInput[]
@@ -122138,6 +124078,13 @@ export namespace Prisma {
     connectOrCreate?: AdmissionCreateOrConnectWithoutWardInput | AdmissionCreateOrConnectWithoutWardInput[]
     createMany?: AdmissionCreateManyWardInputEnvelope
     connect?: AdmissionWhereUniqueInput | AdmissionWhereUniqueInput[]
+  }
+
+  export type IpdRequestUncheckedCreateNestedManyWithoutPreferredWardInput = {
+    create?: XOR<IpdRequestCreateWithoutPreferredWardInput, IpdRequestUncheckedCreateWithoutPreferredWardInput> | IpdRequestCreateWithoutPreferredWardInput[] | IpdRequestUncheckedCreateWithoutPreferredWardInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutPreferredWardInput | IpdRequestCreateOrConnectWithoutPreferredWardInput[]
+    createMany?: IpdRequestCreateManyPreferredWardInputEnvelope
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
   }
 
   export type BedUncheckedCreateNestedManyWithoutWardInput = {
@@ -122166,6 +124113,20 @@ export namespace Prisma {
     update?: AdmissionUpdateWithWhereUniqueWithoutWardInput | AdmissionUpdateWithWhereUniqueWithoutWardInput[]
     updateMany?: AdmissionUpdateManyWithWhereWithoutWardInput | AdmissionUpdateManyWithWhereWithoutWardInput[]
     deleteMany?: AdmissionScalarWhereInput | AdmissionScalarWhereInput[]
+  }
+
+  export type IpdRequestUpdateManyWithoutPreferredWardNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutPreferredWardInput, IpdRequestUncheckedCreateWithoutPreferredWardInput> | IpdRequestCreateWithoutPreferredWardInput[] | IpdRequestUncheckedCreateWithoutPreferredWardInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutPreferredWardInput | IpdRequestCreateOrConnectWithoutPreferredWardInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutPreferredWardInput | IpdRequestUpsertWithWhereUniqueWithoutPreferredWardInput[]
+    createMany?: IpdRequestCreateManyPreferredWardInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutPreferredWardInput | IpdRequestUpdateWithWhereUniqueWithoutPreferredWardInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutPreferredWardInput | IpdRequestUpdateManyWithWhereWithoutPreferredWardInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
   }
 
   export type BedUpdateManyWithoutWardNestedInput = {
@@ -122208,6 +124169,20 @@ export namespace Prisma {
     update?: AdmissionUpdateWithWhereUniqueWithoutWardInput | AdmissionUpdateWithWhereUniqueWithoutWardInput[]
     updateMany?: AdmissionUpdateManyWithWhereWithoutWardInput | AdmissionUpdateManyWithWhereWithoutWardInput[]
     deleteMany?: AdmissionScalarWhereInput | AdmissionScalarWhereInput[]
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutPreferredWardNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutPreferredWardInput, IpdRequestUncheckedCreateWithoutPreferredWardInput> | IpdRequestCreateWithoutPreferredWardInput[] | IpdRequestUncheckedCreateWithoutPreferredWardInput[]
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutPreferredWardInput | IpdRequestCreateOrConnectWithoutPreferredWardInput[]
+    upsert?: IpdRequestUpsertWithWhereUniqueWithoutPreferredWardInput | IpdRequestUpsertWithWhereUniqueWithoutPreferredWardInput[]
+    createMany?: IpdRequestCreateManyPreferredWardInputEnvelope
+    set?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    disconnect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    delete?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    connect?: IpdRequestWhereUniqueInput | IpdRequestWhereUniqueInput[]
+    update?: IpdRequestUpdateWithWhereUniqueWithoutPreferredWardInput | IpdRequestUpdateWithWhereUniqueWithoutPreferredWardInput[]
+    updateMany?: IpdRequestUpdateManyWithWhereWithoutPreferredWardInput | IpdRequestUpdateManyWithWhereWithoutPreferredWardInput[]
+    deleteMany?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
   }
 
   export type BedUncheckedUpdateManyWithoutWardNestedInput = {
@@ -122352,6 +124327,12 @@ export namespace Prisma {
     connect?: InpatientDepositWhereUniqueInput | InpatientDepositWhereUniqueInput[]
   }
 
+  export type IpdRequestCreateNestedOneWithoutAdmissionInput = {
+    create?: XOR<IpdRequestCreateWithoutAdmissionInput, IpdRequestUncheckedCreateWithoutAdmissionInput>
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutAdmissionInput
+    connect?: IpdRequestWhereUniqueInput
+  }
+
   export type DailyChargeSummaryUncheckedCreateNestedManyWithoutAdmissionInput = {
     create?: XOR<DailyChargeSummaryCreateWithoutAdmissionInput, DailyChargeSummaryUncheckedCreateWithoutAdmissionInput> | DailyChargeSummaryCreateWithoutAdmissionInput[] | DailyChargeSummaryUncheckedCreateWithoutAdmissionInput[]
     connectOrCreate?: DailyChargeSummaryCreateOrConnectWithoutAdmissionInput | DailyChargeSummaryCreateOrConnectWithoutAdmissionInput[]
@@ -122378,6 +124359,12 @@ export namespace Prisma {
     connectOrCreate?: InpatientDepositCreateOrConnectWithoutAdmissionInput | InpatientDepositCreateOrConnectWithoutAdmissionInput[]
     createMany?: InpatientDepositCreateManyAdmissionInputEnvelope
     connect?: InpatientDepositWhereUniqueInput | InpatientDepositWhereUniqueInput[]
+  }
+
+  export type IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput = {
+    create?: XOR<IpdRequestCreateWithoutAdmissionInput, IpdRequestUncheckedCreateWithoutAdmissionInput>
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutAdmissionInput
+    connect?: IpdRequestWhereUniqueInput
   }
 
   export type UserUpdateOneRequiredWithoutAdmissionsNestedInput = {
@@ -122482,6 +124469,16 @@ export namespace Prisma {
     deleteMany?: InpatientDepositScalarWhereInput | InpatientDepositScalarWhereInput[]
   }
 
+  export type IpdRequestUpdateOneWithoutAdmissionNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutAdmissionInput, IpdRequestUncheckedCreateWithoutAdmissionInput>
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutAdmissionInput
+    upsert?: IpdRequestUpsertWithoutAdmissionInput
+    disconnect?: IpdRequestWhereInput | boolean
+    delete?: IpdRequestWhereInput | boolean
+    connect?: IpdRequestWhereUniqueInput
+    update?: XOR<XOR<IpdRequestUpdateToOneWithWhereWithoutAdmissionInput, IpdRequestUpdateWithoutAdmissionInput>, IpdRequestUncheckedUpdateWithoutAdmissionInput>
+  }
+
   export type DailyChargeSummaryUncheckedUpdateManyWithoutAdmissionNestedInput = {
     create?: XOR<DailyChargeSummaryCreateWithoutAdmissionInput, DailyChargeSummaryUncheckedCreateWithoutAdmissionInput> | DailyChargeSummaryCreateWithoutAdmissionInput[] | DailyChargeSummaryUncheckedCreateWithoutAdmissionInput[]
     connectOrCreate?: DailyChargeSummaryCreateOrConnectWithoutAdmissionInput | DailyChargeSummaryCreateOrConnectWithoutAdmissionInput[]
@@ -122536,6 +124533,92 @@ export namespace Prisma {
     update?: InpatientDepositUpdateWithWhereUniqueWithoutAdmissionInput | InpatientDepositUpdateWithWhereUniqueWithoutAdmissionInput[]
     updateMany?: InpatientDepositUpdateManyWithWhereWithoutAdmissionInput | InpatientDepositUpdateManyWithWhereWithoutAdmissionInput[]
     deleteMany?: InpatientDepositScalarWhereInput | InpatientDepositScalarWhereInput[]
+  }
+
+  export type IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput = {
+    create?: XOR<IpdRequestCreateWithoutAdmissionInput, IpdRequestUncheckedCreateWithoutAdmissionInput>
+    connectOrCreate?: IpdRequestCreateOrConnectWithoutAdmissionInput
+    upsert?: IpdRequestUpsertWithoutAdmissionInput
+    disconnect?: IpdRequestWhereInput | boolean
+    delete?: IpdRequestWhereInput | boolean
+    connect?: IpdRequestWhereUniqueInput
+    update?: XOR<XOR<IpdRequestUpdateToOneWithWhereWithoutAdmissionInput, IpdRequestUpdateWithoutAdmissionInput>, IpdRequestUncheckedUpdateWithoutAdmissionInput>
+  }
+
+  export type VisitCreateNestedOneWithoutIpdRequestsInput = {
+    create?: XOR<VisitCreateWithoutIpdRequestsInput, VisitUncheckedCreateWithoutIpdRequestsInput>
+    connectOrCreate?: VisitCreateOrConnectWithoutIpdRequestsInput
+    connect?: VisitWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutIpdRequestsRequestedInput = {
+    create?: XOR<UserCreateWithoutIpdRequestsRequestedInput, UserUncheckedCreateWithoutIpdRequestsRequestedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutIpdRequestsRequestedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutIpdRequestsReviewedInput = {
+    create?: XOR<UserCreateWithoutIpdRequestsReviewedInput, UserUncheckedCreateWithoutIpdRequestsReviewedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutIpdRequestsReviewedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type WardCreateNestedOneWithoutIpdRequestsInput = {
+    create?: XOR<WardCreateWithoutIpdRequestsInput, WardUncheckedCreateWithoutIpdRequestsInput>
+    connectOrCreate?: WardCreateOrConnectWithoutIpdRequestsInput
+    connect?: WardWhereUniqueInput
+  }
+
+  export type AdmissionCreateNestedOneWithoutIpdRequestInput = {
+    create?: XOR<AdmissionCreateWithoutIpdRequestInput, AdmissionUncheckedCreateWithoutIpdRequestInput>
+    connectOrCreate?: AdmissionCreateOrConnectWithoutIpdRequestInput
+    connect?: AdmissionWhereUniqueInput
+  }
+
+  export type VisitUpdateOneRequiredWithoutIpdRequestsNestedInput = {
+    create?: XOR<VisitCreateWithoutIpdRequestsInput, VisitUncheckedCreateWithoutIpdRequestsInput>
+    connectOrCreate?: VisitCreateOrConnectWithoutIpdRequestsInput
+    upsert?: VisitUpsertWithoutIpdRequestsInput
+    connect?: VisitWhereUniqueInput
+    update?: XOR<XOR<VisitUpdateToOneWithWhereWithoutIpdRequestsInput, VisitUpdateWithoutIpdRequestsInput>, VisitUncheckedUpdateWithoutIpdRequestsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutIpdRequestsRequestedNestedInput = {
+    create?: XOR<UserCreateWithoutIpdRequestsRequestedInput, UserUncheckedCreateWithoutIpdRequestsRequestedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutIpdRequestsRequestedInput
+    upsert?: UserUpsertWithoutIpdRequestsRequestedInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutIpdRequestsRequestedInput, UserUpdateWithoutIpdRequestsRequestedInput>, UserUncheckedUpdateWithoutIpdRequestsRequestedInput>
+  }
+
+  export type UserUpdateOneWithoutIpdRequestsReviewedNestedInput = {
+    create?: XOR<UserCreateWithoutIpdRequestsReviewedInput, UserUncheckedCreateWithoutIpdRequestsReviewedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutIpdRequestsReviewedInput
+    upsert?: UserUpsertWithoutIpdRequestsReviewedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutIpdRequestsReviewedInput, UserUpdateWithoutIpdRequestsReviewedInput>, UserUncheckedUpdateWithoutIpdRequestsReviewedInput>
+  }
+
+  export type WardUpdateOneWithoutIpdRequestsNestedInput = {
+    create?: XOR<WardCreateWithoutIpdRequestsInput, WardUncheckedCreateWithoutIpdRequestsInput>
+    connectOrCreate?: WardCreateOrConnectWithoutIpdRequestsInput
+    upsert?: WardUpsertWithoutIpdRequestsInput
+    disconnect?: WardWhereInput | boolean
+    delete?: WardWhereInput | boolean
+    connect?: WardWhereUniqueInput
+    update?: XOR<XOR<WardUpdateToOneWithWhereWithoutIpdRequestsInput, WardUpdateWithoutIpdRequestsInput>, WardUncheckedUpdateWithoutIpdRequestsInput>
+  }
+
+  export type AdmissionUpdateOneWithoutIpdRequestNestedInput = {
+    create?: XOR<AdmissionCreateWithoutIpdRequestInput, AdmissionUncheckedCreateWithoutIpdRequestInput>
+    connectOrCreate?: AdmissionCreateOrConnectWithoutIpdRequestInput
+    upsert?: AdmissionUpsertWithoutIpdRequestInput
+    disconnect?: AdmissionWhereInput | boolean
+    delete?: AdmissionWhereInput | boolean
+    connect?: AdmissionWhereUniqueInput
+    update?: XOR<XOR<AdmissionUpdateToOneWithWhereWithoutIpdRequestInput, AdmissionUpdateWithoutIpdRequestInput>, AdmissionUncheckedUpdateWithoutIpdRequestInput>
   }
 
   export type ChartOfAccountCreateNestedOneWithoutBillableItemsInput = {
@@ -124308,6 +126391,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutAdmittingDoctorInput = {
@@ -124327,6 +126411,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutAdmittingDoctorInput = {
@@ -124336,6 +126421,106 @@ export namespace Prisma {
 
   export type AdmissionCreateManyAdmittingDoctorInputEnvelope = {
     data: AdmissionCreateManyAdmittingDoctorInput | AdmissionCreateManyAdmittingDoctorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type IpdRequestCreateWithoutRequestedByInput = {
+    id?: string
+    requestNumber: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    visit: VisitCreateNestedOneWithoutIpdRequestsInput
+    reviewedBy?: UserCreateNestedOneWithoutIpdRequestsReviewedInput
+    preferredWard?: WardCreateNestedOneWithoutIpdRequestsInput
+    admission?: AdmissionCreateNestedOneWithoutIpdRequestInput
+  }
+
+  export type IpdRequestUncheckedCreateWithoutRequestedByInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestCreateOrConnectWithoutRequestedByInput = {
+    where: IpdRequestWhereUniqueInput
+    create: XOR<IpdRequestCreateWithoutRequestedByInput, IpdRequestUncheckedCreateWithoutRequestedByInput>
+  }
+
+  export type IpdRequestCreateManyRequestedByInputEnvelope = {
+    data: IpdRequestCreateManyRequestedByInput | IpdRequestCreateManyRequestedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type IpdRequestCreateWithoutReviewedByInput = {
+    id?: string
+    requestNumber: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    visit: VisitCreateNestedOneWithoutIpdRequestsInput
+    requestedBy: UserCreateNestedOneWithoutIpdRequestsRequestedInput
+    preferredWard?: WardCreateNestedOneWithoutIpdRequestsInput
+    admission?: AdmissionCreateNestedOneWithoutIpdRequestInput
+  }
+
+  export type IpdRequestUncheckedCreateWithoutReviewedByInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestCreateOrConnectWithoutReviewedByInput = {
+    where: IpdRequestWhereUniqueInput
+    create: XOR<IpdRequestCreateWithoutReviewedByInput, IpdRequestUncheckedCreateWithoutReviewedByInput>
+  }
+
+  export type IpdRequestCreateManyReviewedByInputEnvelope = {
+    data: IpdRequestCreateManyReviewedByInput | IpdRequestCreateManyReviewedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -125793,6 +127978,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -125846,6 +128032,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -125897,6 +128084,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -125950,6 +128138,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -126001,6 +128190,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -126054,6 +128244,7 @@ export namespace Prisma {
     discontinuationDate?: Date | string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -126557,6 +128748,62 @@ export namespace Prisma {
     type?: StringFilter<"Admission"> | string
     createdAt?: DateTimeFilter<"Admission"> | Date | string
     updatedAt?: DateTimeFilter<"Admission"> | Date | string
+  }
+
+  export type IpdRequestUpsertWithWhereUniqueWithoutRequestedByInput = {
+    where: IpdRequestWhereUniqueInput
+    update: XOR<IpdRequestUpdateWithoutRequestedByInput, IpdRequestUncheckedUpdateWithoutRequestedByInput>
+    create: XOR<IpdRequestCreateWithoutRequestedByInput, IpdRequestUncheckedCreateWithoutRequestedByInput>
+  }
+
+  export type IpdRequestUpdateWithWhereUniqueWithoutRequestedByInput = {
+    where: IpdRequestWhereUniqueInput
+    data: XOR<IpdRequestUpdateWithoutRequestedByInput, IpdRequestUncheckedUpdateWithoutRequestedByInput>
+  }
+
+  export type IpdRequestUpdateManyWithWhereWithoutRequestedByInput = {
+    where: IpdRequestScalarWhereInput
+    data: XOR<IpdRequestUpdateManyMutationInput, IpdRequestUncheckedUpdateManyWithoutRequestedByInput>
+  }
+
+  export type IpdRequestScalarWhereInput = {
+    AND?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
+    OR?: IpdRequestScalarWhereInput[]
+    NOT?: IpdRequestScalarWhereInput | IpdRequestScalarWhereInput[]
+    id?: StringFilter<"IpdRequest"> | string
+    requestNumber?: StringFilter<"IpdRequest"> | string
+    visitId?: StringFilter<"IpdRequest"> | string
+    requestedById?: StringFilter<"IpdRequest"> | string
+    reasonForAdmission?: StringFilter<"IpdRequest"> | string
+    admittingDiagnosis?: StringNullableFilter<"IpdRequest"> | string | null
+    urgency?: StringFilter<"IpdRequest"> | string
+    preferredWardId?: StringNullableFilter<"IpdRequest"> | string | null
+    preferredBedType?: StringNullableFilter<"IpdRequest"> | string | null
+    clinicalNotes?: StringNullableFilter<"IpdRequest"> | string | null
+    status?: StringFilter<"IpdRequest"> | string
+    reviewedById?: StringNullableFilter<"IpdRequest"> | string | null
+    reviewedAt?: DateTimeNullableFilter<"IpdRequest"> | Date | string | null
+    reviewNotes?: StringNullableFilter<"IpdRequest"> | string | null
+    fulfilledAt?: DateTimeNullableFilter<"IpdRequest"> | Date | string | null
+    admissionId?: StringNullableFilter<"IpdRequest"> | string | null
+    createdAt?: DateTimeFilter<"IpdRequest"> | Date | string
+    updatedAt?: DateTimeFilter<"IpdRequest"> | Date | string
+  }
+
+  export type IpdRequestUpsertWithWhereUniqueWithoutReviewedByInput = {
+    where: IpdRequestWhereUniqueInput
+    update: XOR<IpdRequestUpdateWithoutReviewedByInput, IpdRequestUncheckedUpdateWithoutReviewedByInput>
+    create: XOR<IpdRequestCreateWithoutReviewedByInput, IpdRequestUncheckedCreateWithoutReviewedByInput>
+  }
+
+  export type IpdRequestUpdateWithWhereUniqueWithoutReviewedByInput = {
+    where: IpdRequestWhereUniqueInput
+    data: XOR<IpdRequestUpdateWithoutReviewedByInput, IpdRequestUncheckedUpdateWithoutReviewedByInput>
+  }
+
+  export type IpdRequestUpdateManyWithWhereWithoutReviewedByInput = {
+    where: IpdRequestScalarWhereInput
+    data: XOR<IpdRequestUpdateManyMutationInput, IpdRequestUncheckedUpdateManyWithoutReviewedByInput>
   }
 
   export type AppointmentUpsertWithWhereUniqueWithoutDoctorInput = {
@@ -127812,6 +130059,8 @@ export namespace Prisma {
     tenant?: TenantCreateNestedOneWithoutUsersInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -127870,6 +130119,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -127942,6 +130193,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneWithoutUsersNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -128000,6 +130253,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -128057,6 +130312,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -128115,6 +130372,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -128187,6 +130446,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -128245,6 +130506,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -128301,6 +130564,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -128358,6 +130623,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -128556,6 +130823,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutPatientInput = {
@@ -128575,6 +130843,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutPatientInput = {
@@ -129110,6 +131379,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -129163,6 +131433,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -129407,6 +131678,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutVisitInput = {
@@ -129426,11 +131698,62 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutVisitInput = {
     where: AdmissionWhereUniqueInput
     create: XOR<AdmissionCreateWithoutVisitInput, AdmissionUncheckedCreateWithoutVisitInput>
+  }
+
+  export type IpdRequestCreateWithoutVisitInput = {
+    id?: string
+    requestNumber: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    requestedBy: UserCreateNestedOneWithoutIpdRequestsRequestedInput
+    reviewedBy?: UserCreateNestedOneWithoutIpdRequestsReviewedInput
+    preferredWard?: WardCreateNestedOneWithoutIpdRequestsInput
+    admission?: AdmissionCreateNestedOneWithoutIpdRequestInput
+  }
+
+  export type IpdRequestUncheckedCreateWithoutVisitInput = {
+    id?: string
+    requestNumber: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestCreateOrConnectWithoutVisitInput = {
+    where: IpdRequestWhereUniqueInput
+    create: XOR<IpdRequestCreateWithoutVisitInput, IpdRequestUncheckedCreateWithoutVisitInput>
+  }
+
+  export type IpdRequestCreateManyVisitInputEnvelope = {
+    data: IpdRequestCreateManyVisitInput | IpdRequestCreateManyVisitInput[]
+    skipDuplicates?: boolean
   }
 
   export type DiagnosisCreateWithoutVisitInput = {
@@ -129832,6 +132155,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -129885,6 +132209,7 @@ export namespace Prisma {
     discontinuationDate?: Date | string | null
     discontinuationById?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -129923,6 +132248,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -129981,6 +132308,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -130237,6 +132566,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -130295,6 +132626,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -130356,6 +132689,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -130414,6 +132749,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -130488,6 +132825,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -130542,6 +132880,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -130584,6 +132923,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutVisitInput = {
@@ -130603,6 +132943,23 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
+  }
+
+  export type IpdRequestUpsertWithWhereUniqueWithoutVisitInput = {
+    where: IpdRequestWhereUniqueInput
+    update: XOR<IpdRequestUpdateWithoutVisitInput, IpdRequestUncheckedUpdateWithoutVisitInput>
+    create: XOR<IpdRequestCreateWithoutVisitInput, IpdRequestUncheckedCreateWithoutVisitInput>
+  }
+
+  export type IpdRequestUpdateWithWhereUniqueWithoutVisitInput = {
+    where: IpdRequestWhereUniqueInput
+    data: XOR<IpdRequestUpdateWithoutVisitInput, IpdRequestUncheckedUpdateWithoutVisitInput>
+  }
+
+  export type IpdRequestUpdateManyWithWhereWithoutVisitInput = {
+    where: IpdRequestScalarWhereInput
+    data: XOR<IpdRequestUpdateManyMutationInput, IpdRequestUncheckedUpdateManyWithoutVisitInput>
   }
 
   export type DiagnosisUpsertWithWhereUniqueWithoutVisitInput = {
@@ -130777,6 +133134,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -130835,6 +133194,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -131115,6 +133476,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -131173,6 +133536,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -131240,6 +133605,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -131298,6 +133665,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -131378,6 +133747,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -131432,6 +133802,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -131459,6 +133830,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
     appliedDeposits?: DepositApplicationCreateNestedManyWithoutAppliedByInput
@@ -131517,6 +133890,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
     appliedDeposits?: DepositApplicationUncheckedCreateNestedManyWithoutAppliedByInput
@@ -131678,6 +134053,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
     appliedDeposits?: DepositApplicationUpdateManyWithoutAppliedByNestedInput
@@ -131736,6 +134113,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
     appliedDeposits?: DepositApplicationUncheckedUpdateManyWithoutAppliedByNestedInput
@@ -131989,6 +134368,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
     labOrders?: LabOrderCreateNestedManyWithoutVisitInput
@@ -132043,6 +134423,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
     labOrders?: LabOrderUncheckedCreateNestedManyWithoutVisitInput
@@ -132194,6 +134575,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
     labOrders?: LabOrderUpdateManyWithoutVisitNestedInput
@@ -132248,6 +134630,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
     labOrders?: LabOrderUncheckedUpdateManyWithoutVisitNestedInput
@@ -132337,6 +134720,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -132395,6 +134780,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -132558,6 +134945,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -132612,6 +135000,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -132879,6 +135268,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -132937,6 +135328,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -133112,6 +135505,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -133166,6 +135560,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -133413,6 +135808,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -133471,6 +135868,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -133634,6 +136033,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -133688,6 +136088,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -133784,6 +136185,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -133842,6 +136245,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -134017,6 +136422,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -134071,6 +136477,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -134381,6 +136788,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -134439,6 +136848,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -134500,6 +136911,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -134558,6 +136971,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -134669,6 +137084,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -134727,6 +137144,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -134794,6 +137213,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -134852,6 +137273,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -134908,6 +137331,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -134966,6 +137391,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -135129,6 +137556,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -135183,6 +137611,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -135279,6 +137708,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -135337,6 +137768,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -135512,6 +137945,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -135566,6 +138000,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -135665,6 +138100,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -135719,6 +138155,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -135775,6 +138212,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -135829,6 +138267,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -138421,6 +140860,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -138479,6 +140920,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -138712,6 +141155,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -138770,6 +141215,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -139929,6 +142376,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -139987,6 +142436,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -140220,6 +142671,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -140278,6 +142731,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -140710,6 +143165,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -140768,6 +143225,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -140829,6 +143288,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -140887,6 +143348,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -141062,6 +143525,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -141120,6 +143585,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -141187,6 +143654,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -141245,6 +143714,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -141960,6 +144431,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -142018,6 +144491,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -142250,6 +144725,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -142308,6 +144785,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -142988,6 +145467,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -143046,6 +145527,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -143566,6 +146049,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
     labOrders?: LabOrderCreateNestedManyWithoutVisitInput
@@ -143620,6 +146104,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
     labOrders?: LabOrderUncheckedCreateNestedManyWithoutVisitInput
@@ -143663,6 +146148,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -143721,6 +146208,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -144283,6 +146772,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
     labOrders?: LabOrderUpdateManyWithoutVisitNestedInput
@@ -144337,6 +146827,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
     labOrders?: LabOrderUncheckedUpdateManyWithoutVisitNestedInput
@@ -144646,6 +147137,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -144704,6 +147197,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -145024,6 +147519,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -145082,6 +147579,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -145138,6 +147637,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -145196,6 +147697,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -145257,6 +147760,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -145315,6 +147820,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -145387,6 +147894,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -145445,6 +147954,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -145512,6 +148023,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -145570,6 +148083,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -145626,6 +148141,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -145684,6 +148201,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -145802,6 +148321,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -145860,6 +148381,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -145932,6 +148455,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -145990,6 +148515,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -146120,6 +148647,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -146178,6 +148707,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -146486,6 +149017,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -146544,6 +149077,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -146605,6 +149140,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -146663,6 +149200,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -146774,6 +149313,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -146832,6 +149373,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -146899,6 +149442,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -146957,6 +149502,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -147111,6 +149658,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -147169,6 +149718,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -147332,6 +149883,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     labOrders?: LabOrderCreateNestedManyWithoutVisitInput
@@ -147386,6 +149938,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     labOrders?: LabOrderUncheckedCreateNestedManyWithoutVisitInput
@@ -147589,6 +150142,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -147642,6 +150196,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -147693,6 +150248,7 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     admission?: AdmissionCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -147746,6 +150302,7 @@ export namespace Prisma {
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
     admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -148009,6 +150566,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -148067,6 +150626,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -148242,6 +150803,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     labOrders?: LabOrderUpdateManyWithoutVisitNestedInput
@@ -148296,6 +150858,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     labOrders?: LabOrderUncheckedUpdateManyWithoutVisitNestedInput
@@ -148749,6 +151312,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -148807,6 +151372,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -149126,6 +151693,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -149184,6 +151753,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -149358,6 +151929,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -149416,6 +151989,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -149488,6 +152063,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -149546,6 +152123,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -149849,6 +152428,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -149907,6 +152488,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -151678,6 +154261,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -151736,6 +154321,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -151840,6 +154427,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -151898,6 +154487,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -151953,6 +154544,8 @@ export namespace Prisma {
     tenant?: TenantCreateNestedOneWithoutUsersInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -152011,6 +154604,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -152116,6 +154711,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneWithoutUsersNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -152174,6 +154771,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -152310,6 +154909,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -152368,6 +154969,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -152429,6 +155032,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -152487,6 +155092,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -152906,6 +155513,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -152964,6 +155573,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -153031,6 +155642,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -153089,6 +155702,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -153679,6 +156294,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -153737,6 +156354,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -154278,6 +156897,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -154336,6 +156957,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -155324,6 +157947,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
     appliedDeposits?: DepositApplicationCreateNestedManyWithoutAppliedByInput
@@ -155382,6 +158007,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
     appliedDeposits?: DepositApplicationUncheckedCreateNestedManyWithoutAppliedByInput
@@ -155539,6 +158166,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
     appliedDeposits?: DepositApplicationUpdateManyWithoutAppliedByNestedInput
@@ -155597,6 +158226,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
     appliedDeposits?: DepositApplicationUncheckedUpdateManyWithoutAppliedByNestedInput
@@ -155879,6 +158510,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutWardInput = {
@@ -155898,6 +158530,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutWardInput = {
@@ -155907,6 +158540,56 @@ export namespace Prisma {
 
   export type AdmissionCreateManyWardInputEnvelope = {
     data: AdmissionCreateManyWardInput | AdmissionCreateManyWardInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type IpdRequestCreateWithoutPreferredWardInput = {
+    id?: string
+    requestNumber: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    visit: VisitCreateNestedOneWithoutIpdRequestsInput
+    requestedBy: UserCreateNestedOneWithoutIpdRequestsRequestedInput
+    reviewedBy?: UserCreateNestedOneWithoutIpdRequestsReviewedInput
+    admission?: AdmissionCreateNestedOneWithoutIpdRequestInput
+  }
+
+  export type IpdRequestUncheckedCreateWithoutPreferredWardInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestCreateOrConnectWithoutPreferredWardInput = {
+    where: IpdRequestWhereUniqueInput
+    create: XOR<IpdRequestCreateWithoutPreferredWardInput, IpdRequestUncheckedCreateWithoutPreferredWardInput>
+  }
+
+  export type IpdRequestCreateManyPreferredWardInputEnvelope = {
+    data: IpdRequestCreateManyPreferredWardInput | IpdRequestCreateManyPreferredWardInput[]
     skipDuplicates?: boolean
   }
 
@@ -156000,6 +158683,22 @@ export namespace Prisma {
     data: XOR<AdmissionUpdateManyMutationInput, AdmissionUncheckedUpdateManyWithoutWardInput>
   }
 
+  export type IpdRequestUpsertWithWhereUniqueWithoutPreferredWardInput = {
+    where: IpdRequestWhereUniqueInput
+    update: XOR<IpdRequestUpdateWithoutPreferredWardInput, IpdRequestUncheckedUpdateWithoutPreferredWardInput>
+    create: XOR<IpdRequestCreateWithoutPreferredWardInput, IpdRequestUncheckedCreateWithoutPreferredWardInput>
+  }
+
+  export type IpdRequestUpdateWithWhereUniqueWithoutPreferredWardInput = {
+    where: IpdRequestWhereUniqueInput
+    data: XOR<IpdRequestUpdateWithoutPreferredWardInput, IpdRequestUncheckedUpdateWithoutPreferredWardInput>
+  }
+
+  export type IpdRequestUpdateManyWithWhereWithoutPreferredWardInput = {
+    where: IpdRequestScalarWhereInput
+    data: XOR<IpdRequestUpdateManyMutationInput, IpdRequestUncheckedUpdateManyWithoutPreferredWardInput>
+  }
+
   export type BedUpsertWithWhereUniqueWithoutWardInput = {
     where: BedWhereUniqueInput
     update: XOR<BedUpdateWithoutWardInput, BedUncheckedUpdateWithoutWardInput>
@@ -156064,6 +158763,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutBedInput = {
@@ -156083,6 +158783,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutBedInput = {
@@ -156104,6 +158805,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     admissions?: AdmissionCreateNestedManyWithoutWardInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutPreferredWardInput
     floorStocks?: FloorStockCreateNestedManyWithoutWardInput
   }
 
@@ -156116,6 +158818,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     admissions?: AdmissionUncheckedCreateNestedManyWithoutWardInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutPreferredWardInput
     floorStocks?: FloorStockUncheckedCreateNestedManyWithoutWardInput
   }
 
@@ -156160,6 +158863,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admissions?: AdmissionUpdateManyWithoutWardNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutPreferredWardNestedInput
     floorStocks?: FloorStockUpdateManyWithoutWardNestedInput
   }
 
@@ -156172,6 +158876,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admissions?: AdmissionUncheckedUpdateManyWithoutWardNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutPreferredWardNestedInput
     floorStocks?: FloorStockUncheckedUpdateManyWithoutWardNestedInput
   }
 
@@ -156192,6 +158897,8 @@ export namespace Prisma {
     tenant?: TenantCreateNestedOneWithoutUsersInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -156250,6 +158957,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -156442,6 +159151,7 @@ export namespace Prisma {
     accountsClearedAt?: Date | string | null
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
+    ipdRequests?: IpdRequestCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
     invoices?: InvoiceCreateNestedManyWithoutVisitInput
@@ -156496,6 +159206,7 @@ export namespace Prisma {
     discontinuationDate?: Date | string | null
     discontinuationById?: string | null
     linkedPriorVisitId?: string | null
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutVisitInput
     diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
     dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
     invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
@@ -156519,6 +159230,7 @@ export namespace Prisma {
     capacity: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    ipdRequests?: IpdRequestCreateNestedManyWithoutPreferredWardInput
     beds?: BedCreateNestedManyWithoutWardInput
     floorStocks?: FloorStockCreateNestedManyWithoutWardInput
   }
@@ -156531,6 +159243,7 @@ export namespace Prisma {
     capacity: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutPreferredWardInput
     beds?: BedUncheckedCreateNestedManyWithoutWardInput
     floorStocks?: FloorStockUncheckedCreateNestedManyWithoutWardInput
   }
@@ -156744,6 +159457,51 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type IpdRequestCreateWithoutAdmissionInput = {
+    id?: string
+    requestNumber: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    visit: VisitCreateNestedOneWithoutIpdRequestsInput
+    requestedBy: UserCreateNestedOneWithoutIpdRequestsRequestedInput
+    reviewedBy?: UserCreateNestedOneWithoutIpdRequestsReviewedInput
+    preferredWard?: WardCreateNestedOneWithoutIpdRequestsInput
+  }
+
+  export type IpdRequestUncheckedCreateWithoutAdmissionInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestCreateOrConnectWithoutAdmissionInput = {
+    where: IpdRequestWhereUniqueInput
+    create: XOR<IpdRequestCreateWithoutAdmissionInput, IpdRequestUncheckedCreateWithoutAdmissionInput>
+  }
+
   export type UserUpsertWithoutAdmissionsInput = {
     update: XOR<UserUpdateWithoutAdmissionsInput, UserUncheckedUpdateWithoutAdmissionsInput>
     create: XOR<UserCreateWithoutAdmissionsInput, UserUncheckedCreateWithoutAdmissionsInput>
@@ -156772,6 +159530,8 @@ export namespace Prisma {
     tenant?: TenantUpdateOneWithoutUsersNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -156830,6 +159590,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -157040,6 +159802,7 @@ export namespace Prisma {
     accountsClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -157094,6 +159857,7 @@ export namespace Prisma {
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -157123,6 +159887,7 @@ export namespace Prisma {
     capacity?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipdRequests?: IpdRequestUpdateManyWithoutPreferredWardNestedInput
     beds?: BedUpdateManyWithoutWardNestedInput
     floorStocks?: FloorStockUpdateManyWithoutWardNestedInput
   }
@@ -157135,6 +159900,7 @@ export namespace Prisma {
     capacity?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutPreferredWardNestedInput
     beds?: BedUncheckedUpdateManyWithoutWardNestedInput
     floorStocks?: FloorStockUncheckedUpdateManyWithoutWardNestedInput
   }
@@ -157201,6 +159967,933 @@ export namespace Prisma {
   export type InpatientDepositUpdateManyWithWhereWithoutAdmissionInput = {
     where: InpatientDepositScalarWhereInput
     data: XOR<InpatientDepositUpdateManyMutationInput, InpatientDepositUncheckedUpdateManyWithoutAdmissionInput>
+  }
+
+  export type IpdRequestUpsertWithoutAdmissionInput = {
+    update: XOR<IpdRequestUpdateWithoutAdmissionInput, IpdRequestUncheckedUpdateWithoutAdmissionInput>
+    create: XOR<IpdRequestCreateWithoutAdmissionInput, IpdRequestUncheckedCreateWithoutAdmissionInput>
+    where?: IpdRequestWhereInput
+  }
+
+  export type IpdRequestUpdateToOneWithWhereWithoutAdmissionInput = {
+    where?: IpdRequestWhereInput
+    data: XOR<IpdRequestUpdateWithoutAdmissionInput, IpdRequestUncheckedUpdateWithoutAdmissionInput>
+  }
+
+  export type IpdRequestUpdateWithoutAdmissionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    visit?: VisitUpdateOneRequiredWithoutIpdRequestsNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutIpdRequestsRequestedNestedInput
+    reviewedBy?: UserUpdateOneWithoutIpdRequestsReviewedNestedInput
+    preferredWard?: WardUpdateOneWithoutIpdRequestsNestedInput
+  }
+
+  export type IpdRequestUncheckedUpdateWithoutAdmissionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VisitCreateWithoutIpdRequestsInput = {
+    id?: string
+    visitNumber: string
+    type?: $Enums.VisitType
+    chiefComplaint?: string | null
+    bloodPressure?: string | null
+    heartRate?: string | null
+    temperature?: string | null
+    weight?: number | null
+    height?: number | null
+    priority?: string
+    status?: string
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    treatmentPlan?: string | null
+    checkInTime?: Date | string
+    completedTime?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    consultationFeePaid?: boolean
+    consultationFeeAmount?: number | null
+    consultationFeePaidAt?: Date | string | null
+    labFeesPaid?: boolean
+    labFeesAmount?: number | null
+    labFeesPaidAt?: Date | string | null
+    accountsCleared?: boolean
+    accountsClearedAt?: Date | string | null
+    discontinuationNote?: string | null
+    discontinuationDate?: Date | string | null
+    admission?: AdmissionCreateNestedOneWithoutVisitInput
+    diagnoses?: DiagnosisCreateNestedManyWithoutVisitInput
+    dispensingLogs?: DispensingLogCreateNestedManyWithoutVisitInput
+    invoices?: InvoiceCreateNestedManyWithoutVisitInput
+    labOrders?: LabOrderCreateNestedManyWithoutVisitInput
+    prescriptions?: PrescriptionCreateNestedManyWithoutVisitInput
+    radiologyOrders?: RadiologyOrderCreateNestedManyWithoutVisitInput
+    orderWriteOffs?: OrderWriteOffCreateNestedManyWithoutVisitInput
+    followUpVisits?: VisitCreateNestedManyWithoutLinkedPriorVisitInput
+    doctor?: UserCreateNestedOneWithoutVisitsInput
+    patient: PatientCreateNestedOneWithoutVisitsInput
+    consultationInvoice?: InvoiceCreateNestedOneWithoutConsultationInvoiceInput
+    labInvoice?: InvoiceCreateNestedOneWithoutLabInvoiceInput
+    accountsClearedBy?: UserCreateNestedOneWithoutAccountsClearedVisitsInput
+    discontinuationBy?: UserCreateNestedOneWithoutDiscontinuedVisitsInput
+    linkedPriorVisit?: VisitCreateNestedOneWithoutFollowUpVisitsInput
+  }
+
+  export type VisitUncheckedCreateWithoutIpdRequestsInput = {
+    id?: string
+    visitNumber: string
+    patientId: string
+    type?: $Enums.VisitType
+    chiefComplaint?: string | null
+    bloodPressure?: string | null
+    heartRate?: string | null
+    temperature?: string | null
+    weight?: number | null
+    height?: number | null
+    priority?: string
+    status?: string
+    subjective?: string | null
+    objective?: string | null
+    assessment?: string | null
+    treatmentPlan?: string | null
+    assignedDoctorId?: string | null
+    checkInTime?: Date | string
+    completedTime?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    consultationFeePaid?: boolean
+    consultationFeeAmount?: number | null
+    consultationFeePaidAt?: Date | string | null
+    consultationInvoiceId?: string | null
+    labFeesPaid?: boolean
+    labFeesAmount?: number | null
+    labFeesPaidAt?: Date | string | null
+    labInvoiceId?: string | null
+    accountsCleared?: boolean
+    accountsClearedAt?: Date | string | null
+    accountsClearedById?: string | null
+    discontinuationNote?: string | null
+    discontinuationDate?: Date | string | null
+    discontinuationById?: string | null
+    linkedPriorVisitId?: string | null
+    admission?: AdmissionUncheckedCreateNestedOneWithoutVisitInput
+    diagnoses?: DiagnosisUncheckedCreateNestedManyWithoutVisitInput
+    dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutVisitInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutVisitInput
+    labOrders?: LabOrderUncheckedCreateNestedManyWithoutVisitInput
+    prescriptions?: PrescriptionUncheckedCreateNestedManyWithoutVisitInput
+    radiologyOrders?: RadiologyOrderUncheckedCreateNestedManyWithoutVisitInput
+    orderWriteOffs?: OrderWriteOffUncheckedCreateNestedManyWithoutVisitInput
+    followUpVisits?: VisitUncheckedCreateNestedManyWithoutLinkedPriorVisitInput
+  }
+
+  export type VisitCreateOrConnectWithoutIpdRequestsInput = {
+    where: VisitWhereUniqueInput
+    create: XOR<VisitCreateWithoutIpdRequestsInput, VisitUncheckedCreateWithoutIpdRequestsInput>
+  }
+
+  export type UserCreateWithoutIpdRequestsRequestedInput = {
+    id?: string
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    hashedPassword?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    department?: string | null
+    specialization?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant?: TenantCreateNestedOneWithoutUsersInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
+    admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
+    appointments?: AppointmentCreateNestedManyWithoutDoctorInput
+    createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
+    finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
+    appliedDeposits?: DepositApplicationCreateNestedManyWithoutAppliedByInput
+    dispensingLogs?: DispensingLogCreateNestedManyWithoutDispensedByInput
+    recordedExpenses?: ExpenseCreateNestedManyWithoutRecordedByInput
+    closedFiscalYears?: FiscalYearCreateNestedManyWithoutClosedByInput
+    usedFloorStocks?: FloorStockUsageCreateNestedManyWithoutUsedByInput
+    goodsReceipts?: GoodsReceiptCreateNestedManyWithoutReceivedByInput
+    createdInpatientCharges?: InpatientChargeCreateNestedManyWithoutCreatedByInput
+    nursedCharges?: InpatientChargeCreateNestedManyWithoutNurseInput
+    receivedDeposits?: InpatientDepositCreateNestedManyWithoutReceivedByInput
+    issuedInvoices?: InvoiceCreateNestedManyWithoutIssuedByInput
+    approvedJournals?: JournalEntryCreateNestedManyWithoutApprovedByInput
+    createdJournals?: JournalEntryCreateNestedManyWithoutCreatedByInput
+    labOrders?: LabOrderCreateNestedManyWithoutDoctorInput
+    receivedPayments?: PaymentCreateNestedManyWithoutReceivedByInput
+    prescriptions?: PrescriptionCreateNestedManyWithoutDoctorInput
+    radiologyOrders?: RadiologyOrderCreateNestedManyWithoutDoctorInput
+    purchaseApprovals?: PurchaseOrderCreateNestedManyWithoutApprovedByInput
+    purchaseRequests?: PurchaseOrderCreateNestedManyWithoutRequestedByInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    stockAdjustApps?: StockAdjustmentCreateNestedManyWithoutApprovedByInput
+    stockAdjustReqs?: StockAdjustmentCreateNestedManyWithoutRequestedByInput
+    stockMovements?: StockMovementCreateNestedManyWithoutPerformedByInput
+    stockTakesCounted?: StockTakeCreateNestedManyWithoutCountedByInput
+    stockTakesVerified?: StockTakeCreateNestedManyWithoutVerifiedByInput
+    createdTaxInvoices?: TaxInvoiceCreateNestedManyWithoutCreatedByInput
+    role?: RoleCreateNestedOneWithoutUsersInput
+    visits?: VisitCreateNestedManyWithoutDoctorInput
+    accountsClearedVisits?: VisitCreateNestedManyWithoutAccountsClearedByInput
+    discontinuedVisits?: VisitCreateNestedManyWithoutDiscontinuationByInput
+    priceChanges?: DrugPriceAuditCreateNestedManyWithoutChangedByInput
+    uploadedImages?: DrugImageCreateNestedManyWithoutUploadedByInput
+    createdLabTemplates?: LabResultTemplateCreateNestedManyWithoutCreatedByInput
+    updatedLabTemplates?: LabResultTemplateCreateNestedManyWithoutUpdatedByInput
+    createdRadiologyTemplates?: RadiologyResultTemplateCreateNestedManyWithoutCreatedByInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutIpdRequestsRequestedInput = {
+    id?: string
+    tenantId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    hashedPassword?: string | null
+    roleId?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    department?: string | null
+    specialization?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
+    admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+    createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
+    finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
+    appliedDeposits?: DepositApplicationUncheckedCreateNestedManyWithoutAppliedByInput
+    dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutDispensedByInput
+    recordedExpenses?: ExpenseUncheckedCreateNestedManyWithoutRecordedByInput
+    closedFiscalYears?: FiscalYearUncheckedCreateNestedManyWithoutClosedByInput
+    usedFloorStocks?: FloorStockUsageUncheckedCreateNestedManyWithoutUsedByInput
+    goodsReceipts?: GoodsReceiptUncheckedCreateNestedManyWithoutReceivedByInput
+    createdInpatientCharges?: InpatientChargeUncheckedCreateNestedManyWithoutCreatedByInput
+    nursedCharges?: InpatientChargeUncheckedCreateNestedManyWithoutNurseInput
+    receivedDeposits?: InpatientDepositUncheckedCreateNestedManyWithoutReceivedByInput
+    issuedInvoices?: InvoiceUncheckedCreateNestedManyWithoutIssuedByInput
+    approvedJournals?: JournalEntryUncheckedCreateNestedManyWithoutApprovedByInput
+    createdJournals?: JournalEntryUncheckedCreateNestedManyWithoutCreatedByInput
+    labOrders?: LabOrderUncheckedCreateNestedManyWithoutDoctorInput
+    receivedPayments?: PaymentUncheckedCreateNestedManyWithoutReceivedByInput
+    prescriptions?: PrescriptionUncheckedCreateNestedManyWithoutDoctorInput
+    radiologyOrders?: RadiologyOrderUncheckedCreateNestedManyWithoutDoctorInput
+    purchaseApprovals?: PurchaseOrderUncheckedCreateNestedManyWithoutApprovedByInput
+    purchaseRequests?: PurchaseOrderUncheckedCreateNestedManyWithoutRequestedByInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    stockAdjustApps?: StockAdjustmentUncheckedCreateNestedManyWithoutApprovedByInput
+    stockAdjustReqs?: StockAdjustmentUncheckedCreateNestedManyWithoutRequestedByInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutPerformedByInput
+    stockTakesCounted?: StockTakeUncheckedCreateNestedManyWithoutCountedByInput
+    stockTakesVerified?: StockTakeUncheckedCreateNestedManyWithoutVerifiedByInput
+    createdTaxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutCreatedByInput
+    visits?: VisitUncheckedCreateNestedManyWithoutDoctorInput
+    accountsClearedVisits?: VisitUncheckedCreateNestedManyWithoutAccountsClearedByInput
+    discontinuedVisits?: VisitUncheckedCreateNestedManyWithoutDiscontinuationByInput
+    priceChanges?: DrugPriceAuditUncheckedCreateNestedManyWithoutChangedByInput
+    uploadedImages?: DrugImageUncheckedCreateNestedManyWithoutUploadedByInput
+    createdLabTemplates?: LabResultTemplateUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLabTemplates?: LabResultTemplateUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdRadiologyTemplates?: RadiologyResultTemplateUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateUncheckedCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutIpdRequestsRequestedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutIpdRequestsRequestedInput, UserUncheckedCreateWithoutIpdRequestsRequestedInput>
+  }
+
+  export type UserCreateWithoutIpdRequestsReviewedInput = {
+    id?: string
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    hashedPassword?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    department?: string | null
+    specialization?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tenant?: TenantCreateNestedOneWithoutUsersInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
+    admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    appointments?: AppointmentCreateNestedManyWithoutDoctorInput
+    createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
+    finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
+    appliedDeposits?: DepositApplicationCreateNestedManyWithoutAppliedByInput
+    dispensingLogs?: DispensingLogCreateNestedManyWithoutDispensedByInput
+    recordedExpenses?: ExpenseCreateNestedManyWithoutRecordedByInput
+    closedFiscalYears?: FiscalYearCreateNestedManyWithoutClosedByInput
+    usedFloorStocks?: FloorStockUsageCreateNestedManyWithoutUsedByInput
+    goodsReceipts?: GoodsReceiptCreateNestedManyWithoutReceivedByInput
+    createdInpatientCharges?: InpatientChargeCreateNestedManyWithoutCreatedByInput
+    nursedCharges?: InpatientChargeCreateNestedManyWithoutNurseInput
+    receivedDeposits?: InpatientDepositCreateNestedManyWithoutReceivedByInput
+    issuedInvoices?: InvoiceCreateNestedManyWithoutIssuedByInput
+    approvedJournals?: JournalEntryCreateNestedManyWithoutApprovedByInput
+    createdJournals?: JournalEntryCreateNestedManyWithoutCreatedByInput
+    labOrders?: LabOrderCreateNestedManyWithoutDoctorInput
+    receivedPayments?: PaymentCreateNestedManyWithoutReceivedByInput
+    prescriptions?: PrescriptionCreateNestedManyWithoutDoctorInput
+    radiologyOrders?: RadiologyOrderCreateNestedManyWithoutDoctorInput
+    purchaseApprovals?: PurchaseOrderCreateNestedManyWithoutApprovedByInput
+    purchaseRequests?: PurchaseOrderCreateNestedManyWithoutRequestedByInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    stockAdjustApps?: StockAdjustmentCreateNestedManyWithoutApprovedByInput
+    stockAdjustReqs?: StockAdjustmentCreateNestedManyWithoutRequestedByInput
+    stockMovements?: StockMovementCreateNestedManyWithoutPerformedByInput
+    stockTakesCounted?: StockTakeCreateNestedManyWithoutCountedByInput
+    stockTakesVerified?: StockTakeCreateNestedManyWithoutVerifiedByInput
+    createdTaxInvoices?: TaxInvoiceCreateNestedManyWithoutCreatedByInput
+    role?: RoleCreateNestedOneWithoutUsersInput
+    visits?: VisitCreateNestedManyWithoutDoctorInput
+    accountsClearedVisits?: VisitCreateNestedManyWithoutAccountsClearedByInput
+    discontinuedVisits?: VisitCreateNestedManyWithoutDiscontinuationByInput
+    priceChanges?: DrugPriceAuditCreateNestedManyWithoutChangedByInput
+    uploadedImages?: DrugImageCreateNestedManyWithoutUploadedByInput
+    createdLabTemplates?: LabResultTemplateCreateNestedManyWithoutCreatedByInput
+    updatedLabTemplates?: LabResultTemplateCreateNestedManyWithoutUpdatedByInput
+    createdRadiologyTemplates?: RadiologyResultTemplateCreateNestedManyWithoutCreatedByInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutIpdRequestsReviewedInput = {
+    id?: string
+    tenantId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    hashedPassword?: string | null
+    roleId?: string | null
+    employeeId?: string | null
+    phone?: string | null
+    department?: string | null
+    specialization?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
+    admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+    createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
+    finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
+    appliedDeposits?: DepositApplicationUncheckedCreateNestedManyWithoutAppliedByInput
+    dispensingLogs?: DispensingLogUncheckedCreateNestedManyWithoutDispensedByInput
+    recordedExpenses?: ExpenseUncheckedCreateNestedManyWithoutRecordedByInput
+    closedFiscalYears?: FiscalYearUncheckedCreateNestedManyWithoutClosedByInput
+    usedFloorStocks?: FloorStockUsageUncheckedCreateNestedManyWithoutUsedByInput
+    goodsReceipts?: GoodsReceiptUncheckedCreateNestedManyWithoutReceivedByInput
+    createdInpatientCharges?: InpatientChargeUncheckedCreateNestedManyWithoutCreatedByInput
+    nursedCharges?: InpatientChargeUncheckedCreateNestedManyWithoutNurseInput
+    receivedDeposits?: InpatientDepositUncheckedCreateNestedManyWithoutReceivedByInput
+    issuedInvoices?: InvoiceUncheckedCreateNestedManyWithoutIssuedByInput
+    approvedJournals?: JournalEntryUncheckedCreateNestedManyWithoutApprovedByInput
+    createdJournals?: JournalEntryUncheckedCreateNestedManyWithoutCreatedByInput
+    labOrders?: LabOrderUncheckedCreateNestedManyWithoutDoctorInput
+    receivedPayments?: PaymentUncheckedCreateNestedManyWithoutReceivedByInput
+    prescriptions?: PrescriptionUncheckedCreateNestedManyWithoutDoctorInput
+    radiologyOrders?: RadiologyOrderUncheckedCreateNestedManyWithoutDoctorInput
+    purchaseApprovals?: PurchaseOrderUncheckedCreateNestedManyWithoutApprovedByInput
+    purchaseRequests?: PurchaseOrderUncheckedCreateNestedManyWithoutRequestedByInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    stockAdjustApps?: StockAdjustmentUncheckedCreateNestedManyWithoutApprovedByInput
+    stockAdjustReqs?: StockAdjustmentUncheckedCreateNestedManyWithoutRequestedByInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutPerformedByInput
+    stockTakesCounted?: StockTakeUncheckedCreateNestedManyWithoutCountedByInput
+    stockTakesVerified?: StockTakeUncheckedCreateNestedManyWithoutVerifiedByInput
+    createdTaxInvoices?: TaxInvoiceUncheckedCreateNestedManyWithoutCreatedByInput
+    visits?: VisitUncheckedCreateNestedManyWithoutDoctorInput
+    accountsClearedVisits?: VisitUncheckedCreateNestedManyWithoutAccountsClearedByInput
+    discontinuedVisits?: VisitUncheckedCreateNestedManyWithoutDiscontinuationByInput
+    priceChanges?: DrugPriceAuditUncheckedCreateNestedManyWithoutChangedByInput
+    uploadedImages?: DrugImageUncheckedCreateNestedManyWithoutUploadedByInput
+    createdLabTemplates?: LabResultTemplateUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedLabTemplates?: LabResultTemplateUncheckedCreateNestedManyWithoutUpdatedByInput
+    createdRadiologyTemplates?: RadiologyResultTemplateUncheckedCreateNestedManyWithoutCreatedByInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateUncheckedCreateNestedManyWithoutUpdatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutIpdRequestsReviewedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutIpdRequestsReviewedInput, UserUncheckedCreateWithoutIpdRequestsReviewedInput>
+  }
+
+  export type WardCreateWithoutIpdRequestsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    type: string
+    capacity: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    admissions?: AdmissionCreateNestedManyWithoutWardInput
+    beds?: BedCreateNestedManyWithoutWardInput
+    floorStocks?: FloorStockCreateNestedManyWithoutWardInput
+  }
+
+  export type WardUncheckedCreateWithoutIpdRequestsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    type: string
+    capacity: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    admissions?: AdmissionUncheckedCreateNestedManyWithoutWardInput
+    beds?: BedUncheckedCreateNestedManyWithoutWardInput
+    floorStocks?: FloorStockUncheckedCreateNestedManyWithoutWardInput
+  }
+
+  export type WardCreateOrConnectWithoutIpdRequestsInput = {
+    where: WardWhereUniqueInput
+    create: XOR<WardCreateWithoutIpdRequestsInput, WardUncheckedCreateWithoutIpdRequestsInput>
+  }
+
+  export type AdmissionCreateWithoutIpdRequestInput = {
+    id?: string
+    admissionNumber: string
+    admissionDate?: Date | string
+    dischargeDate?: Date | string | null
+    status?: string
+    type: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    admittingDoctor: UserCreateNestedOneWithoutAdmissionsInput
+    bed?: BedCreateNestedOneWithoutAdmissionsInput
+    patient: PatientCreateNestedOneWithoutAdmissionsInput
+    visit?: VisitCreateNestedOneWithoutAdmissionInput
+    ward?: WardCreateNestedOneWithoutAdmissionsInput
+    dailySummaries?: DailyChargeSummaryCreateNestedManyWithoutAdmissionInput
+    floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
+    charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
+    deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+  }
+
+  export type AdmissionUncheckedCreateWithoutIpdRequestInput = {
+    id?: string
+    admissionNumber: string
+    patientId: string
+    visitId?: string | null
+    wardId?: string | null
+    bedId?: string | null
+    admittingDoctorId: string
+    admissionDate?: Date | string
+    dischargeDate?: Date | string | null
+    status?: string
+    type: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutAdmissionInput
+    floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
+    charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
+    deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+  }
+
+  export type AdmissionCreateOrConnectWithoutIpdRequestInput = {
+    where: AdmissionWhereUniqueInput
+    create: XOR<AdmissionCreateWithoutIpdRequestInput, AdmissionUncheckedCreateWithoutIpdRequestInput>
+  }
+
+  export type VisitUpsertWithoutIpdRequestsInput = {
+    update: XOR<VisitUpdateWithoutIpdRequestsInput, VisitUncheckedUpdateWithoutIpdRequestsInput>
+    create: XOR<VisitCreateWithoutIpdRequestsInput, VisitUncheckedCreateWithoutIpdRequestsInput>
+    where?: VisitWhereInput
+  }
+
+  export type VisitUpdateToOneWithWhereWithoutIpdRequestsInput = {
+    where?: VisitWhereInput
+    data: XOR<VisitUpdateWithoutIpdRequestsInput, VisitUncheckedUpdateWithoutIpdRequestsInput>
+  }
+
+  export type VisitUpdateWithoutIpdRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visitNumber?: StringFieldUpdateOperationsInput | string
+    type?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    bloodPressure?: NullableStringFieldUpdateOperationsInput | string | null
+    heartRate?: NullableStringFieldUpdateOperationsInput | string | null
+    temperature?: NullableStringFieldUpdateOperationsInput | string | null
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    height?: NullableFloatFieldUpdateOperationsInput | number | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    treatmentPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consultationFeePaid?: BoolFieldUpdateOperationsInput | boolean
+    consultationFeeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    consultationFeePaidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    labFeesPaid?: BoolFieldUpdateOperationsInput | boolean
+    labFeesAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    labFeesPaidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    accountsCleared?: BoolFieldUpdateOperationsInput | boolean
+    accountsClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
+    discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
+    dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
+    invoices?: InvoiceUpdateManyWithoutVisitNestedInput
+    labOrders?: LabOrderUpdateManyWithoutVisitNestedInput
+    prescriptions?: PrescriptionUpdateManyWithoutVisitNestedInput
+    radiologyOrders?: RadiologyOrderUpdateManyWithoutVisitNestedInput
+    orderWriteOffs?: OrderWriteOffUpdateManyWithoutVisitNestedInput
+    followUpVisits?: VisitUpdateManyWithoutLinkedPriorVisitNestedInput
+    doctor?: UserUpdateOneWithoutVisitsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutVisitsNestedInput
+    consultationInvoice?: InvoiceUpdateOneWithoutConsultationInvoiceNestedInput
+    labInvoice?: InvoiceUpdateOneWithoutLabInvoiceNestedInput
+    accountsClearedBy?: UserUpdateOneWithoutAccountsClearedVisitsNestedInput
+    discontinuationBy?: UserUpdateOneWithoutDiscontinuedVisitsNestedInput
+    linkedPriorVisit?: VisitUpdateOneWithoutFollowUpVisitsNestedInput
+  }
+
+  export type VisitUncheckedUpdateWithoutIpdRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    visitNumber?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
+    type?: EnumVisitTypeFieldUpdateOperationsInput | $Enums.VisitType
+    chiefComplaint?: NullableStringFieldUpdateOperationsInput | string | null
+    bloodPressure?: NullableStringFieldUpdateOperationsInput | string | null
+    heartRate?: NullableStringFieldUpdateOperationsInput | string | null
+    temperature?: NullableStringFieldUpdateOperationsInput | string | null
+    weight?: NullableFloatFieldUpdateOperationsInput | number | null
+    height?: NullableFloatFieldUpdateOperationsInput | number | null
+    priority?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    subjective?: NullableStringFieldUpdateOperationsInput | string | null
+    objective?: NullableStringFieldUpdateOperationsInput | string | null
+    assessment?: NullableStringFieldUpdateOperationsInput | string | null
+    treatmentPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedDoctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedTime?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    consultationFeePaid?: BoolFieldUpdateOperationsInput | boolean
+    consultationFeeAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    consultationFeePaidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    consultationInvoiceId?: NullableStringFieldUpdateOperationsInput | string | null
+    labFeesPaid?: BoolFieldUpdateOperationsInput | boolean
+    labFeesAmount?: NullableFloatFieldUpdateOperationsInput | number | null
+    labFeesPaidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    labInvoiceId?: NullableStringFieldUpdateOperationsInput | string | null
+    accountsCleared?: BoolFieldUpdateOperationsInput | boolean
+    accountsClearedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    accountsClearedById?: NullableStringFieldUpdateOperationsInput | string | null
+    discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
+    discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
+    linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
+    admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
+    dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
+    labOrders?: LabOrderUncheckedUpdateManyWithoutVisitNestedInput
+    prescriptions?: PrescriptionUncheckedUpdateManyWithoutVisitNestedInput
+    radiologyOrders?: RadiologyOrderUncheckedUpdateManyWithoutVisitNestedInput
+    orderWriteOffs?: OrderWriteOffUncheckedUpdateManyWithoutVisitNestedInput
+    followUpVisits?: VisitUncheckedUpdateManyWithoutLinkedPriorVisitNestedInput
+  }
+
+  export type UserUpsertWithoutIpdRequestsRequestedInput = {
+    update: XOR<UserUpdateWithoutIpdRequestsRequestedInput, UserUncheckedUpdateWithoutIpdRequestsRequestedInput>
+    create: XOR<UserCreateWithoutIpdRequestsRequestedInput, UserUncheckedCreateWithoutIpdRequestsRequestedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutIpdRequestsRequestedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutIpdRequestsRequestedInput, UserUncheckedUpdateWithoutIpdRequestsRequestedInput>
+  }
+
+  export type UserUpdateWithoutIpdRequestsRequestedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    hashedPassword?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneWithoutUsersNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
+    admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
+    appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
+    createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
+    finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
+    appliedDeposits?: DepositApplicationUpdateManyWithoutAppliedByNestedInput
+    dispensingLogs?: DispensingLogUpdateManyWithoutDispensedByNestedInput
+    recordedExpenses?: ExpenseUpdateManyWithoutRecordedByNestedInput
+    closedFiscalYears?: FiscalYearUpdateManyWithoutClosedByNestedInput
+    usedFloorStocks?: FloorStockUsageUpdateManyWithoutUsedByNestedInput
+    goodsReceipts?: GoodsReceiptUpdateManyWithoutReceivedByNestedInput
+    createdInpatientCharges?: InpatientChargeUpdateManyWithoutCreatedByNestedInput
+    nursedCharges?: InpatientChargeUpdateManyWithoutNurseNestedInput
+    receivedDeposits?: InpatientDepositUpdateManyWithoutReceivedByNestedInput
+    issuedInvoices?: InvoiceUpdateManyWithoutIssuedByNestedInput
+    approvedJournals?: JournalEntryUpdateManyWithoutApprovedByNestedInput
+    createdJournals?: JournalEntryUpdateManyWithoutCreatedByNestedInput
+    labOrders?: LabOrderUpdateManyWithoutDoctorNestedInput
+    receivedPayments?: PaymentUpdateManyWithoutReceivedByNestedInput
+    prescriptions?: PrescriptionUpdateManyWithoutDoctorNestedInput
+    radiologyOrders?: RadiologyOrderUpdateManyWithoutDoctorNestedInput
+    purchaseApprovals?: PurchaseOrderUpdateManyWithoutApprovedByNestedInput
+    purchaseRequests?: PurchaseOrderUpdateManyWithoutRequestedByNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    stockAdjustApps?: StockAdjustmentUpdateManyWithoutApprovedByNestedInput
+    stockAdjustReqs?: StockAdjustmentUpdateManyWithoutRequestedByNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutPerformedByNestedInput
+    stockTakesCounted?: StockTakeUpdateManyWithoutCountedByNestedInput
+    stockTakesVerified?: StockTakeUpdateManyWithoutVerifiedByNestedInput
+    createdTaxInvoices?: TaxInvoiceUpdateManyWithoutCreatedByNestedInput
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    visits?: VisitUpdateManyWithoutDoctorNestedInput
+    accountsClearedVisits?: VisitUpdateManyWithoutAccountsClearedByNestedInput
+    discontinuedVisits?: VisitUpdateManyWithoutDiscontinuationByNestedInput
+    priceChanges?: DrugPriceAuditUpdateManyWithoutChangedByNestedInput
+    uploadedImages?: DrugImageUpdateManyWithoutUploadedByNestedInput
+    createdLabTemplates?: LabResultTemplateUpdateManyWithoutCreatedByNestedInput
+    updatedLabTemplates?: LabResultTemplateUpdateManyWithoutUpdatedByNestedInput
+    createdRadiologyTemplates?: RadiologyResultTemplateUpdateManyWithoutCreatedByNestedInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutIpdRequestsRequestedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    hashedPassword?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
+    admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+    createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
+    finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
+    appliedDeposits?: DepositApplicationUncheckedUpdateManyWithoutAppliedByNestedInput
+    dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutDispensedByNestedInput
+    recordedExpenses?: ExpenseUncheckedUpdateManyWithoutRecordedByNestedInput
+    closedFiscalYears?: FiscalYearUncheckedUpdateManyWithoutClosedByNestedInput
+    usedFloorStocks?: FloorStockUsageUncheckedUpdateManyWithoutUsedByNestedInput
+    goodsReceipts?: GoodsReceiptUncheckedUpdateManyWithoutReceivedByNestedInput
+    createdInpatientCharges?: InpatientChargeUncheckedUpdateManyWithoutCreatedByNestedInput
+    nursedCharges?: InpatientChargeUncheckedUpdateManyWithoutNurseNestedInput
+    receivedDeposits?: InpatientDepositUncheckedUpdateManyWithoutReceivedByNestedInput
+    issuedInvoices?: InvoiceUncheckedUpdateManyWithoutIssuedByNestedInput
+    approvedJournals?: JournalEntryUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdJournals?: JournalEntryUncheckedUpdateManyWithoutCreatedByNestedInput
+    labOrders?: LabOrderUncheckedUpdateManyWithoutDoctorNestedInput
+    receivedPayments?: PaymentUncheckedUpdateManyWithoutReceivedByNestedInput
+    prescriptions?: PrescriptionUncheckedUpdateManyWithoutDoctorNestedInput
+    radiologyOrders?: RadiologyOrderUncheckedUpdateManyWithoutDoctorNestedInput
+    purchaseApprovals?: PurchaseOrderUncheckedUpdateManyWithoutApprovedByNestedInput
+    purchaseRequests?: PurchaseOrderUncheckedUpdateManyWithoutRequestedByNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    stockAdjustApps?: StockAdjustmentUncheckedUpdateManyWithoutApprovedByNestedInput
+    stockAdjustReqs?: StockAdjustmentUncheckedUpdateManyWithoutRequestedByNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutPerformedByNestedInput
+    stockTakesCounted?: StockTakeUncheckedUpdateManyWithoutCountedByNestedInput
+    stockTakesVerified?: StockTakeUncheckedUpdateManyWithoutVerifiedByNestedInput
+    createdTaxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutCreatedByNestedInput
+    visits?: VisitUncheckedUpdateManyWithoutDoctorNestedInput
+    accountsClearedVisits?: VisitUncheckedUpdateManyWithoutAccountsClearedByNestedInput
+    discontinuedVisits?: VisitUncheckedUpdateManyWithoutDiscontinuationByNestedInput
+    priceChanges?: DrugPriceAuditUncheckedUpdateManyWithoutChangedByNestedInput
+    uploadedImages?: DrugImageUncheckedUpdateManyWithoutUploadedByNestedInput
+    createdLabTemplates?: LabResultTemplateUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLabTemplates?: LabResultTemplateUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdRadiologyTemplates?: RadiologyResultTemplateUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateUncheckedUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUpsertWithoutIpdRequestsReviewedInput = {
+    update: XOR<UserUpdateWithoutIpdRequestsReviewedInput, UserUncheckedUpdateWithoutIpdRequestsReviewedInput>
+    create: XOR<UserCreateWithoutIpdRequestsReviewedInput, UserUncheckedCreateWithoutIpdRequestsReviewedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutIpdRequestsReviewedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutIpdRequestsReviewedInput, UserUncheckedUpdateWithoutIpdRequestsReviewedInput>
+  }
+
+  export type UserUpdateWithoutIpdRequestsReviewedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    hashedPassword?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tenant?: TenantUpdateOneWithoutUsersNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
+    admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
+    createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
+    finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
+    appliedDeposits?: DepositApplicationUpdateManyWithoutAppliedByNestedInput
+    dispensingLogs?: DispensingLogUpdateManyWithoutDispensedByNestedInput
+    recordedExpenses?: ExpenseUpdateManyWithoutRecordedByNestedInput
+    closedFiscalYears?: FiscalYearUpdateManyWithoutClosedByNestedInput
+    usedFloorStocks?: FloorStockUsageUpdateManyWithoutUsedByNestedInput
+    goodsReceipts?: GoodsReceiptUpdateManyWithoutReceivedByNestedInput
+    createdInpatientCharges?: InpatientChargeUpdateManyWithoutCreatedByNestedInput
+    nursedCharges?: InpatientChargeUpdateManyWithoutNurseNestedInput
+    receivedDeposits?: InpatientDepositUpdateManyWithoutReceivedByNestedInput
+    issuedInvoices?: InvoiceUpdateManyWithoutIssuedByNestedInput
+    approvedJournals?: JournalEntryUpdateManyWithoutApprovedByNestedInput
+    createdJournals?: JournalEntryUpdateManyWithoutCreatedByNestedInput
+    labOrders?: LabOrderUpdateManyWithoutDoctorNestedInput
+    receivedPayments?: PaymentUpdateManyWithoutReceivedByNestedInput
+    prescriptions?: PrescriptionUpdateManyWithoutDoctorNestedInput
+    radiologyOrders?: RadiologyOrderUpdateManyWithoutDoctorNestedInput
+    purchaseApprovals?: PurchaseOrderUpdateManyWithoutApprovedByNestedInput
+    purchaseRequests?: PurchaseOrderUpdateManyWithoutRequestedByNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    stockAdjustApps?: StockAdjustmentUpdateManyWithoutApprovedByNestedInput
+    stockAdjustReqs?: StockAdjustmentUpdateManyWithoutRequestedByNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutPerformedByNestedInput
+    stockTakesCounted?: StockTakeUpdateManyWithoutCountedByNestedInput
+    stockTakesVerified?: StockTakeUpdateManyWithoutVerifiedByNestedInput
+    createdTaxInvoices?: TaxInvoiceUpdateManyWithoutCreatedByNestedInput
+    role?: RoleUpdateOneWithoutUsersNestedInput
+    visits?: VisitUpdateManyWithoutDoctorNestedInput
+    accountsClearedVisits?: VisitUpdateManyWithoutAccountsClearedByNestedInput
+    discontinuedVisits?: VisitUpdateManyWithoutDiscontinuationByNestedInput
+    priceChanges?: DrugPriceAuditUpdateManyWithoutChangedByNestedInput
+    uploadedImages?: DrugImageUpdateManyWithoutUploadedByNestedInput
+    createdLabTemplates?: LabResultTemplateUpdateManyWithoutCreatedByNestedInput
+    updatedLabTemplates?: LabResultTemplateUpdateManyWithoutUpdatedByNestedInput
+    createdRadiologyTemplates?: RadiologyResultTemplateUpdateManyWithoutCreatedByNestedInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutIpdRequestsReviewedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    tenantId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    hashedPassword?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    employeeId?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    department?: NullableStringFieldUpdateOperationsInput | string | null
+    specialization?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
+    admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+    createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
+    finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
+    appliedDeposits?: DepositApplicationUncheckedUpdateManyWithoutAppliedByNestedInput
+    dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutDispensedByNestedInput
+    recordedExpenses?: ExpenseUncheckedUpdateManyWithoutRecordedByNestedInput
+    closedFiscalYears?: FiscalYearUncheckedUpdateManyWithoutClosedByNestedInput
+    usedFloorStocks?: FloorStockUsageUncheckedUpdateManyWithoutUsedByNestedInput
+    goodsReceipts?: GoodsReceiptUncheckedUpdateManyWithoutReceivedByNestedInput
+    createdInpatientCharges?: InpatientChargeUncheckedUpdateManyWithoutCreatedByNestedInput
+    nursedCharges?: InpatientChargeUncheckedUpdateManyWithoutNurseNestedInput
+    receivedDeposits?: InpatientDepositUncheckedUpdateManyWithoutReceivedByNestedInput
+    issuedInvoices?: InvoiceUncheckedUpdateManyWithoutIssuedByNestedInput
+    approvedJournals?: JournalEntryUncheckedUpdateManyWithoutApprovedByNestedInput
+    createdJournals?: JournalEntryUncheckedUpdateManyWithoutCreatedByNestedInput
+    labOrders?: LabOrderUncheckedUpdateManyWithoutDoctorNestedInput
+    receivedPayments?: PaymentUncheckedUpdateManyWithoutReceivedByNestedInput
+    prescriptions?: PrescriptionUncheckedUpdateManyWithoutDoctorNestedInput
+    radiologyOrders?: RadiologyOrderUncheckedUpdateManyWithoutDoctorNestedInput
+    purchaseApprovals?: PurchaseOrderUncheckedUpdateManyWithoutApprovedByNestedInput
+    purchaseRequests?: PurchaseOrderUncheckedUpdateManyWithoutRequestedByNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    stockAdjustApps?: StockAdjustmentUncheckedUpdateManyWithoutApprovedByNestedInput
+    stockAdjustReqs?: StockAdjustmentUncheckedUpdateManyWithoutRequestedByNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutPerformedByNestedInput
+    stockTakesCounted?: StockTakeUncheckedUpdateManyWithoutCountedByNestedInput
+    stockTakesVerified?: StockTakeUncheckedUpdateManyWithoutVerifiedByNestedInput
+    createdTaxInvoices?: TaxInvoiceUncheckedUpdateManyWithoutCreatedByNestedInput
+    visits?: VisitUncheckedUpdateManyWithoutDoctorNestedInput
+    accountsClearedVisits?: VisitUncheckedUpdateManyWithoutAccountsClearedByNestedInput
+    discontinuedVisits?: VisitUncheckedUpdateManyWithoutDiscontinuationByNestedInput
+    priceChanges?: DrugPriceAuditUncheckedUpdateManyWithoutChangedByNestedInput
+    uploadedImages?: DrugImageUncheckedUpdateManyWithoutUploadedByNestedInput
+    createdLabTemplates?: LabResultTemplateUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedLabTemplates?: LabResultTemplateUncheckedUpdateManyWithoutUpdatedByNestedInput
+    createdRadiologyTemplates?: RadiologyResultTemplateUncheckedUpdateManyWithoutCreatedByNestedInput
+    updatedRadiologyTemplates?: RadiologyResultTemplateUncheckedUpdateManyWithoutUpdatedByNestedInput
+  }
+
+  export type WardUpsertWithoutIpdRequestsInput = {
+    update: XOR<WardUpdateWithoutIpdRequestsInput, WardUncheckedUpdateWithoutIpdRequestsInput>
+    create: XOR<WardCreateWithoutIpdRequestsInput, WardUncheckedCreateWithoutIpdRequestsInput>
+    where?: WardWhereInput
+  }
+
+  export type WardUpdateToOneWithWhereWithoutIpdRequestsInput = {
+    where?: WardWhereInput
+    data: XOR<WardUpdateWithoutIpdRequestsInput, WardUncheckedUpdateWithoutIpdRequestsInput>
+  }
+
+  export type WardUpdateWithoutIpdRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admissions?: AdmissionUpdateManyWithoutWardNestedInput
+    beds?: BedUpdateManyWithoutWardNestedInput
+    floorStocks?: FloorStockUpdateManyWithoutWardNestedInput
+  }
+
+  export type WardUncheckedUpdateWithoutIpdRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admissions?: AdmissionUncheckedUpdateManyWithoutWardNestedInput
+    beds?: BedUncheckedUpdateManyWithoutWardNestedInput
+    floorStocks?: FloorStockUncheckedUpdateManyWithoutWardNestedInput
+  }
+
+  export type AdmissionUpsertWithoutIpdRequestInput = {
+    update: XOR<AdmissionUpdateWithoutIpdRequestInput, AdmissionUncheckedUpdateWithoutIpdRequestInput>
+    create: XOR<AdmissionCreateWithoutIpdRequestInput, AdmissionUncheckedCreateWithoutIpdRequestInput>
+    where?: AdmissionWhereInput
+  }
+
+  export type AdmissionUpdateToOneWithWhereWithoutIpdRequestInput = {
+    where?: AdmissionWhereInput
+    data: XOR<AdmissionUpdateWithoutIpdRequestInput, AdmissionUncheckedUpdateWithoutIpdRequestInput>
+  }
+
+  export type AdmissionUpdateWithoutIpdRequestInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    admissionNumber?: StringFieldUpdateOperationsInput | string
+    admissionDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dischargeDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admittingDoctor?: UserUpdateOneRequiredWithoutAdmissionsNestedInput
+    bed?: BedUpdateOneWithoutAdmissionsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutAdmissionsNestedInput
+    visit?: VisitUpdateOneWithoutAdmissionNestedInput
+    ward?: WardUpdateOneWithoutAdmissionsNestedInput
+    dailySummaries?: DailyChargeSummaryUpdateManyWithoutAdmissionNestedInput
+    floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
+    charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
+    deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+  }
+
+  export type AdmissionUncheckedUpdateWithoutIpdRequestInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    admissionNumber?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
+    visitId?: NullableStringFieldUpdateOperationsInput | string | null
+    wardId?: NullableStringFieldUpdateOperationsInput | string | null
+    bedId?: NullableStringFieldUpdateOperationsInput | string | null
+    admittingDoctorId?: StringFieldUpdateOperationsInput | string
+    admissionDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    dischargeDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutAdmissionNestedInput
+    floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
+    charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
+    deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
   }
 
   export type ChartOfAccountCreateWithoutBillableItemsInput = {
@@ -157562,6 +161255,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryCreateNestedManyWithoutAdmissionInput
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutChargesInput = {
@@ -157581,6 +161275,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutAdmissionInput
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutChargesInput = {
@@ -157661,6 +161356,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -157719,6 +161416,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -157890,6 +161589,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -157948,6 +161649,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -158051,6 +161754,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUpdateManyWithoutAdmissionNestedInput
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutChargesInput = {
@@ -158070,6 +161774,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutAdmissionNestedInput
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type BillableItemUpsertWithoutChargesInput = {
@@ -158162,6 +161867,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -158220,6 +161927,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -158409,6 +162118,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -158467,6 +162178,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -158522,6 +162235,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutDailySummariesInput = {
@@ -158541,6 +162255,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutDailySummariesInput = {
@@ -158566,6 +162281,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     appliedDeposits?: DepositApplicationCreateNestedManyWithoutAppliedByInput
@@ -158624,6 +162341,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     appliedDeposits?: DepositApplicationUncheckedCreateNestedManyWithoutAppliedByInput
@@ -158765,6 +162484,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutDailySummariesInput = {
@@ -158784,6 +162504,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type UserUpsertWithoutFinalizedDailySummariesInput = {
@@ -158815,6 +162536,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     appliedDeposits?: DepositApplicationUpdateManyWithoutAppliedByNestedInput
@@ -158873,6 +162596,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     appliedDeposits?: DepositApplicationUncheckedUpdateManyWithoutAppliedByNestedInput
@@ -158972,6 +162697,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryCreateNestedManyWithoutAdmissionInput
     floorStockUsages?: FloorStockUsageCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutDepositsInput = {
@@ -158991,6 +162717,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutAdmissionInput
     floorStockUsages?: FloorStockUsageUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutDepositsInput = {
@@ -159016,6 +162743,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -159074,6 +162803,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -159161,6 +162892,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUpdateManyWithoutAdmissionNestedInput
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutDepositsInput = {
@@ -159180,6 +162912,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutAdmissionNestedInput
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type UserUpsertWithoutReceivedDepositsInput = {
@@ -159211,6 +162944,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -159269,6 +163004,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -159325,6 +163062,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -159383,6 +163122,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -159608,6 +163349,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -159666,6 +163409,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -160039,6 +163784,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     admissions?: AdmissionCreateNestedManyWithoutWardInput
+    ipdRequests?: IpdRequestCreateNestedManyWithoutPreferredWardInput
     beds?: BedCreateNestedManyWithoutWardInput
   }
 
@@ -160051,6 +163797,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     admissions?: AdmissionUncheckedCreateNestedManyWithoutWardInput
+    ipdRequests?: IpdRequestUncheckedCreateNestedManyWithoutPreferredWardInput
     beds?: BedUncheckedCreateNestedManyWithoutWardInput
   }
 
@@ -160272,6 +164019,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admissions?: AdmissionUpdateManyWithoutWardNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutPreferredWardNestedInput
     beds?: BedUpdateManyWithoutWardNestedInput
   }
 
@@ -160284,6 +164032,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admissions?: AdmissionUncheckedUpdateManyWithoutWardNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutPreferredWardNestedInput
     beds?: BedUncheckedUpdateManyWithoutWardNestedInput
   }
 
@@ -160320,6 +164069,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionUncheckedCreateWithoutFloorStockUsagesInput = {
@@ -160339,6 +164089,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutAdmissionInput
     charges?: InpatientChargeUncheckedCreateNestedManyWithoutAdmissionInput
     deposits?: InpatientDepositUncheckedCreateNestedManyWithoutAdmissionInput
+    ipdRequest?: IpdRequestUncheckedCreateNestedOneWithoutAdmissionInput
   }
 
   export type AdmissionCreateOrConnectWithoutFloorStockUsagesInput = {
@@ -160464,6 +164215,8 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryCreateNestedManyWithoutFinalizedByInput
@@ -160522,6 +164275,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     closedPeriods?: AccountingPeriodUncheckedCreateNestedManyWithoutClosedByInput
     admissions?: AdmissionUncheckedCreateNestedManyWithoutAdmittingDoctorInput
+    ipdRequestsRequested?: IpdRequestUncheckedCreateNestedManyWithoutRequestedByInput
+    ipdRequestsReviewed?: IpdRequestUncheckedCreateNestedManyWithoutReviewedByInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     createdBudgets?: BudgetUncheckedCreateNestedManyWithoutCreatedByInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedCreateNestedManyWithoutFinalizedByInput
@@ -160593,6 +164348,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutFloorStockUsagesInput = {
@@ -160612,6 +164368,7 @@ export namespace Prisma {
     dailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type InpatientChargeUpsertWithoutFloorStockUsagesInput = {
@@ -160755,6 +164512,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -160813,6 +164572,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -160889,6 +164650,46 @@ export namespace Prisma {
     dischargeDate?: Date | string | null
     status?: string
     type: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestCreateManyRequestedByInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type IpdRequestCreateManyReviewedByInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -161707,6 +165508,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutAdmittingDoctorInput = {
@@ -161726,6 +165528,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateManyWithoutAdmittingDoctorInput = {
@@ -161739,6 +165542,126 @@ export namespace Prisma {
     dischargeDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUpdateWithoutRequestedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    visit?: VisitUpdateOneRequiredWithoutIpdRequestsNestedInput
+    reviewedBy?: UserUpdateOneWithoutIpdRequestsReviewedNestedInput
+    preferredWard?: WardUpdateOneWithoutIpdRequestsNestedInput
+    admission?: AdmissionUpdateOneWithoutIpdRequestNestedInput
+  }
+
+  export type IpdRequestUncheckedUpdateWithoutRequestedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutRequestedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUpdateWithoutReviewedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    visit?: VisitUpdateOneRequiredWithoutIpdRequestsNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutIpdRequestsRequestedNestedInput
+    preferredWard?: WardUpdateOneWithoutIpdRequestsNestedInput
+    admission?: AdmissionUpdateOneWithoutIpdRequestNestedInput
+  }
+
+  export type IpdRequestUncheckedUpdateWithoutReviewedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutReviewedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -163410,6 +167333,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -163463,6 +167387,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -163542,6 +167467,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -163595,6 +167521,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -163674,6 +167601,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -163727,6 +167655,7 @@ export namespace Prisma {
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -164068,6 +167997,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -164125,6 +168056,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -164484,6 +168417,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutPatientInput = {
@@ -164503,6 +168437,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateManyWithoutPatientInput = {
@@ -165139,6 +169074,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -165192,6 +169128,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -165238,6 +169175,26 @@ export namespace Prisma {
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type IpdRequestCreateManyVisitInput = {
+    id?: string
+    requestNumber: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredWardId?: string | null
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DiagnosisCreateManyVisitInput = {
@@ -165414,6 +169371,66 @@ export namespace Prisma {
     discontinuationNote?: string | null
     discontinuationDate?: Date | string | null
     discontinuationById?: string | null
+  }
+
+  export type IpdRequestUpdateWithoutVisitInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    requestedBy?: UserUpdateOneRequiredWithoutIpdRequestsRequestedNestedInput
+    reviewedBy?: UserUpdateOneWithoutIpdRequestsReviewedNestedInput
+    preferredWard?: WardUpdateOneWithoutIpdRequestsNestedInput
+    admission?: AdmissionUpdateOneWithoutIpdRequestNestedInput
+  }
+
+  export type IpdRequestUncheckedUpdateWithoutVisitInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutVisitInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredWardId?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DiagnosisUpdateWithoutVisitInput = {
@@ -165883,6 +169900,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -165936,6 +169954,7 @@ export namespace Prisma {
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -169064,6 +173083,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -169117,6 +173137,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -169196,6 +173217,7 @@ export namespace Prisma {
     discontinuationNote?: NullableStringFieldUpdateOperationsInput | string | null
     discontinuationDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     admission?: AdmissionUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUpdateManyWithoutVisitNestedInput
@@ -169249,6 +173271,7 @@ export namespace Prisma {
     discontinuationById?: NullableStringFieldUpdateOperationsInput | string | null
     linkedPriorVisitId?: NullableStringFieldUpdateOperationsInput | string | null
     admission?: AdmissionUncheckedUpdateOneWithoutVisitNestedInput
+    ipdRequests?: IpdRequestUncheckedUpdateManyWithoutVisitNestedInput
     diagnoses?: DiagnosisUncheckedUpdateManyWithoutVisitNestedInput
     dispensingLogs?: DispensingLogUncheckedUpdateManyWithoutVisitNestedInput
     invoices?: InvoiceUncheckedUpdateManyWithoutVisitNestedInput
@@ -169778,6 +173801,8 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUpdateManyWithoutFinalizedByNestedInput
@@ -169836,6 +173861,8 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     closedPeriods?: AccountingPeriodUncheckedUpdateManyWithoutClosedByNestedInput
     admissions?: AdmissionUncheckedUpdateManyWithoutAdmittingDoctorNestedInput
+    ipdRequestsRequested?: IpdRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+    ipdRequestsReviewed?: IpdRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     createdBudgets?: BudgetUncheckedUpdateManyWithoutCreatedByNestedInput
     finalizedDailySummaries?: DailyChargeSummaryUncheckedUpdateManyWithoutFinalizedByNestedInput
@@ -171683,6 +175710,26 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type IpdRequestCreateManyPreferredWardInput = {
+    id?: string
+    requestNumber: string
+    visitId: string
+    requestedById: string
+    reasonForAdmission: string
+    admittingDiagnosis?: string | null
+    urgency: string
+    preferredBedType?: string | null
+    clinicalNotes?: string | null
+    status?: string
+    reviewedById?: string | null
+    reviewedAt?: Date | string | null
+    reviewNotes?: string | null
+    fulfilledAt?: Date | string | null
+    admissionId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type BedCreateManyWardInput = {
     id?: string
     bedNumber: string
@@ -171725,6 +175772,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutWardInput = {
@@ -171744,6 +175792,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateManyWithoutWardInput = {
@@ -171757,6 +175806,66 @@ export namespace Prisma {
     dischargeDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     status?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUpdateWithoutPreferredWardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    visit?: VisitUpdateOneRequiredWithoutIpdRequestsNestedInput
+    requestedBy?: UserUpdateOneRequiredWithoutIpdRequestsRequestedNestedInput
+    reviewedBy?: UserUpdateOneWithoutIpdRequestsReviewedNestedInput
+    admission?: AdmissionUpdateOneWithoutIpdRequestNestedInput
+  }
+
+  export type IpdRequestUncheckedUpdateWithoutPreferredWardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type IpdRequestUncheckedUpdateManyWithoutPreferredWardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    requestNumber?: StringFieldUpdateOperationsInput | string
+    visitId?: StringFieldUpdateOperationsInput | string
+    requestedById?: StringFieldUpdateOperationsInput | string
+    reasonForAdmission?: StringFieldUpdateOperationsInput | string
+    admittingDiagnosis?: NullableStringFieldUpdateOperationsInput | string | null
+    urgency?: StringFieldUpdateOperationsInput | string
+    preferredBedType?: NullableStringFieldUpdateOperationsInput | string | null
+    clinicalNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    reviewedById?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reviewNotes?: NullableStringFieldUpdateOperationsInput | string | null
+    fulfilledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    admissionId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -171872,6 +175981,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateWithoutBedInput = {
@@ -171891,6 +176001,7 @@ export namespace Prisma {
     floorStockUsages?: FloorStockUsageUncheckedUpdateManyWithoutAdmissionNestedInput
     charges?: InpatientChargeUncheckedUpdateManyWithoutAdmissionNestedInput
     deposits?: InpatientDepositUncheckedUpdateManyWithoutAdmissionNestedInput
+    ipdRequest?: IpdRequestUncheckedUpdateOneWithoutAdmissionNestedInput
   }
 
   export type AdmissionUncheckedUpdateManyWithoutBedInput = {
@@ -173001,6 +177112,10 @@ export namespace Prisma {
      * @deprecated Use AdmissionDefaultArgs instead
      */
     export type AdmissionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = AdmissionDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use IpdRequestDefaultArgs instead
+     */
+    export type IpdRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = IpdRequestDefaultArgs<ExtArgs>
     /**
      * @deprecated Use BillableItemDefaultArgs instead
      */

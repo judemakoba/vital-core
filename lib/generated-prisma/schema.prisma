@@ -28,6 +28,8 @@ model User {
   accounts                  Account[]
   closedPeriods             AccountingPeriod[]
   admissions                Admission[]               @relation("AdmittingDoctor")
+  ipdRequestsRequested      IpdRequest[]              @relation("IpdRequestRequester")
+  ipdRequestsReviewed       IpdRequest[]              @relation("IpdRequestReviewer")
   appointments              Appointment[]
   createdBudgets            Budget[]                  @relation("CreatedBudgets")
   finalizedDailySummaries   DailyChargeSummary[]      @relation("SummaryFinalizer")
@@ -209,6 +211,7 @@ model Visit {
 
   // Relations
   admission           Admission?
+  ipdRequests         IpdRequest[]
   diagnoses           Diagnosis[]
   dispensingLogs      DispensingLog[]
   invoices            Invoice[]
@@ -1500,6 +1503,7 @@ model Ward {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   admissions  Admission[]
+  ipdRequests IpdRequest[]
   beds        Bed[]
   floorStocks FloorStock[]
 }
@@ -1541,6 +1545,63 @@ model Admission {
   floorStockUsages  FloorStockUsage[]
   charges           InpatientCharge[]
   deposits          InpatientDeposit[]
+  ipdRequest        IpdRequest?          @relation("IpdRequestAdmission")
+}
+
+// ============================================================================
+// IpdRequest (R62)
+//
+// A doctor's request to admit a visit to IPD. Splits the medical decision
+// (doctor submits) from the operational transition (admin/reception fulfils).
+// The visit is NOT changed to INPATIENT until an admin/reception user
+// fulfils the request — the visit stays in its OPD status throughout.
+//
+// Status state machine:
+//   PENDING  -> APPROVED   -> FULFILLED
+//   PENDING  -> REJECTED   (terminal)
+//   PENDING  -> CANCELLED  (doctor changes mind; terminal)
+//
+// On FULFILLED, the request links to the resulting Admission (one-to-one).
+// The Visit.type and Visit.status are also updated in the same transaction.
+//
+// Allowed roles per action:
+//   POST   /api/ipd-requests          DOCTOR (own visit), ADMIN, SUPER_ADMIN
+//   POST   /api/ipd-requests/[id]/cancel    DOCTOR (own request, PENDING only)
+//   POST   /api/ipd-requests/[id]/approve  ADMIN, RECEPTIONIST, SUPER_ADMIN
+//   POST   /api/ipd-requests/[id]/reject   ADMIN, RECEPTIONIST, SUPER_ADMIN
+//   POST   /api/ipd-requests/[id]/fulfill  ADMIN, RECEPTIONIST, SUPER_ADMIN
+// ============================================================================
+model IpdRequest {
+  id                 String    @id @default(cuid())
+  requestNumber      String    @unique // IPDREQ-YYYYMMDD-NNN
+  visitId            String
+  requestedById      String // doctor who submitted
+  reasonForAdmission String
+  admittingDiagnosis String? // free text — ICD code/name if available
+  urgency            String // EMERGENCY | URGENT | ELECTIVE
+  preferredWardId    String?
+  preferredBedType   String? // STANDARD | DELUXE | PRIVATE
+  clinicalNotes      String?
+  status             String    @default("PENDING")
+  // PENDING | APPROVED | REJECTED | CANCELLED | FULFILLED
+  reviewedById       String?
+  reviewedAt         DateTime?
+  reviewNotes        String?
+  fulfilledAt        DateTime?
+  admissionId        String?   @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  visit         Visit      @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  requestedBy   User       @relation("IpdRequestRequester", fields: [requestedById], references: [id])
+  reviewedBy    User?      @relation("IpdRequestReviewer", fields: [reviewedById], references: [id])
+  preferredWard Ward?      @relation(fields: [preferredWardId], references: [id])
+  admission     Admission? @relation("IpdRequestAdmission", fields: [admissionId], references: [id])
+
+  @@index([visitId])
+  @@index([status])
+  @@index([requestedById])
+  @@index([urgency, status])
 }
 
 model BillableItem {
@@ -1892,6 +1953,12 @@ enum VisitType {
   LAB_ONLY // Visit is for a lab test only
   RADIOLOGY_ONLY // Visit is for an imaging exam only
   PRESCRIPTION_ONLY // Visit is to pick up a prescription only
+
+  // Inpatient — visit is/will be admitted to a ward.
+  // R62: most OPD visits stay OPD until a doctor submits an
+  // IpdRequest and admin/reception fulfils it. Direct-referral /
+  // planned admissions create the visit with this type from the start.
+  INPATIENT
 }
 
 enum AccountType {

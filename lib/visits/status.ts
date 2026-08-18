@@ -76,6 +76,12 @@ export const VISIT_STATUS = {
     // Post-orders final bill
     FinalBilling: "FinalBilling",
 
+    // Inpatient — set when admin/reception fulfils an IpdRequest
+    // (R62) or creates a direct-referral admission. The visit is
+    // actively admitted to a ward; doctor/consultation work pauses
+    // until discharge.
+    Admitted: "Admitted",
+
     // Terminal states
     Completed: "Completed",
     Discontinued: "Discontinued",

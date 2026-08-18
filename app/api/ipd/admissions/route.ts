@@ -3,6 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+/**
+ * R62: the doctor flow now goes through IpdRequest. This endpoint
+ * is reserved for admin / reception who create direct admissions
+ * (referrals, planned admissions, or admin-overriding the request
+ * workflow for emergencies).
+ *
+ * Doctors must use POST /api/ipd-requests instead. The role check
+ * below returns 403 to a doctor who tries to bypass the workflow.
+ */
+const DIRECT_ADMIT_ROLES = ["ADMIN", "RECEPTIONIST", "SUPER_ADMIN"];
+
 export async function GET(request: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -31,7 +42,19 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const user = (session as any)?.user;
+        if (!session || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+        // R62: doctors must use the IpdRequest workflow.
+        if (!DIRECT_ADMIT_ROLES.includes(user.role)) {
+            return NextResponse.json(
+                {
+                    error:
+                        `Doctors cannot directly create admissions. Submit an IPD request via POST /api/ipd-requests, and admin/reception will fulfil it. (your role: ${user.role})`,
+                },
+                { status: 403 }
+            );
+        }
 
         const { patientId, visitId, wardId, bedId, type, initialDeposit } = await request.json();
 

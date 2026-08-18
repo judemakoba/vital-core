@@ -102,56 +102,112 @@ export default function ConsultationPage({ params }: { params: { visitId: string
 
     const [visit, setVisit] = useState<Visit | null>(null);
 
-    // Admit Patient State
-    const [showAdmitModal, setShowAdmitModal] = useState(false);
-    const [admitting, setAdmitting] = useState(false);
+    // R62: IPD Request state. The doctor now submits a *request* that
+    // admin/reception fulfils — they no longer create the Admission
+    // directly. The visit's type/status do not change until fulfilment.
+    const [showIpdRequestModal, setShowIpdRequestModal] = useState(false);
+    const [ipdRequestSubmitting, setIpdRequestSubmitting] = useState(false);
     const [wards, setWards] = useState<any[]>([]);
-    const [admitForm, setAdmitForm] = useState({
-        type: 'EMERGENCY',
-        wardId: '',
-        bedId: '',
+    const [ipdRequestForm, setIpdRequestForm] = useState({
+        reasonForAdmission: '',
+        admittingDiagnosis: '',
+        urgency: 'ELECTIVE',
+        preferredWardId: '',
+        preferredBedType: '',
+        clinicalNotes: '',
     });
+    const [ipdRequests, setIpdRequests] = useState<any[]>([]);
 
-    const openAdmitModal = async () => {
-        setShowAdmitModal(true);
+    const fetchIpdRequests = async () => {
+        if (!params.visitId) return;
         try {
-            const res = await fetch('/api/ipd/wards', { credentials: "include" });
+            const res = await fetch(`/api/ipd-requests?visitId=${params.visitId}`, { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                setIpdRequests(data);
+            }
+        } catch (e) {
+            console.error('Failed to fetch IPD requests', e);
+        }
+    };
+
+    const openIpdRequestModal = async () => {
+        setShowIpdRequestModal(true);
+        try {
+            const res = await fetch('/api/ipd/wards', { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setWards(data);
             }
         } catch (e) {
-            console.error("Failed to fetch wards", e);
+            console.error('Failed to fetch wards', e);
         }
     };
 
-    const handleAdmit = async () => {
-        setAdmitting(true);
+    const handleRequestIpdAdmission = async () => {
+        if (!ipdRequestForm.reasonForAdmission.trim()) {
+            alert('Reason for admission is required.');
+            return;
+        }
+        setIpdRequestSubmitting(true);
         try {
-            const res = await fetch('/api/ipd/admissions', {
+            const res = await fetch('/api/ipd-requests', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    patientId: visit?.patient.id,
                     visitId: params.visitId,
-                    type: admitForm.type,
-                    wardId: admitForm.wardId || undefined,
-                    bedId: admitForm.bedId || undefined,
-                })
+                    reasonForAdmission: ipdRequestForm.reasonForAdmission,
+                    admittingDiagnosis: ipdRequestForm.admittingDiagnosis || undefined,
+                    urgency: ipdRequestForm.urgency,
+                    preferredWardId: ipdRequestForm.preferredWardId || undefined,
+                    preferredBedType: ipdRequestForm.preferredBedType || undefined,
+                    clinicalNotes: ipdRequestForm.clinicalNotes || undefined,
+                }),
             });
             if (res.ok) {
-                alert("Patient successfully admitted to IPD.");
-                setShowAdmitModal(false);
+                const created = await res.json();
+                alert(
+                    `IPD request ${created.requestNumber} submitted. Reception / admin will assign a bed and fulfil the request shortly.`
+                );
+                setShowIpdRequestModal(false);
+                setIpdRequestForm({
+                    reasonForAdmission: '',
+                    admittingDiagnosis: '',
+                    urgency: 'ELECTIVE',
+                    preferredWardId: '',
+                    preferredBedType: '',
+                    clinicalNotes: '',
+                });
+                await fetchIpdRequests();
             } else {
                 const err = await res.json();
-                alert(`Error admitting patient: ${err.error}`);
+                alert(`Error submitting IPD request: ${err.error}`);
             }
         } catch (e) {
             console.error(e);
-            alert("An error occurred during admission.");
+            alert('An error occurred while submitting the IPD request.');
         } finally {
-            setAdmitting(false);
+            setIpdRequestSubmitting(false);
+        }
+    };
+
+    const handleCancelIpdRequest = async (requestId: string) => {
+        if (!confirm('Cancel this IPD admission request?')) return;
+        try {
+            const res = await fetch(`/api/ipd-requests/${requestId}/cancel`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+            if (res.ok) {
+                await fetchIpdRequests();
+            } else {
+                const err = await res.json();
+                alert(`Error: ${err.error}`);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error cancelling IPD request.');
         }
     };
 
@@ -273,6 +329,9 @@ export default function ConsultationPage({ params }: { params: { visitId: string
         fetchLabCatalog();
         fetchRadiologyCatalog();
         fetchSystemSettings();
+        // R62: also load any existing IPD request for this visit so the
+        // doctor sees a "Pending" / "Approved" badge on the page.
+        fetchIpdRequests();
     }, [params.visitId, router, session, sessionStatus]);
 
     const handleSave = async (complete: boolean = false) => {
@@ -1356,15 +1415,129 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                             </div>
                         ) : (
                         <div className={styles.actions}>
+                            {/* R62: Request IPD Admission — doctor's action.
+                                Sends a request to admin/reception; they fulfil
+                                it (assign bed, transition Visit.type, create
+                                Admission) via /api/ipd-requests/[id]/fulfill.
+                                Disabled when the visit is already admitted or
+                                has a request in flight. */}
                             <button
                                 className="btn-secondary"
-                                onClick={openAdmitModal}
-                                disabled={saving}
+                                onClick={openIpdRequestModal}
+                                disabled={
+                                    saving ||
+                                    (visit as any)?.admission !== undefined ||
+                                    ipdRequests.some(r => r.status === "PENDING" || r.status === "APPROVED" || r.status === "FULFILLED")
+                                }
+                                title={
+                                    (visit as any)?.admission
+                                        ? "Visit is already admitted to IPD"
+                                        : ipdRequests.some(r => r.status === "PENDING" || r.status === "APPROVED")
+                                            ? "An IPD request is already in progress for this visit"
+                                            : ipdRequests.some(r => r.status === "FULFILLED")
+                                                ? "IPD request already fulfilled — visit is admitted"
+                                                : "Submit a request to admit this patient to IPD"
+                                }
                                 style={{ width: '100%', marginBottom: '0.75rem', justifyContent: 'center' }}
                             >
                                 <Bed size={18} style={{ marginRight: '8px' }} />
-                                Admit to IPD
+                                {(visit as any)?.admission || ipdRequests.some(r => r.status === "FULFILLED")
+                                    ? "Admitted to IPD"
+                                    : ipdRequests.some(r => r.status === "PENDING" || r.status === "APPROVED")
+                                        ? "IPD Request In Progress"
+                                        : "Request IPD Admission"}
                             </button>
+
+                            {/* R62: Show pending / approved / fulfilled / cancelled IPD requests for this visit */}
+                            {ipdRequests.length > 0 && (
+                                <div style={{ marginBottom: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                    {ipdRequests
+                                        .filter(r => r.status === "PENDING" || r.status === "APPROVED")
+                                        .map(r => (
+                                            <div
+                                                key={r.id}
+                                                style={{
+                                                    background: "rgba(245, 158, 11, 0.1)",
+                                                    border: "1px solid rgba(245, 158, 11, 0.3)",
+                                                    borderRadius: "var(--radius-sm)",
+                                                    padding: "0.5rem 0.65rem",
+                                                    fontSize: "0.78rem",
+                                                    color: "#92400e",
+                                                }}
+                                            >
+                                                <div style={{ fontWeight: 700, marginBottom: 2 }}>
+                                                    IPD Request {r.requestNumber} · {r.status}
+                                                </div>
+                                                <div style={{ fontSize: "0.7rem" }}>
+                                                    Submitted {new Date(r.createdAt).toLocaleString()} · Urgency: <strong>{r.urgency}</strong>
+                                                </div>
+                                                {r.preferredWard && (
+                                                    <div style={{ fontSize: "0.7rem" }}>Preferred ward: {r.preferredWard.name}</div>
+                                                )}
+                                                {r.status === "PENDING" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleCancelIpdRequest(r.id)}
+                                                        style={{
+                                                            marginTop: 6,
+                                                            background: "transparent",
+                                                            border: "1px solid rgba(245, 158, 11, 0.4)",
+                                                            color: "#92400e",
+                                                            fontSize: "0.72rem",
+                                                            padding: "0.2rem 0.55rem",
+                                                            borderRadius: 4,
+                                                            cursor: "pointer",
+                                                        }}
+                                                    >
+                                                        Cancel request
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    {ipdRequests
+                                        .filter(r => r.status === "FULFILLED")
+                                        .map(r => (
+                                            <div
+                                                key={r.id}
+                                                style={{
+                                                    background: "rgba(34, 197, 94, 0.1)",
+                                                    border: "1px solid rgba(34, 197, 94, 0.3)",
+                                                    borderRadius: "var(--radius-sm)",
+                                                    padding: "0.5rem 0.65rem",
+                                                    fontSize: "0.78rem",
+                                                    color: "var(--success-color)",
+                                                }}
+                                            >
+                                                <div style={{ fontWeight: 700 }}>✓ Admitted to IPD</div>
+                                                <div style={{ fontSize: "0.7rem" }}>
+                                                    Request {r.requestNumber} fulfilled {r.fulfilledAt && new Date(r.fulfilledAt).toLocaleString()}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    {ipdRequests
+                                        .filter(r => r.status === "REJECTED" || r.status === "CANCELLED")
+                                        .map(r => (
+                                            <div
+                                                key={r.id}
+                                                style={{
+                                                    background: "rgba(239, 68, 68, 0.05)",
+                                                    border: "1px solid rgba(239, 68, 68, 0.2)",
+                                                    borderRadius: "var(--radius-sm)",
+                                                    padding: "0.5rem 0.65rem",
+                                                    fontSize: "0.78rem",
+                                                    color: "var(--danger-color)",
+                                                }}
+                                            >
+                                                <div style={{ fontWeight: 700 }}>IPD Request {r.status.toLowerCase()}</div>
+                                                {r.reviewNotes && (
+                                                    <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)", marginTop: 2 }}>
+                                                        {r.reviewNotes}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
                             <button
                                 className={styles.saveBtn}
                                 onClick={() => handleSave(false)}
@@ -1414,58 +1587,103 @@ export default function ConsultationPage({ params }: { params: { visitId: string
             {/* Admit Patient Modal */}
             {showAdmitModal && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-                    <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '500px' }}>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '100%', maxWidth: '560px', maxHeight: '90vh', overflowY: 'auto' }}>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Bed size={20} color="#6366f1" />
-                            Admit Patient to IPD
+                            Request IPD Admission
                         </h2>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                            The visit type will change to <strong>INPATIENT</strong> only after admin or reception fulfils this request. The doctor does not assign the bed or change the visit type directly.
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Admission Type</label>
-                                <select 
-                                    className={styles.input} 
-                                    value={admitForm.type}
-                                    onChange={e => setAdmitForm({ ...admitForm, type: e.target.value })}
+                                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                    Reason for Admission <span style={{ color: 'var(--danger-color)' }}>*</span>
+                                </label>
+                                <textarea
+                                    className={styles.input}
+                                    value={ipdRequestForm.reasonForAdmission}
+                                    onChange={e => setIpdRequestForm({ ...ipdRequestForm, reasonForAdmission: e.target.value })}
+                                    rows={2}
+                                    placeholder="e.g. Severe pneumonia requiring IV antibiotics and oxygen support"
+                                    style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                    Admitting Diagnosis (ICD-10/11, optional)
+                                </label>
+                                <input
+                                    className={styles.input}
+                                    value={ipdRequestForm.admittingDiagnosis}
+                                    onChange={e => setIpdRequestForm({ ...ipdRequestForm, admittingDiagnosis: e.target.value })}
+                                    placeholder="e.g. J18.9 — Pneumonia, unspecified organism"
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                    Urgency
+                                </label>
+                                <select
+                                    className={styles.input}
+                                    value={ipdRequestForm.urgency}
+                                    onChange={e => setIpdRequestForm({ ...ipdRequestForm, urgency: e.target.value })}
                                 >
-                                    <option value="EMERGENCY">Emergency</option>
-                                    <option value="ELECTIVE">Elective</option>
-                                    <option value="URGENT">Urgent</option>
-                                    <option value="TRANSFER">Transfer</option>
+                                    <option value="ELECTIVE">Elective (planned)</option>
+                                    <option value="URGENT">Urgent (within hours)</option>
+                                    <option value="EMERGENCY">Emergency (immediate)</option>
                                 </select>
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Select Ward</label>
-                                <select 
-                                    className={styles.input} 
-                                    value={admitForm.wardId}
-                                    onChange={e => setAdmitForm({ ...admitForm, wardId: e.target.value, bedId: '' })}
+                                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                    Preferred Ward (advisory — admin may override)
+                                </label>
+                                <select
+                                    className={styles.input}
+                                    value={ipdRequestForm.preferredWardId}
+                                    onChange={e => setIpdRequestForm({ ...ipdRequestForm, preferredWardId: e.target.value })}
                                 >
-                                    <option value="">-- Choose Ward (Optional) --</option>
+                                    <option value="">-- No preference --</option>
                                     {wards.map(w => (
                                         <option key={w.id} value={w.id}>{w.name} ({w.type})</option>
                                     ))}
                                 </select>
                             </div>
-                            {admitForm.wardId && (
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>Select Bed</label>
-                                    <select 
-                                        className={styles.input} 
-                                        value={admitForm.bedId}
-                                        onChange={e => setAdmitForm({ ...admitForm, bedId: e.target.value })}
-                                    >
-                                        <option value="">-- Choose Bed (Optional) --</option>
-                                        {wards.find(w => w.id === admitForm.wardId)?.beds?.filter((b: any) => b.status === 'AVAILABLE').map((b: any) => (
-                                            <option key={b.id} value={b.id}>{b.bedNumber} ({b.type})</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                    Preferred Bed Type
+                                </label>
+                                <select
+                                    className={styles.input}
+                                    value={ipdRequestForm.preferredBedType}
+                                    onChange={e => setIpdRequestForm({ ...ipdRequestForm, preferredBedType: e.target.value })}
+                                >
+                                    <option value="">-- No preference --</option>
+                                    <option value="STANDARD">Standard</option>
+                                    <option value="DELUXE">Deluxe</option>
+                                    <option value="PRIVATE">Private</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                                    Clinical Notes (optional)
+                                </label>
+                                <textarea
+                                    className={styles.input}
+                                    value={ipdRequestForm.clinicalNotes}
+                                    onChange={e => setIpdRequestForm({ ...ipdRequestForm, clinicalNotes: e.target.value })}
+                                    rows={2}
+                                    placeholder="Any additional context the admin / reception should know"
+                                    style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                                />
+                            </div>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-                            <button type="button" className={styles.cancelButton} onClick={() => setShowAdmitModal(false)} disabled={admitting}>Cancel</button>
-                            <button type="button" className={styles.saveBtn} onClick={handleAdmit} disabled={admitting}>
-                                {admitting ? 'Admitting...' : 'Confirm Admission'}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+                            <button type="button" className={styles.cancelButton} onClick={() => setShowIpdRequestModal(false)} disabled={ipdRequestSubmitting}>
+                                Cancel
+                            </button>
+                            <button type="button" className={styles.saveBtn} onClick={handleRequestIpdAdmission} disabled={ipdRequestSubmitting}>
+                                {ipdRequestSubmitting ? 'Submitting…' : 'Submit Request'}
                             </button>
                         </div>
                     </div>
