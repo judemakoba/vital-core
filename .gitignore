@@ -15,6 +15,11 @@
 /.next/
 /out/
 next-env.d.ts
+# Backup directories created by `Rename-Item .next -NewName .next.bak`
+# during local webpack cache corruption recovery. Never committed.
+/.next.bak/
+/.next.bak*/
+/.next.stale.bak/
 
 # ─── Production builds ────────────────────────────────────────────────────
 /build
@@ -66,6 +71,14 @@ check-*.js
 debug-*.js
 cleanup-*.ts
 cleanup-*.js
+
+# ─── Prisma transient lock files (Windows) ───────────────────────────────
+# `prisma generate` writes query_engine-windows.dll.node.tmp<PID> and
+# renames it atomically. If the process is killed mid-rename, the
+# .tmp file lingers. Safe to delete; harmless to commit but pollutes
+# the working tree. Ignore.
+lib/generated-prisma/*.tmp*
+lib/generated-prisma/*.bak*
 
 # ─── Backup files (keep repo lean) ────────────────────────────────────────
 backups/

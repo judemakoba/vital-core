@@ -1,14 +1,9 @@
 # Vital Core HMS
 
-> **Note (2026-08):** The insurance module was removed in a single atomic
-> commit (`feat: remove insurance module`). The clinic is now cash-only.
-> Re-integration guide at [`docs/INSURANCE_REINTEGRATION_GUIDE.md`](docs/INSURANCE_REINTEGRATION_GUIDE.md)
-> (2,150 lines, mega-prompt format).
-
 > A complete, production-ready Hospital Management System for small to mid-size clinics.
 > Built with Next.js 14, Prisma, and PostgreSQL. Single-DB, multi-role, multi-tenant-ready.
 
-[![Status](https://img.shields.io/badge/status-active_development-yellow)](#)
+[![Status](https://img.shields.io/badge/status-shipped-brightgreen)](#)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black)](https://nextjs.org)
 [![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748)](https://prisma.io)
 [![Postgres](https://img.shields.io/badge/PostgreSQL-16-336791)](https://postgresql.org)
@@ -20,35 +15,44 @@
 
 Vital Core is a single-deployment HMS that runs the full clinical workflow:
 patient registration → triage → consultation → investigations (lab + radiology + pharmacy)
-→ billing → payment → completion. It also handles insurance adjudication, role-based
-access for 8+ user roles, double-entry accounting with a real general ledger, and
+→ billing → payment → completion. It also handles role-based access for 9 user roles,
+double-entry accounting with a real general ledger, OPD ↔ IPD transitions, and
 C-suite dashboards for revenue, cash flow, and aging.
 
+The clinic is **cash-only** (the legacy insurance module was removed). The
+data model is already structured for true multi-tenant SaaS when the time
+comes — there's a `Tenant` + `TenantSetting` model with per-tenant
+branding, feature toggles, and SMTP config.
+
 It's designed to deploy on a small Proxmox LXC (4 GB RAM, 32 GB disk) and
-serve a single hospital — with the data model already structured for true
-multi-tenant SaaS when the time comes.
+serve a single hospital today.
 
 ---
 
 ## Feature highlights
 
 ### Clinical
-- **Patient registration** with photo, insurance, demographics, contact
-- **Visit lifecycle** with 9-state machine: `ConsultationBilling → Triage →
+- **Patient registration** with photo, demographics, contact, allergies
+- **Visit lifecycle** with the canonical state machine: `ConsultationBilling → Triage →
   InConsultation → PendingOrders → FinalBilling → Completed`
-  (plus `PendingInsuranceValidation` and `Discontinued`)
+  (plus `Admitted` for IPD and `Discontinued` for admin-cancelled)
 - **Doctor's desk**: prescription writing with structured dosage /
   frequency / duration, lab order entry, radiology order entry,
   automatic drug-interaction & allergy checks
+- **IPD request workflow (R62)**: doctor submits a request, admin/reception
+  fulfils it (assigns ward + bed, creates the admission, transitions
+  the visit). Splits the medical decision from the operational transition.
+- **IPD admissions management (R63-R64)**: dashboard of active
+  admissions with modify / terminate / delete (cascading) actions
+  and a full audit trail
+- **Doctor's "Completed Today" tab (R61)**: reviews the day's finished
+  consultations in read-only mode; auto-empties at midnight
 - **Lab module**: 51 built-in tests, customizable templates, structured
   result entry, branded printable reports
 - **Radiology module**: 22 exam types, image upload to Nextcloud, branded
   printable reports
 - **Pharmacy**: 450-drug catalog, batch tracking with expiry, real-time
   stock deduction at dispense, COGS posting to the ledger
-- **Insurance**: per-patient enrollment, per-insurer price lists,
-  per-visit consultation fees, full claim adjudication lifecycle
-  (Draft → Submitted → Acknowledged → Approved/Paid)
 
 ### Financial
 - **Double-entry accounting**: chart of accounts, journal entries,
@@ -56,18 +60,18 @@ multi-tenant SaaS when the time comes.
 - **Consolidated final bill** model: one `FINAL-` invoice per visit,
   not separate invoices per service
 - **Cash flow dashboard**: revenue, COGS, AR aging, monthly trend
-- **Insurance claims analytics**: submission → approval → payment
-  funnel, denial reasons, top-paying insurers
 - **Daily close / settlement report** with audit trail
 
 ### Admin
-- **8 user roles** with strict RBAC: Admin, Doctor, Nurse, Lab Tech,
-  Radiologist, Pharmacist, Cashier, Reception
+- **9 user roles** with strict RBAC: Super Admin, Admin, Doctor, Nurse,
+  Receptionist, Pharmacist, Lab Tech, Accountant, Cashier
 - **Multi-tenant ready**: `Tenant` model with `TenantSetting` typed
   settings; single-tenant today, multi-tenant when needed
 - **Customization audit**: per-tenant branding (logo, colors, name),
   per-tenant SMS/email config, per-tenant SMTP
-- **Feature toggles**: insurance on/off, multi-tenant on/off
+- **Audit log**: every significant action (login, patient create,
+  prescription, lab/rad order, payment, invoice, visit discontinue)
+  is recorded with before/after JSONB diffs
 - **GDPR-friendly**: soft-delete with retention, anonymization export
 
 ### Technical
@@ -95,8 +99,13 @@ cp .env.example .env
 npx prisma generate --schema=lib/generated-prisma/schema.prisma
 npx prisma db push --schema=lib/generated-prisma/schema.prisma --accept-data-loss
 
-# 4. Seed reference data (drugs, lab tests, etc.)
-npx prisma db seed --schema=lib/generated-prisma/schema.prisma
+# 4. Seed roles + 12 test users (default password: password123)
+npm run db:seed
+# Optional reference data (drugs, lab tests, IPD wards, etc.):
+npm run db:seed:pharmacy
+npm run db:seed:lab
+npm run db:seed:ipd
+# ...see package.json for the full list
 
 # 5. Start dev server
 npm run dev
@@ -173,7 +182,9 @@ All persistent data lives in named Docker volumes. Backups via
 ├── prisma/
 │   ├── schema.prisma     # Legacy (incomplete) schema — DON'T USE
 │   ├── migrations/       # Migration history
-│   └── seed-*.ts         # Reference data seeds
+│   ├── seed.cjs          # Minimal seed: roles + 12 test users
+│   └── seed-*.ts         # Optional reference data seeds
+│       (finance / pharmacy / icd / lab / ipd / inventory)
 ├── deploy/               # Production deployment docs + templates
 │   ├── DEPLOY.md         # Step-by-step LXC walkthrough
 │   ├── README.md         # Day-2 ops + troubleshooting
@@ -195,24 +206,21 @@ All persistent data lives in named Docker volumes. Backups via
 ConsultationBilling ───┼─→ Triage ──→ InConsultation ──→ PendingOrders
         │              │                                  │
         │              │                                  ├─→ DirectServicePending
+        │              │                                  ├─→ Admitted (IPD, R62)
         │              │                                  └─→ FinalBilling
-        │              └─→ PendingInsuranceValidation          │
-        │                     │                               │
-        │                     │ (verified)                    ▼
-        │                     └───────────────────────→ FinalBilling
-        │                                                  │
-        │                                                  ▼
-        │                                              Completed
-        │                                              (back to PendingOrders
-        │                                               if new order arrives)
+        │              │                                      │
+        │              │                                      ▼
+        │              │                                  Completed
+        │              │                                  (back to PendingOrders
+        │              │                                   if new order arrives)
         │
         └─→ Discontinued (from any state)
 ```
 
-**Insurance is a parallel axis**: the `PendingInsuranceValidation` state
-gates triage when the patient is on insurance but the eligibility check
-hasn't completed yet. R49 introduces a feature toggle to disable insurance
-entirely for cash-only clinics.
+The OPD → IPD transition (R62) is initiated by the doctor via an
+**IpdRequest** (medical decision) and fulfilled by admin/reception
+(operational transition). The `Admitted` state is set when the
+admission record is created and the visit is marked as `INPATIENT`.
 
 ---
 

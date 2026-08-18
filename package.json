@@ -13,6 +13,13 @@
         "test:denial": "echo 'deprecated — denial management moved to ClaimAdjudicationService'",
         "test:validation": "npx ts-node lib/finance/validation-services.test.ts",
         "test": "vitest run",
+        "db:seed": "node prisma/seed.cjs",
+        "db:seed:finance": "npx ts-node prisma/seed-finance.ts",
+        "db:seed:pharmacy": "npx ts-node prisma/seed-pharmacy.ts",
+        "db:seed:icd": "npx ts-node prisma/seed-icd11.ts",
+        "db:seed:lab": "npx ts-node prisma/seed-lab-comprehensive.js",
+        "db:seed:ipd": "npx ts-node prisma/seed-ipd.ts",
+        "db:seed:inventory": "npx ts-node prisma/seed-inventory.js",
         "docker:build": "docker compose --env-file .env.production build",
         "docker:up": "docker compose --env-file .env.production up -d",
         "docker:down": "docker compose --env-file .env.production down",
@@ -21,7 +28,11 @@
         "docker:logs:app": "docker compose --env-file .env.production logs -f app",
         "docker:ps": "docker compose --env-file .env.production ps",
         "docker:shell": "docker compose --env-file .env.production exec app sh",
-        "docker:db": "docker compose --env-file .env.production exec postgres psql -U vitalcore -d vitalcore"
+        "docker:db": "docker compose --env-file .env.production exec postgres psql -U vitalcore -d vitalcore",
+        "docker:seed": "docker compose --env-file .env.production exec app npm run db:seed"
+    },
+    "prisma": {
+        "seed": "node prisma/seed.cjs"
     },
     "devDependencies": {
         "@types/node": "^26.1.2",

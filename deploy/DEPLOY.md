@@ -234,17 +234,46 @@ cert for `https://<lxc-lan-ip>`.
 
 ## 9. Initial data seed
 
-The database starts empty. Run the seeds to populate reference data
-(drugs, lab tests, etc.). Note: the insurance module was removed in
-2026-08 — the clinic is cash-only, no insurance seed needed.
+The database starts empty. Run the seed to populate the minimum data
+needed to log in (system roles + 12 test users with default password
+`password123` — admin MUST rotate this on first login).
 
 ```bash
+# Minimum seed — roles + 12 test users. Safe to re-run (all upserts).
 docker compose --env-file .env.production exec app \
     npx prisma db seed
 ```
 
-If the seed reports errors, they're usually non-fatal (the seed is
-idempotent — re-running is safe).
+The seed prints what it did. If it succeeds, you should see:
+
+```
+--- Vital Core minimal seed (roles + test users) ---
+  ✓ 9 roles ensured
+  ✓ 12 test users ensured (default password: password123)
+--- Done. App is now ready to log in. ---
+```
+
+You can now log in at `https://vitalcore` as `admin@vitalcore.com` /
+`password123`. **Rotate this password immediately** under
+Settings → Users → admin@vitalcore.com.
+
+### Optional reference data
+
+The minimum seed gets you to a working app. The following scripts
+populate reference data (drugs, lab tests, etc.) that you'll want
+eventually — they're idempotent so safe to re-run anytime:
+
+```bash
+docker compose --env-file .env.production exec app npm run db:seed:finance     # chart of accounts
+docker compose --env-file .env.production exec app npm run db:seed:pharmacy    # drug master
+docker compose --env-file .env.production exec app npm run db:seed:icd        # ICD-11 codes
+docker compose --env-file .env.production exec app npm run db:seed:lab        # lab test catalog
+docker compose --env-file .env.production exec app npm run db:seed:ipd        # IPD wards + billable items
+docker compose --env-file .env.production exec app npm run db:seed:inventory   # inventory
+```
+
+The insurance module was removed in 2026-08 (commit `5d00b6c`) — the
+clinic is cash-only, no insurance seed needed.
 
 ---
 
