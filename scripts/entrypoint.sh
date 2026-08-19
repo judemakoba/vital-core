@@ -31,7 +31,7 @@ WAIT_TIMEOUT="${DB_WAIT_TIMEOUT:-60}"
 
 echo "[entrypoint] Waiting for Postgres at ${DB_HOST}:${DB_PORT} (timeout ${WAIT_TIMEOUT}s)..."
 
-node -e "
+DB_HOST="$DB_HOST" DB_PORT="$DB_PORT" WAIT_TIMEOUT="$WAIT_TIMEOUT" node -e "
 const net = require('net');
 const host = process.env.DB_HOST;
 const port = parseInt(process.env.DB_PORT, 10);
@@ -78,7 +78,7 @@ echo "[entrypoint] Applying Prisma schema (db push, idempotent)..."
 # We already ran `prisma generate` at build time on Linux, so:
 #   --skip-generate avoids a redundant re-generation (saves ~5s on every boot)
 #   --accept-data-loss matches the dev workflow this project uses
-npx prisma db push \
+node node_modules/.bin/prisma db push \
     --schema=lib/generated-prisma/schema.prisma \
     --accept-data-loss \
     --skip-generate \
