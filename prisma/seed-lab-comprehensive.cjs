@@ -1,17 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-
-let databaseUrl = process.env.DATABASE_URL;
-if (databaseUrl && databaseUrl.includes('localhost')) {
-    databaseUrl = databaseUrl.replace('localhost', '127.0.0.1');
-}
-
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: databaseUrl,
-        },
-    },
-});
+const prisma = require('../lib/generated-prisma');
 
 async function main() {
     console.log('--- Seeding Comprehensive Lab Catalog hearth ---');
