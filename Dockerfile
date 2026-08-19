@@ -106,6 +106,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # (the Linux query engine binary + helpers). The .dockerignore excludes
 # the pre-built Windows client, so we copy the freshly-built one here.
 COPY --from=builder --chown=nextjs:nodejs /app/lib/generated-prisma ./lib/generated-prisma
+# Prisma CLI (needed by entrypoint.sh for `prisma db push`)
+# Next.js standalone strips .bin/ scripts, so we explicitly bring the CLI
+# package and its @prisma/engines dependency over from the builder.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 # Entrypoint script — waits for Postgres, runs migrations, starts the server
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/entrypoint.sh ./entrypoint.sh

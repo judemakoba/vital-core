@@ -78,11 +78,10 @@ echo "[entrypoint] Applying Prisma schema (db push, idempotent)..."
 # We already ran `prisma generate` at build time on Linux, so:
 #   --skip-generate avoids a redundant re-generation (saves ~5s on every boot)
 #   --accept-data-loss matches the dev workflow this project uses
-node node_modules/.bin/prisma db push \
+node node_modules/prisma/build/index.js db push \
     --schema=lib/generated-prisma/schema.prisma \
     --accept-data-loss \
-    --skip-generate \
-    2>&1 | sed 's/^/[prisma] /'
+    --skip-generate
 
 # ---------------------------------------------------------------------------
 # 3. Start Next.js
