@@ -69,7 +69,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-vitalcore}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-vitalcore}?schema=public&connection_limit=10&pool_timeout=15
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vitalcore}:${POSTGRES_PASSWORD_ENCODED:?POSTGRES_PASSWORD_ENCODED must be set (URL-encoded version of POSTGRES_PASSWORD)}@postgres:5432/${POSTGRES_DB:-vitalcore}?schema=public&connection_limit=10&pool_timeout=15
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
       NEXTAUTH_URL: ${NEXTAUTH_URL:?NEXTAUTH_URL must be set (e.g. https://vitalcore.tailnet-name.ts.net)}
