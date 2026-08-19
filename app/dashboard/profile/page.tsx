@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { AlertCircle, KeyRound, Lock, User } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function ProfilePage() {
