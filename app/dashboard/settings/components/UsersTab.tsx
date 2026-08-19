@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Plus, Search, Users as UsersIcon } from "lucide-react";
 import styles from "../page.module.css";
 
 export default function UsersTab() {
