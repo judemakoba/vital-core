@@ -173,7 +173,7 @@ export default function AdmissionRecordPage() {
             </div>
 
             {/* Financial Summary Top Bar */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="glass-panel p-4 border-l-4 border-primary">
                     <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Total Charges</div>
                     <div className="text-2xl font-bold mt-1">{currency} {finalBill?.patientShareTotal?.toFixed(2) || '0.00'}</div>
@@ -181,10 +181,6 @@ export default function AdmissionRecordPage() {
                 <div className="glass-panel p-4 border-l-4 border-success">
                     <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Deposits Made</div>
                     <div className="text-2xl font-bold mt-1">{currency} {finalBill?.totalDepositsAvailable?.toFixed(2) || '0.00'}</div>
-                </div>
-                <div className="glass-panel p-4 border-l-4 border-info">
-                    <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Insurance Coverage</div>
-                    <div className="text-2xl font-bold mt-1">{currency} {finalBill?.insuranceShareTotal?.toFixed(2) || '0.00'}</div>
                 </div>
                 <div className={`glass-panel p-4 border-l-4 ${finalBill?.balanceDue > 0 ? 'border-warning' : 'border-success'}`}>
                     <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Balance Due</div>
