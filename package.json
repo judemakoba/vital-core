@@ -19,6 +19,7 @@
         "db:seed:icd": "npx ts-node prisma/seed-icd11.ts",
         "db:seed:lab": "npx ts-node prisma/seed-lab-comprehensive.js",
         "db:seed:ipd": "npx ts-node prisma/seed-ipd.ts",
+        "db:seed:radiology": "node prisma/seed-radiology.js",
         "db:seed:inventory": "npx ts-node prisma/seed-inventory.js",
         "docker:build": "docker compose --env-file .env.production build",
         "docker:up": "docker compose --env-file .env.production up -d",
