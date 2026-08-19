@@ -47,11 +47,30 @@ async function main() {
         { name: 'Semen Analysis', category: 'General', price: 40000, referenceRange: 'N/A', unit: 'N/A', template: 'Liquefaction: [ ]\nCount: [ ]\nMotility: [ ]\nMorphology: [ ]' }
     ];
 
+    // 1. Upsert categories first, build name→id map
+    const categoryNames = [...new Set(labTests.map(t => t.category))];
+    const catMap = {};
+    for (const catName of categoryNames) {
+        const cat = await prisma.labCategory.upsert({
+            where: { name: catName },
+            update: {},
+            create: { name: catName },
+        });
+        catMap[catName] = cat.id;
+    }
+    console.log(`  ✓ ${categoryNames.length} categories ensured: ${categoryNames.join(', ')}`);
+
+    // 2. Upsert each test, using categoryId (the relation requires an ID, not a string)
     for (const test of labTests) {
+        const categoryId = catMap[test.category];
+        if (!categoryId) {
+            console.warn(`  ⚠ Skipping ${test.name} — unknown category ${test.category}`);
+            continue;
+        }
         await prisma.labTestCatalog.upsert({
             where: { name: test.name },
             update: {
-                category: test.category,
+                categoryId,
                 price: test.price,
                 referenceRange: test.referenceRange,
                 unit: test.unit,
@@ -59,7 +78,12 @@ async function main() {
                 isActive: true
             },
             create: {
-                ...test,
+                name: test.name,
+                categoryId,
+                price: test.price,
+                referenceRange: test.referenceRange,
+                unit: test.unit,
+                template: test.template || null,
                 isActive: true
             }
         });

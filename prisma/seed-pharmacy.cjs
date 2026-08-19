@@ -1,6 +1,19 @@
-import { PrismaClient, DosageForm, StorageCondition, DrugSchedule, PriceType } from '../lib/generated-prisma';
+// ─── Vital Core HMS — Pharmacy module seed ─────────────────────────────────
+// .cjs (not .ts, not .js) because the project is "type": "module" — plain
+// .js files are parsed as ESM and `require()` would fail. .cjs opts out.
+//
+// No ts-node is available in the standalone runner, and this script has no
+// TypeScript type annotations anyway — it's just runtime JS using the
+// Prisma enums (which work identically as property accesses in both CJS
+// and ESM).
 
-const prisma = new PrismaClient();
+const { PrismaClient, DosageForm, StorageCondition, DrugSchedule } = require('../lib/generated-prisma');
+
+let databaseUrl = process.env.DATABASE_URL;
+if (databaseUrl && databaseUrl.includes('localhost')) {
+    databaseUrl = databaseUrl.replace('localhost', '127.0.0.1');
+}
+const prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
 
 async function main() {
     console.log('--- Starting Pharmacy Module Seeding ---');

@@ -15,7 +15,7 @@
         "test": "vitest run",
         "db:seed": "node prisma/seed.cjs",
         "db:seed:finance": "npx ts-node prisma/seed-finance.ts",
-        "db:seed:pharmacy": "npx ts-node prisma/seed-pharmacy.ts",
+        "db:seed:pharmacy": "node prisma/seed-pharmacy.cjs",
         "db:seed:icd": "npx ts-node prisma/seed-icd11.ts",
         "db:seed:lab": "node prisma/seed-lab-comprehensive.cjs",
         "db:seed:ipd": "npx ts-node prisma/seed-ipd.ts",
