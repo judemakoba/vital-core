@@ -61,6 +61,7 @@ export const AUDIT_ACTION = {
     // Admin / RBAC
     USER_CREATE:  "USER_CREATE",
     USER_UPDATE:  "USER_UPDATE",
+    USER_DELETE:  "USER_DELETE",  // hard delete with tombstone; the audit row IS the user's last footprint
     ROLE_CHANGE:  "ROLE_CHANGE",
     PERMISSION_CHANGE: "PERMISSION_CHANGE",
 } as const;

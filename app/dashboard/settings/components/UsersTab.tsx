@@ -16,9 +16,11 @@ export default function UsersTab() {
         department: "", specialization: "", roleId: "", password: ""
     });
 
-    // Track the user pending deactivation; null when no dialog is open.
+    // Track the user pending deletion; null when no dialog is open.
     const [pendingDelete, setPendingDelete] = useState<any | null>(null);
     const [deleting, setDeleting] = useState(false);
+    // Typed-name confirmation: must match the user's name exactly.
+    const [confirmText, setConfirmText] = useState("");
 
     useEffect(() => {
         fetchUsers();
@@ -74,8 +76,25 @@ export default function UsersTab() {
         }
     };
 
+    const openDeleteDialog = (user: any) => {
+        setPendingDelete(user);
+        setConfirmText("");
+    };
+
+    const closeDeleteDialog = () => {
+        if (deleting) return;
+        setPendingDelete(null);
+        setConfirmText("");
+    };
+
     const handleConfirmDelete = async () => {
         if (!pendingDelete) return;
+        // Defensive: require typed-name match on the client too,
+        // even though the server has its own guards.
+        if (confirmText.trim() !== (pendingDelete.name || "").trim()) {
+            setMessage("Confirmation text does not match the user's name.");
+            return;
+        }
         setDeleting(true);
         setMessage("");
         try {
@@ -84,12 +103,12 @@ export default function UsersTab() {
             });
             const data = await res.json().catch(() => ({}));
             if (res.ok) {
-                setMessage(`User "${pendingDelete.name}" deactivated.`);
-                setPendingDelete(null);
+                setMessage(`User "${pendingDelete.name}" deleted. Records preserved with audit tombstone.`);
+                closeDeleteDialog();
                 fetchUsers();
-                setTimeout(() => setMessage(""), 3000);
+                setTimeout(() => setMessage(""), 4000);
             } else {
-                setMessage(data.error || "Failed to deactivate user");
+                setMessage(data.error || "Failed to delete user");
             }
         } catch (err) {
             setMessage("Network error occurred.");
@@ -225,9 +244,8 @@ export default function UsersTab() {
                                                 <button
                                                     className={`${styles.actionBtn} ${styles.deleteBtn}`}
                                                     style={{ fontSize: "0.8rem" }}
-                                                    disabled={!user.isActive}
-                                                    title={user.isActive ? "Deactivate user" : "Already inactive"}
-                                                    onClick={() => setPendingDelete(user)}
+                                                    title="Delete user (history preserved with audit tombstone)"
+                                                    onClick={() => openDeleteDialog(user)}
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
@@ -247,7 +265,7 @@ export default function UsersTab() {
                     aria-modal="true"
                     onClick={(e) => {
                         // click on backdrop closes; click on panel does not
-                        if (e.target === e.currentTarget && !deleting) setPendingDelete(null);
+                        if (e.target === e.currentTarget) closeDeleteDialog();
                     }}
                     style={{
                         position: "fixed",
@@ -265,28 +283,50 @@ export default function UsersTab() {
                             color: "var(--text-color, #111)",
                             borderRadius: "var(--radius-md, 8px)",
                             padding: "1.5rem",
-                            maxWidth: "440px",
+                            maxWidth: "500px",
                             width: "90%",
                             boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
                         }}
                     >
                         <h3 style={{ margin: "0 0 0.75rem 0", fontSize: "1.1rem" }}>
-                            Deactivate user?
+                            Delete user permanently?
                         </h3>
-                        <p style={{ margin: "0 0 1rem 0", lineHeight: 1.5 }}>
+                        <p style={{ margin: "0 0 0.75rem 0", lineHeight: 1.5 }}>
                             <strong>{pendingDelete.name}</strong>
                             {pendingDelete.email ? ` (${pendingDelete.email})` : ""} will be
-                            deactivated immediately. They will no longer be able to sign in,
-                            and their record will be hidden from operational dropdowns.
-                            The user record is preserved for audit purposes and can be
-                            reactivated later.
+                            removed from the system. The user record is deleted; this
+                            cannot be undone.
                         </p>
+                        <p style={{ margin: "0 0 0.75rem 0", lineHeight: 1.5, color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                            <strong>What is preserved:</strong> all clinical, billing, and
+                            operational records (visits, prescriptions, lab orders, payments,
+                            admissions, dispensing logs, journal entries, …) stay in their
+                            tables. References to this user are cleared. A full snapshot of
+                            the user's identity (name, email, role, tenant) is written to
+                            the audit log as a <em>tombstone</em>.
+                        </p>
+                        <div style={{ margin: "1rem 0" }}>
+                            <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.35rem", color: "var(--text-muted)" }}>
+                                Type <code style={{ background: "rgba(0,0,0,0.06)", padding: "0 0.25rem", borderRadius: 3 }}>{pendingDelete.name}</code> to confirm:
+                            </label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={confirmText}
+                                onChange={(e) => setConfirmText(e.target.value)}
+                                disabled={deleting}
+                                autoFocus
+                                autoComplete="off"
+                                spellCheck={false}
+                                placeholder={pendingDelete.name}
+                            />
+                        </div>
                         <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
                             <button
                                 type="button"
                                 className={styles.addPartnerBtn}
                                 style={{ background: "transparent", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}
-                                onClick={() => setPendingDelete(null)}
+                                onClick={closeDeleteDialog}
                                 disabled={deleting}
                             >
                                 Cancel
@@ -294,18 +334,18 @@ export default function UsersTab() {
                             <button
                                 type="button"
                                 onClick={handleConfirmDelete}
-                                disabled={deleting}
+                                disabled={deleting || confirmText.trim() !== (pendingDelete.name || "").trim()}
                                 style={{
                                     background: "var(--danger-color, #dc2626)",
                                     color: "#fff",
                                     border: "none",
                                     padding: "0.5rem 1rem",
                                     borderRadius: "var(--radius-sm, 4px)",
-                                    cursor: deleting ? "not-allowed" : "pointer",
-                                    opacity: deleting ? 0.6 : 1,
+                                    cursor: (deleting || confirmText.trim() !== (pendingDelete.name || "").trim()) ? "not-allowed" : "pointer",
+                                    opacity: (deleting || confirmText.trim() !== (pendingDelete.name || "").trim()) ? 0.5 : 1,
                                 }}
                             >
-                                {deleting ? "Deactivating…" : "Deactivate user"}
+                                {deleting ? "Deleting…" : "Permanently delete"}
                             </button>
                         </div>
                     </div>
