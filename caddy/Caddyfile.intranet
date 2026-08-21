@@ -22,11 +22,11 @@
 #   # Then install caddy-root-ca.crt on the LAN client as a Trusted Root.
 
 # ─── Site block: Tailscale hostname (primary access) ─────────────────────
-# The placeholder {$VITALCORE_HOSTNAME:vitalcore} reads from the env var
+# The placeholder vitalcore.tailfd1512.ts.net reads from the env var
 # (set by docker-compose from TS_HOSTNAME), defaulting to "vitalcore".
 # Use https://<that-name> in your browser — Tailscale MagicDNS resolves
 # it automatically on any device with Tailscale installed.
-{$VITALCORE_HOSTNAME:vitalcore} {
+vitalcore.tailfd1512.ts.net {
 	tls /var/lib/tailscale/cert.pem /var/lib/tailscale/key.pem
 
 	reverse_proxy 127.0.0.1:3000 {
