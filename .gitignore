@@ -108,5 +108,12 @@ docker-compose.override.yml
 caddy/*.pem
 caddy/*.crt
 caddy/*.key
-lan-certs/
+# lan-certs/ holds private keys (key.pem) and live certs (cert.pem).
+# The install scripts and README inside it ARE tracked (see ! below);
+# cert/key files are not.
+lan-certs/*
+!lan-certs/install.sh
+!lan-certs/install.ps1
+!lan-certs/install.bat
+!lan-certs/README.md
 *.patch
