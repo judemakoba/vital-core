@@ -187,6 +187,7 @@ services:
     volumes:
       # Caddyfile for the Tailscale / LAN setup.
       - ./caddy/Caddyfile.intranet:/etc/caddy/Caddyfile:ro
+      - /etc/caddy/lan-certs:/etc/caddy/lan-certs:ro
       # Tailscale-issued cert + key (read-only).
       - tailscale_state:/var/lib/tailscale:ro
       # Caddy state — internal CA (for LAN fallback) and logs.

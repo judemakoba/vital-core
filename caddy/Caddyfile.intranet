@@ -68,8 +68,7 @@
 # the warning, install the root CA from /data/caddy/pki/authorities/local/root.crt
 # on the LAN device (one-time setup).
 :443 {
-	tls internal
-
+        tls /etc/caddy/lan-certs/cert.pem /etc/caddy/lan-certs/key.pem
 	reverse_proxy 127.0.0.1:3000 {
 		health_uri /api/auth/csrf
 		health_interval 30s
