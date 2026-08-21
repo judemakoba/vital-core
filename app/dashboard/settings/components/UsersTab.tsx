@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Users as UsersIcon } from "lucide-react";
+import { Plus, Search, Users as UsersIcon, Trash2 } from "lucide-react";
 import styles from "../page.module.css";
 
 export default function UsersTab() {
@@ -15,6 +15,10 @@ export default function UsersTab() {
         name: "", email: "", employeeId: "", phone: "",
         department: "", specialization: "", roleId: "", password: ""
     });
+
+    // Track the user pending deactivation; null when no dialog is open.
+    const [pendingDelete, setPendingDelete] = useState<any | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -55,7 +59,7 @@ export default function UsersTab() {
                 body: JSON.stringify(newUser)
             });
             const data = await res.json();
-            
+
             if (res.ok) {
                 setShowForm(false);
                 setNewUser({ name: "", email: "", employeeId: "", phone: "", department: "", specialization: "", roleId: "", password: "" });
@@ -67,6 +71,30 @@ export default function UsersTab() {
             }
         } catch (err) {
             setMessage("Network error occurred.");
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!pendingDelete) return;
+        setDeleting(true);
+        setMessage("");
+        try {
+            const res = await fetch(`/api/admin/users/${pendingDelete.id}`, {
+                method: "DELETE",
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setMessage(`User "${pendingDelete.name}" deactivated.`);
+                setPendingDelete(null);
+                fetchUsers();
+                setTimeout(() => setMessage(""), 3000);
+            } else {
+                setMessage(data.error || "Failed to deactivate user");
+            }
+        } catch (err) {
+            setMessage("Network error occurred.");
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -186,9 +214,24 @@ export default function UsersTab() {
                                             </span>
                                         </td>
                                         <td>
-                                            <button className={styles.actionBtn} style={{ fontSize: "0.8rem" }}>
-                                                Edit
-                                            </button>
+                                            <div style={{ display: "flex", gap: "0.25rem" }}>
+                                                <button
+                                                    className={styles.actionBtn}
+                                                    style={{ fontSize: "0.8rem" }}
+                                                    title="Edit user"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                                                    style={{ fontSize: "0.8rem" }}
+                                                    disabled={!user.isActive}
+                                                    title={user.isActive ? "Deactivate user" : "Already inactive"}
+                                                    onClick={() => setPendingDelete(user)}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -197,6 +240,77 @@ export default function UsersTab() {
                     </table>
                 </div>
             </div>
+
+            {pendingDelete && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    onClick={(e) => {
+                        // click on backdrop closes; click on panel does not
+                        if (e.target === e.currentTarget && !deleting) setPendingDelete(null);
+                    }}
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.4)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 1000,
+                    }}
+                >
+                    <div
+                        style={{
+                            background: "var(--surface-color, #fff)",
+                            color: "var(--text-color, #111)",
+                            borderRadius: "var(--radius-md, 8px)",
+                            padding: "1.5rem",
+                            maxWidth: "440px",
+                            width: "90%",
+                            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+                        }}
+                    >
+                        <h3 style={{ margin: "0 0 0.75rem 0", fontSize: "1.1rem" }}>
+                            Deactivate user?
+                        </h3>
+                        <p style={{ margin: "0 0 1rem 0", lineHeight: 1.5 }}>
+                            <strong>{pendingDelete.name}</strong>
+                            {pendingDelete.email ? ` (${pendingDelete.email})` : ""} will be
+                            deactivated immediately. They will no longer be able to sign in,
+                            and their record will be hidden from operational dropdowns.
+                            The user record is preserved for audit purposes and can be
+                            reactivated later.
+                        </p>
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                            <button
+                                type="button"
+                                className={styles.addPartnerBtn}
+                                style={{ background: "transparent", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}
+                                onClick={() => setPendingDelete(null)}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleConfirmDelete}
+                                disabled={deleting}
+                                style={{
+                                    background: "var(--danger-color, #dc2626)",
+                                    color: "#fff",
+                                    border: "none",
+                                    padding: "0.5rem 1rem",
+                                    borderRadius: "var(--radius-sm, 4px)",
+                                    cursor: deleting ? "not-allowed" : "pointer",
+                                    opacity: deleting ? 0.6 : 1,
+                                }}
+                            >
+                                {deleting ? "Deactivating…" : "Deactivate user"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

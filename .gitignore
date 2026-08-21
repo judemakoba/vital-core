@@ -99,3 +99,14 @@ uploads/*
 # docker-compose.yml, Dockerfile, and .dockerignore are tracked as project files.
 # Use docker-compose.override.yml for local-only changes.
 docker-compose.override.yml
+
+# ─── TLS certs & private keys (NEVER commit) ──────────────────────────────
+# The cert files in caddy/ and lan-certs/ are production secrets bound to
+# specific LXC hostnames + IPs. A private key checked into git history is
+# forever-leaked. Cert regeneration scripts ARE tracked (deploy/*.sh);
+# generated cert/key files are not.
+caddy/*.pem
+caddy/*.crt
+caddy/*.key
+lan-certs/
+*.patch
