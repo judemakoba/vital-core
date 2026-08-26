@@ -36,6 +36,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       POSTGRES_DB: ${POSTGRES_DB:-vitalcore}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      # Pin Postgres to EAT. The app container also runs TZ=Africa/Kampala,
+      # so the date math in the app (e.g. dashboard "Today's Revenue")
+      # matches what `now()` writes to `createdAt` columns — no more
+      # EAT-vs-UTC mismatch where a payment at 23:59:56 EAT lands 4 s
+      # before the next "day" boundary computed from local-time components.
+      TZ: ${TZ:-Africa/Kampala}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
