@@ -76,6 +76,11 @@ export default withAuth(
 export const config = {
   matcher: [
     "/dashboard/:path*",
-    "/api/((?!auth).*)",
+    // Run on every /api/* EXCEPT:
+    //   /api/auth/* — auth pages; needs to work for the login form
+    //   /api/files/* — public file server (branding, etc.) shown
+    //                   before login. Traversal protection lives in
+    //                   the route handler itself, not here.
+    "/api/((?!auth|files).*)",
   ],
 };
