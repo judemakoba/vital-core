@@ -448,7 +448,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
             if (res.ok) {
                 setVisit(prev => prev ? {
                     ...prev,
-                    labOrders: prev.labOrders.filter(o => o.id !== id)
+                    labOrders: (prev.labOrders ?? []).filter(o => o.id !== id)
                 } : null);
                 setConfirmingId(null);
             } else {
@@ -465,7 +465,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
             if (res.ok) {
                 setVisit(prev => prev ? {
                     ...prev,
-                    radiologyOrders: prev.radiologyOrders.filter(o => o.id !== id)
+                    radiologyOrders: (prev.radiologyOrders ?? []).filter(o => o.id !== id)
                 } : null);
                 setConfirmingId(null);
             } else {
@@ -487,7 +487,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
             if (res.ok) {
                 setVisit(prev => prev ? {
                     ...prev,
-                    prescriptions: prev.prescriptions.filter(p => p.id !== id)
+                    prescriptions: (prev.prescriptions ?? []).filter(p => p.id !== id)
                 } : null);
                 setConfirmingId(null);
             } else {
@@ -506,7 +506,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
             if (res.ok) {
                 setVisit(prev => prev ? {
                     ...prev,
-                    diagnoses: prev.diagnoses.filter(d => d.id !== id)
+                    diagnoses: (prev.diagnoses ?? []).filter(d => d.id !== id)
                 } : null);
                 setConfirmingId(null);
             } else {
@@ -749,7 +749,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                                     });
                                                     if (res.ok) {
                                                         const newD = await res.json();
-                                                        setVisit(prev => prev ? { ...prev, diagnoses: [...prev.diagnoses, newD] } : prev);
+                                                        setVisit(prev => prev ? { ...prev, diagnoses: [...(prev.diagnoses ?? []), newD] } : prev);
                                                         setIcdSearchQuery("");
                                                     }
                                                 }
@@ -773,7 +773,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                                 });
                                                 if (res.ok) {
                                                     const newD = await res.json();
-                                                    setVisit(prev => prev ? { ...prev, diagnoses: [...prev.diagnoses, newD] } : prev);
+                                                    setVisit(prev => prev ? { ...prev, diagnoses: [...(prev.diagnoses ?? []), newD] } : prev);
                                                     setIcdSearchQuery("");
                                                     setSelectedIcdCode("");
                                                 }
@@ -827,7 +827,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                                         });
                                                         if (response.ok) {
                                                             const newD = await response.json();
-                                                            setVisit(prev => prev ? { ...prev, diagnoses: [...prev.diagnoses, newD] } : prev);
+                                                            setVisit(prev => prev ? { ...prev, diagnoses: [...(prev.diagnoses ?? []), newD] } : prev);
                                                             setIcdSearchQuery("");
                                                             setShowIcdDropdown(false);
                                                         }
@@ -849,7 +849,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                 )}
 
                                 <div className={styles.list}>
-                                    {visit.diagnoses.map((d) => (
+                                    {(visit.diagnoses ?? []).map((d) => (
                                         <div key={d.id} className={styles.listItem} style={{ padding: "0.75rem 0", borderBottom: "1px solid var(--border-color)", justifyContent: "space-between", display: "flex", alignItems: "center" }}>
                                             <div>
                                                 <strong>{d.name}</strong> {d.code && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>({d.icdVersion || "ICD-10"}: {d.code})</span>}
@@ -874,7 +874,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                             )}
                                         </div>
                                     ))}
-                                    {visit.diagnoses.length === 0 && <div className={styles.emptyState} style={{ padding: "1rem" }}>No diagnoses added yet.</div>}
+                                    {(!visit.diagnoses || visit.diagnoses.length === 0) && <div className={styles.emptyState} style={{ padding: "1rem" }}>No diagnoses added yet.</div>}
                                 </div>
                             </div>
                         )}
@@ -886,7 +886,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                 prescriptions={visit.prescriptions}
                                 confirmingId={confirmingId}
                                 setConfirmingId={setConfirmingId}
-                                onAdd={(newP) => setVisit(prev => prev ? { ...prev, prescriptions: [...prev.prescriptions, newP] } : prev)}
+                                onAdd={(newP) => setVisit(prev => prev ? { ...prev, prescriptions: [...(prev.prescriptions ?? []), newP] } : prev)}
                                 onCancel={handleCancelPrescription}
                                 readOnly={isReadOnly}
                             />

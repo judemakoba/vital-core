@@ -31,6 +31,17 @@ export default function DashboardError({
     const [attempt, setAttempt] = useState(0);
 
     useEffect(() => {
+        // Always log to the console so devtools captures the real error.
+        // The "Temporary hiccup" UI hides the message; this preserves it
+        // for the developer. In production, this hits the browser console
+        // and can be forwarded to Sentry/etc via a global handler.
+        // eslint-disable-next-line no-console
+        console.error("[DashboardError] caught:", error);
+        if (error?.digest) {
+            // eslint-disable-next-line no-console
+            console.error("[DashboardError] digest:", error.digest);
+        }
+
         if (attempt >= MAX_AUTO_RETRIES) return;
 
         const timer = setTimeout(() => {
@@ -39,7 +50,7 @@ export default function DashboardError({
         }, RETRY_DELAY_MS);
 
         return () => clearTimeout(timer);
-    }, [attempt, reset]);
+    }, [attempt, reset, error]);
 
     if (attempt >= MAX_AUTO_RETRIES) {
         return (
