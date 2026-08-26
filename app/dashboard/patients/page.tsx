@@ -477,10 +477,10 @@ export default function PatientsPage() {
                                         required
                                     >
                                         <optgroup label="Consultation visits">
-                                            <option value="OPD">OPD — General outpatient (UGX 50K)</option>
-                                            <option value="EMERGENCY">Emergency (UGX 50K)</option>
-                                            <option value="SCHEDULED">Scheduled (UGX 50K)</option>
-                                            <option value="OTHER">Other (UGX 50K)</option>
+                                            <option value="OPD">OPD — General outpatient</option>
+                                            <option value="EMERGENCY">Emergency</option>
+                                            <option value="SCHEDULED">Scheduled</option>
+                                            <option value="OTHER">Other</option>
                                             <option value="FOLLOW_UP">Follow-up — link to prior visit (no fee)</option>
                                             <option value="LAB_REVIEW">Lab/Radiology review (no fee)</option>
                                             <option value="VACCINATION">Vaccination only (no fee)</option>
