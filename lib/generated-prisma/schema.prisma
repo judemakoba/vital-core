@@ -280,6 +280,37 @@ model ICD11Code {
   title String
 }
 
+model ICD10Code {
+  id    String @id @default(cuid())
+  code  String @unique
+  title String
+}
+
+// ─── Consultation fee categories (multi-tier pricing) ────────────────
+// One row per fee tier per tenant. Examples: "Standard OPD", "Senior
+// Specialist", "Pediatric", "Telemedicine", "Follow-up (waived)".
+// A visit is charged the fee from the category whose `visitTypes` CSV
+// includes the visit's type. Multiple categories can target the same
+// visit type — the caller picks which one to apply (or `isDefault`
+// picks the fallback).
+model ConsultationFeeCategory {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  name        String
+  fee         Float
+  visitTypes  String   // CSV of VisitType values, e.g. "OPD,OTHER"
+  description String?
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, isActive])
+  @@index([tenantId, isDefault])
+}
+
 model Prescription {
   id             String   @id @default(cuid())
   visitId        String
@@ -1181,6 +1212,7 @@ model Tenant {
   branches Branch[]
   settings TenantSetting[]
   users    User[]
+  consultationFeeCategories ConsultationFeeCategory[]
 }
 
 model Branch {

@@ -8,6 +8,7 @@ import {
     Plus, Edit, Trash2, X, Upload, Image as ImageIcon, AlertTriangle,
 } from "lucide-react";
 import styles from "../page.module.css";
+import ConsultationFeesSection from "./ConsultationFeesSection";
 
 type SettingDef = {
     key: string;
@@ -230,6 +231,12 @@ export default function ClinicConfigTab() {
                         values={settings}
                         onChange={handleSettingChange}
                     />
+                )}
+
+                {/* Consultation fee categories: surfaced under the VISIT
+                    tab, below the legacy single-fee settings. */}
+                {activeCategory === "VISIT" && (
+                    <ConsultationFeesSection />
                 )}
 
                 {/* Save button (always visible) */}

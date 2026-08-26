@@ -15,22 +15,25 @@ export async function GET(request: Request) {
         const search = searchParams.get("search") || "";
         const version = searchParams.get("version") || "ICD-11";
 
-        if (version === "ICD-11") {
-            const codes = await (prisma as any).iCD11Code.findMany({
-                where: {
-                    OR: [
-                        { code: { contains: search, mode: "insensitive" } },
-                        { title: { contains: search, mode: "insensitive" } },
-                    ],
-                },
-                take: 20,
-            });
-            return NextResponse.json(codes);
-        }
+        // Pick the right Prisma model by version. Default to ICD-11 if
+        // the caller didn't specify (or specified something unknown).
+        const modelName = version === "ICD-10" ? "iCD10Code" : "iCD11Code";
+        const versionTag = version === "ICD-10" ? "ICD-10" : "ICD-11";
 
-        // For ICD-10, we could have a similar table or a search logic if added later.
-        // For now, let's just return empty or a small list of common ones if you have them.
-        return NextResponse.json([]);
+        const codes = await (prisma as any)[modelName].findMany({
+            where: {
+                OR: [
+                    { code: { contains: search, mode: "insensitive" } },
+                    { title: { contains: search, mode: "insensitive" } },
+                ],
+            },
+            take: 20,
+            orderBy: { code: "asc" },
+        });
+
+        // Tag each row with the version so the UI can label them.
+        // The code/title are the same shape across both models.
+        return NextResponse.json(codes.map((c: any) => ({ ...c, version: versionTag })));
     } catch (error) {
         console.error("Failed to fetch ICD codes:", error);
         return NextResponse.json({ error: "Failed to fetch ICD codes" }, { status: 500 });

@@ -4,9 +4,19 @@
  * Centralized rules for whether a new visit triggers the auto-consultation-fee
  * at creation time, and how much that fee should be.
  *
- * Settings (read from TenantSetting on each call, with fallback defaults):
- *   - visit.consultationFee: amount charged for billable visit types
- *   - visit.emergencyFee / visit.scheduledFee: per-type overrides
+ * Primary source: `ConsultationFeeCategory` rows (multi-tier pricing).
+ *   - Each tier has a name, fee, comma-separated visitTypes, and a
+ *     `isDefault` flag (at most one default per (tenant, visitType) bucket).
+ *   - Tenant-scoped tiers override global (tenantId=null) tiers.
+ *   - When picking a fee for a visit type, the system prefers the
+ *     tier explicitly chosen by the caller (via `categoryId` on the
+ *     visit), or falls back to the default tier for that type.
+ *
+ * Fallback: legacy `visit.consultationFee` / `visit.emergencyFee` /
+ * `visit.scheduledFee` settings on the Tenant row, used when no
+ * `ConsultationFeeCategory` row matches.
+ *
+ * Other settings (TenantSetting):
  *   - visit.followUpWindowDays: how recent a prior visit must be to default to FOLLOW_UP
  *   - visit.billableTypes: comma-separated VisitType values that get charged
  *
@@ -37,11 +47,51 @@ export async function getVisitSettings(): Promise<{ consultationFee: number; fol
 }
 
 /**
- * Pick the right consultation fee for a given visit type.
- * EMERGENCY uses emergencyFee, SCHEDULED uses scheduledFee, anything else uses consultationFee.
+ * Resolve the fee to charge for a visit, given:
+ *   - the visit type
+ *   - an optional categoryId (caller's explicit pick from the admin UI)
+ *   - the tenantId (so we pick the right scope)
+ *
+ * Resolution order:
+ *   1. Explicit categoryId if provided and matches the visit type
+ *   2. The default tier for (tenantId, visitType) if exactly one
+ *   3. The first matching tier (any isDefault=false is also fine if
+ *      the caller has been explicit)
+ *   4. The legacy per-type setting (visit.emergencyFee / scheduledFee)
+ *   5. The legacy base setting (visit.consultationFee, default 50000)
  */
-export async function getConsultationFeeForType(type: VisitType | string | null | undefined): Promise<number> {
+export async function getConsultationFeeForType(
+    type: VisitType | string | null | undefined,
+    opts?: { tenantId?: string | null; categoryId?: string | null }
+): Promise<number> {
     const t = String(type || '').toUpperCase();
+    const tenantId = opts?.tenantId ?? null;
+    const explicitCategoryId = opts?.categoryId ?? null;
+
+    // 1. Explicit categoryId
+    if (explicitCategoryId) {
+        const tier = await prisma.consultationFeeCategory.findUnique({ where: { id: explicitCategoryId } });
+        if (tier && tier.isActive && tierMatchesType(tier, t)) {
+            return tier.fee;
+        }
+        // Fall through if the explicit tier is missing/inactive/wrong-type
+    }
+
+    // 2-3. Pick a tier by visit type for the tenant
+    if (t) {
+        const tiers = await prisma.consultationFeeCategory.findMany({
+            where: {
+                isActive: true,
+                visitTypes: { contains: t },
+                OR: [{ tenantId: tenantId ?? null }, ...(tenantId ? [{ tenantId: null }] : [])],
+            },
+            orderBy: [{ isDefault: "desc" }, { sortOrder: "asc" }, { fee: "asc" }],
+            take: 1,
+        });
+        if (tiers.length > 0) return tiers[0].fee;
+    }
+
+    // 4-5. Legacy settings
     const settings = await getMany(['visit.consultationFee', 'visit.emergencyFee', 'visit.scheduledFee']);
     const base = Number(settings['visit.consultationFee']) || 50000;
     if (t === 'EMERGENCY' && settings['visit.emergencyFee']) {
@@ -51,6 +101,50 @@ export async function getConsultationFeeForType(type: VisitType | string | null 
         return Number(settings['visit.scheduledFee']) || base;
     }
     return base;
+}
+
+/**
+ * Helper: does the tier's visitTypes CSV include the given type?
+ */
+export function tierMatchesType(tier: { visitTypes: string }, type: string): boolean {
+    if (!tier.visitTypes || !type) return false;
+    return tier.visitTypes
+        .split(",")
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean)
+        .includes(type);
+}
+
+/**
+ * List the active fee tiers that apply to a given visit type, in the
+ * order the UI should display them. Tenant-scoped first, then global.
+ * Returns an empty array if the tenant has no tiers configured.
+ */
+export async function listConsultationFeeTiers(
+    tenantId: string | null | undefined,
+    visitType?: string
+): Promise<
+    Array<{
+        id: string;
+        name: string;
+        fee: number;
+        visitTypes: string;
+        description: string | null;
+        isDefault: boolean;
+        isActive: boolean;
+        sortOrder: number;
+    }>
+> {
+    const t = visitType ? String(visitType).toUpperCase() : null;
+    const tiers = await prisma.consultationFeeCategory.findMany({
+        where: {
+            isActive: true,
+            OR: [{ tenantId: tenantId ?? null }, ...(tenantId ? [{ tenantId: null }] : [])],
+            ...(t ? { visitTypes: { contains: t } } : {}),
+        },
+        orderBy: [{ isDefault: "desc" }, { sortOrder: "asc" }, { fee: "asc" }],
+    });
+    return tiers;
 }
 
 /**
