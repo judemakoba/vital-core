@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Users as UsersIcon, Trash2 } from "lucide-react";
+import { Plus, Search, Users as UsersIcon, Trash2, Pencil } from "lucide-react";
 import styles from "../page.module.css";
 
 export default function UsersTab() {
@@ -21,6 +21,16 @@ export default function UsersTab() {
     const [deleting, setDeleting] = useState(false);
     // Typed-name confirmation: must match the user's name exactly.
     const [confirmText, setConfirmText] = useState("");
+
+    // Edit dialog state. `editingUser` is the row being edited (or null
+    // when the dialog is closed); `editForm` is a working copy of the
+    // fields, so cancelling doesn't mutate the displayed user.
+    const [editingUser, setEditingUser] = useState<any | null>(null);
+    const [editForm, setEditForm] = useState({
+        name: "", email: "", employeeId: "", phone: "",
+        department: "", specialization: "", roleId: "",
+    });
+    const [savingEdit, setSavingEdit] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -79,6 +89,51 @@ export default function UsersTab() {
     const openDeleteDialog = (user: any) => {
         setPendingDelete(user);
         setConfirmText("");
+    };
+
+    const openEditDialog = (user: any) => {
+        setEditingUser(user);
+        setEditForm({
+            name:        user.name        ?? "",
+            email:       user.email       ?? "",
+            employeeId:  user.employeeId  ?? "",
+            phone:       user.phone       ?? "",
+            department:  user.department  ?? "",
+            specialization: user.specialization ?? "",
+            roleId:      user.roleId      ?? "",
+        });
+    };
+
+    const closeEditDialog = () => {
+        if (savingEdit) return;
+        setEditingUser(null);
+    };
+
+    const handleSaveEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingUser) return;
+        setSavingEdit(true);
+        setMessage("");
+        try {
+            const res = await fetch(`/api/admin/users/${editingUser.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editForm),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setMessage(`User "${editForm.name || editingUser.name}" updated.`);
+                setEditingUser(null);
+                fetchUsers();
+                setTimeout(() => setMessage(""), 3000);
+            } else {
+                setMessage(data.error || "Failed to update user");
+            }
+        } catch (err) {
+            setMessage("Network error occurred.");
+        } finally {
+            setSavingEdit(false);
+        }
     };
 
     const closeDeleteDialog = () => {
@@ -238,8 +293,9 @@ export default function UsersTab() {
                                                     className={styles.actionBtn}
                                                     style={{ fontSize: "0.8rem" }}
                                                     title="Edit user"
+                                                    onClick={() => openEditDialog(user)}
                                                 >
-                                                    Edit
+                                                    <Pencil size={14} />
                                                 </button>
                                                 <button
                                                     className={`${styles.actionBtn} ${styles.deleteBtn}`}
@@ -258,6 +314,135 @@ export default function UsersTab() {
                     </table>
                 </div>
             </div>
+
+            {editingUser && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) closeEditDialog();
+                    }}
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.4)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 1000,
+                    }}
+                >
+                    <form
+                        onSubmit={handleSaveEdit}
+                        style={{
+                            background: "var(--surface-color, #fff)",
+                            color: "var(--text-color, #111)",
+                            borderRadius: "var(--radius-md, 8px)",
+                            padding: "1.5rem",
+                            maxWidth: "560px",
+                            width: "90%",
+                            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+                        }}
+                    >
+                        <h3 style={{ margin: "0 0 1rem 0", fontSize: "1.1rem" }}>
+                            Edit user
+                        </h3>
+                        <div className={styles.grid2} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Full Name *</label>
+                                <input
+                                    className={styles.input}
+                                    value={editForm.name}
+                                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                    required
+                                    disabled={savingEdit}
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Email Address *</label>
+                                <input
+                                    type="email"
+                                    className={styles.input}
+                                    value={editForm.email}
+                                    onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                                    required
+                                    disabled={savingEdit}
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Employee ID</label>
+                                <input
+                                    className={styles.input}
+                                    value={editForm.employeeId}
+                                    onChange={e => setEditForm({ ...editForm, employeeId: e.target.value })}
+                                    disabled={savingEdit}
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Phone Number</label>
+                                <input
+                                    className={styles.input}
+                                    value={editForm.phone}
+                                    onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                                    disabled={savingEdit}
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>System Role *</label>
+                                <select
+                                    className={styles.input}
+                                    value={editForm.roleId}
+                                    onChange={e => setEditForm({ ...editForm, roleId: e.target.value })}
+                                    required
+                                    disabled={savingEdit}
+                                >
+                                    <option value="">Select a Role...</option>
+                                    {roles.map(role => (
+                                        <option key={role.id} value={role.id}>{role.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Department</label>
+                                <input
+                                    className={styles.input}
+                                    value={editForm.department}
+                                    onChange={e => setEditForm({ ...editForm, department: e.target.value })}
+                                    disabled={savingEdit}
+                                />
+                            </div>
+                            <div className={styles.formGroup} style={{ gridColumn: "1 / -1" }}>
+                                <label className={styles.label}>Specialization</label>
+                                <input
+                                    className={styles.input}
+                                    value={editForm.specialization}
+                                    onChange={e => setEditForm({ ...editForm, specialization: e.target.value })}
+                                    disabled={savingEdit}
+                                />
+                            </div>
+                        </div>
+                        <div style={{ marginTop: "1.25rem", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                            <button
+                                type="button"
+                                className={styles.addPartnerBtn}
+                                style={{ background: "transparent", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}
+                                onClick={closeEditDialog}
+                                disabled={savingEdit}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                className={styles.saveBtn}
+                                style={{ margin: 0 }}
+                                disabled={savingEdit}
+                            >
+                                {savingEdit ? "Saving…" : "Save changes"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
 
             {pendingDelete && (
                 <div
