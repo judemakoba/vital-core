@@ -90,7 +90,16 @@ echo ""
 echo "[entrypoint] Starting Next.js standalone server on port ${PORT}..."
 echo "============================================================"
 
-# `exec` so the Node process becomes PID 1 and gets SIGTERM directly when
-# `docker stop` is called. Without exec, shutdown would be delayed by the
-# shell wrapper.
-exec node server.js
+# Fix uploads dir ownership. The `app_uploads` named volume is created
+# root-owned by Docker; the nextjs user (UID 1001) can't mkdir or write
+# into a root-owned path. The entrypoint runs as root (see docker-compose
+# `user: "0:0"` override), so we can chown once at startup, then drop
+# to nextjs for the Node process.
+mkdir -p /app/uploads/branding
+chown -R nextjs:nodejs /app/uploads /app/public 2>/dev/null || true
+
+# Drop to nextjs for the actual app process. `exec` so the Node process
+# becomes PID 1 and gets SIGTERM directly when `docker stop` is called.
+# Without exec, shutdown would be delayed by the shell wrapper.
+# `runuser` is in util-linux, which is part of the debian-slim base image.
+exec runuser -u nextjs -- node server.js

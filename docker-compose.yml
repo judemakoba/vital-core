@@ -63,6 +63,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: vitalcore-app
+    # Run the entrypoint as root so it can chown the `app_uploads` named
+    # volume (created root-owned by Docker) to nextjs before dropping
+    # privileges via `runuser` for the Node process.
+    user: "0:0"
     restart: unless-stopped
     depends_on:
       postgres:
