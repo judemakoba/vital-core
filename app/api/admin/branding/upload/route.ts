@@ -7,9 +7,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getDefaultTenantId } from "@/lib/settings/store";
 
-// Where uploads land. Files served by Next from /public/*.
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "branding");
-const PUBLIC_PREFIX = "/uploads/branding";
+// Where uploads land. The docker-compose volume `app_uploads:/app/uploads`
+// persists this directory across container recreates. We do NOT write to
+// `public/uploads` because Next.js 14 standalone only serves files that
+// were in `public/` at build time — runtime writes there return 404.
+// Instead we serve files via the public route at /api/files/[...path].
+const UPLOAD_DIR = path.join(process.cwd(), "uploads", "branding");
+const PUBLIC_PREFIX = "/api/files/branding";
 
 // Allowed file types — keep tight to limit attack surface.
 const ALLOWED_MIME = new Set([
