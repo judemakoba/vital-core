@@ -41,7 +41,24 @@ export default function AgingPanel() {
     useEffect(() => {
         fetch('/api/finance/aging')
             .then(r => r.json())
-            .then(data => { setPatient(data); setLoading(false); })
+            .then(data => {
+                // The API doesn't return a `counts` field, so derive it
+                // from the items array. This keeps the component's
+                // typed shape consistent without a schema change.
+                const items = Array.isArray(data?.items) ? data.items : [];
+                const enriched = {
+                    ...(data ?? {}),
+                    items,
+                    totalOutstanding: Number(data?.totalOutstanding) || 0,
+                    counts: {
+                        total: items.length,
+                        legacy: items.filter((i: any) => i.type === 'legacy').length,
+                        tax: items.filter((i: any) => i.type === 'tax').length,
+                    },
+                };
+                setPatient(enriched);
+                setLoading(false);
+            })
             .catch(() => setLoading(false));
     }, []);
 

@@ -66,12 +66,18 @@ export async function GET() {
         }
 
         const totalOutstanding = items.reduce((sum, i) => sum + i.balance, 0);
+        const counts = {
+            total: items.length,
+            legacy: items.filter((i) => i.type === "legacy").length,
+            tax: items.filter((i) => i.type === "tax").length,
+        };
 
         return NextResponse.json({
             buckets: bucketTotals,
             labels: bucketLabels,
             boundaries: buckets,
             totalOutstanding,
+            counts,
             items: items.sort((a, b) => b.days - a.days),
         });
     } catch (error) {
