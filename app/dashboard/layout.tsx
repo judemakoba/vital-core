@@ -63,7 +63,7 @@ const navigation = [
     { name: 'Doctor', href: '/dashboard/doctor', icon: Stethoscope, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR'] },
     { name: 'Pharmacy', href: '/dashboard/pharmacy', icon: Pill, roles: ['SUPER_ADMIN', 'ADMIN', 'PHARMACIST'] },
     { name: 'Laboratory', href: '/dashboard/lab', icon: TestTube, roles: ['SUPER_ADMIN', 'ADMIN', 'LAB_TECH', 'LAB_ADMIN'] },
-    { name: 'Radiology', href: '/dashboard/radiology', icon: Scan, roles: ['SUPER_ADMIN', 'RADIOLOGIST'] },
+    { name: 'Radiology', href: '/dashboard/radiology', icon: Scan, roles: ['SUPER_ADMIN', 'ADMIN', 'RADIOLOGIST'] },
     { name: 'Inpatient (IPD)', href: '/dashboard/ipd', icon: BedDouble, roles: ['SUPER_ADMIN', 'ADMIN', 'DOCTOR', 'NURSE', 'RECEPTIONIST'] },
     { name: 'Finance (Billing)', href: '/dashboard/billing', icon: CreditCard, roles: ['SUPER_ADMIN', 'ADMIN', 'CASHIER', 'ACCOUNTANT'] },
     { name: 'Finance & Accounting', href: '/dashboard/finance', icon: TrendingUp, roles: ['SUPER_ADMIN', 'ADMIN'] },

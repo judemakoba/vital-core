@@ -316,13 +316,22 @@ export async function POST(request: Request) {
             if (cashPrice?.price && cashPrice.price > 0) {
                 unitPrice = cashPrice.price;
             } else {
-                // Fallback 1: try MEMBER / STAFF / COMPLIMENTARY price types
+                // Fallback 1: try any other active DrugPrice row. Note: the
+                // DrugPrice.priceType field is the PharmacyPriceType enum
+                // (REGULAR / MEMBER / STAFF / CORPORATE / WHOLESALE /
+                // PROMOTIONAL). The dispense-time enum DispensePriceType
+                // (CASH / MEMBER / STAFF / COMPLIMENTARY) is a different
+                // model used elsewhere — do NOT mix them here. Passing
+                // 'COMPLIMENTARY' to a PharmacyPriceType field throws
+                // "Invalid value for argument `in`. Expected
+                // PharmacyPriceType" at runtime.
                 const fallbackPrice = await tx.drugPrice.findFirst({
                     where: {
                         drugId: drug!.id,
-                        priceType: { in: ['MEMBER', 'STAFF', 'COMPLIMENTARY'] },
+                        priceType: { in: ['MEMBER', 'STAFF', 'CORPORATE', 'WHOLESALE', 'PROMOTIONAL'] },
                         isActive: true
-                    }
+                    },
+                    orderBy: { price: 'desc' }
                 });
                 if (fallbackPrice?.price && fallbackPrice.price > 0) {
                     unitPrice = fallbackPrice.price;
