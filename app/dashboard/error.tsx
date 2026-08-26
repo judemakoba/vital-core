@@ -42,6 +42,33 @@ export default function DashboardError({
             console.error("[DashboardError] digest:", error.digest);
         }
 
+        // Fire-and-forget beacon so the error also lands in
+        // `docker logs vitalcore-app`. The endpoint never throws into us.
+        if (typeof window !== "undefined") {
+            try {
+                const body = JSON.stringify({
+                    source: "DashboardError",
+                    message: error?.message,
+                    stack: error?.stack,
+                    digest: error?.digest,
+                    url: window.location?.href,
+                });
+                // sendBeacon is non-blocking and survives navigation.
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon("/api/debug/client-error", body);
+                } else {
+                    fetch("/api/debug/client-error", {
+                        method: "POST",
+                        body,
+                        headers: { "Content-Type": "application/json" },
+                        keepalive: true,
+                    }).catch(() => {});
+                }
+            } catch {
+                /* beacon is best-effort */
+            }
+        }
+
         if (attempt >= MAX_AUTO_RETRIES) return;
 
         const timer = setTimeout(() => {

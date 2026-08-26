@@ -883,7 +883,7 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                             <PrescriptionForm
                                 visitId={params.visitId}
                                 patientId={visit.patient.id}
-                                prescriptions={visit.prescriptions}
+                                prescriptions={visit.prescriptions ?? []}
                                 confirmingId={confirmingId}
                                 setConfirmingId={setConfirmingId}
                                 onAdd={(newP) => setVisit(prev => prev ? { ...prev, prescriptions: [...(prev.prescriptions ?? []), newP] } : prev)}
@@ -1210,8 +1210,8 @@ export default function ConsultationPage({ params }: { params: { visitId: string
                                             const selectedExam = radiologyCatalog.find(e => e.id === selectedExamId);
                                             if (!selectedExam) return;
 
-                                            const isAlreadyOrdered = (visit as any).radiologyOrders?.some(
-                                                (o: any) => o.examName.toLowerCase() === selectedExam.name.toLowerCase()
+                                            const isAlreadyOrdered = (visit as any).radiologyOrders?.some?.(
+                                                (o: any) => o.examName?.toLowerCase?.() === selectedExam.name.toLowerCase()
                                             );
                                             if (isAlreadyOrdered) {
                                                 setRadiologyError(`"${selectedExam.name}" has already been ordered for this visit.`);
