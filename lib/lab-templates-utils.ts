@@ -911,7 +911,16 @@ const QUALITATIVE_TESTS = new Set([
 export function defaultTemplateFor(opts: { testName: string; categoryName?: string; unit?: string; referenceRange?: string }): { resultMode: "single" | "table" | "qualitative"; templateHtml: string; resultSchema?: any } {
     const name = (opts.testName || "").trim();
 
-    if (QUALITATIVE_TESTS.has(name)) {
+    // Strip a trailing "(alias)" to match canonical names. Tests in the
+    // catalog are commonly stored as "Complete Blood Count (CBC)" or
+    // "Full Blood Count (FBC/CBC)" while the canonical set members
+    // are bare ("Complete Blood Count", "Full Blood Count"). Without
+    // this strip, every aliased test name falls through to `single`
+    // mode even when it's a multi-analyte panel like FBC.
+    const aliasMatch = name.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+    const canonicalName = aliasMatch ? aliasMatch[1].trim() : name;
+
+    if (QUALITATIVE_TESTS.has(name) || QUALITATIVE_TESTS.has(canonicalName)) {
         return {
             resultMode: "qualitative",
             templateHtml: `
@@ -926,7 +935,7 @@ export function defaultTemplateFor(opts: { testName: string; categoryName?: stri
         };
     }
 
-    if (TABLE_MODE_TESTS.has(name)) {
+    if (TABLE_MODE_TESTS.has(name) || TABLE_MODE_TESTS.has(canonicalName)) {
         return {
             resultMode: "table",
             templateHtml: `
