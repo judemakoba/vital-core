@@ -294,28 +294,34 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                         resultFlags: data.resultFlags || "Normal",
                     });
 
-                    // If table-mode template + saved rows, hydrate
-                    if (data.resultMode === 'table' || data.resultMode === 'qualitative') {
-                        const savedRows = data.resultRowsParsed || [];
-                        if (savedRows.length > 0) {
-                            // Merge saved rows with template schema so flag computation
-                            // can use the numeric ranges (saved rows only carry the
-                            // string range like "11.5 - 15", not the parsed numbers).
-                            // We also need the schema to fill in any rows the saved data
-                            // is missing (e.g. new rows added to the schema after save).
-                            let schema = parseSchemaString(data.resultSchema);
-                            // Fall back to the in-code schema map if the template's
-                            // resultSchema is empty/missing — this catches the case where
-                            // a test's template hasn't been seeded yet but the test name
-                            // matches a predefined schema (e.g. CBC/FBC).
-                            if (schema.length === 0) {
-                                const fallback = getTestSchema(data.testName);
-                                if (fallback) schema = fallback.rows as SchemaRow[];
-                            }
-                            const merged = mergeRowsWithSchema(savedRows, schema);
-                            setRows(merged);
-                            rowsInitializedRef.current = true;
+                    // Hydrate saved rows whenever the order has any. The earlier
+                    // guard (`data.resultMode === 'table' || 'qualitative'`)
+                    // skipped hydration when the test's LabResultTemplate row
+                    // was missing — the API then returned `resultMode: null`
+                    // and the form rendered the schema with empty values,
+                    // losing the saved data. `savedRows.length > 0` is the
+                    // real signal that the data exists; resultMode is just a
+                    // form-layout hint and can legitimately be null on a fresh
+                    // or wiped DB.
+                    const savedRows = data.resultRowsParsed || [];
+                    if (savedRows.length > 0) {
+                        // Merge saved rows with template schema so flag computation
+                        // can use the numeric ranges (saved rows only carry the
+                        // string range like "11.5 - 15", not the parsed numbers).
+                        // We also need the schema to fill in any rows the saved data
+                        // is missing (e.g. new rows added to the schema after save).
+                        let schema = parseSchemaString(data.resultSchema);
+                        // Fall back to the in-code schema map if the template's
+                        // resultSchema is empty/missing — this catches the case where
+                        // a test's template hasn't been seeded yet but the test name
+                        // matches a predefined schema (e.g. CBC/FBC).
+                        if (schema.length === 0) {
+                            const fallback = getTestSchema(data.testName);
+                            if (fallback) schema = fallback.rows as SchemaRow[];
                         }
+                        const merged = mergeRowsWithSchema(savedRows, schema);
+                        setRows(merged);
+                        rowsInitializedRef.current = true;
                     }
                 } else {
                     const errorData = await res.json();
