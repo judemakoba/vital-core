@@ -319,7 +319,7 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
                 </div>
 
                 {/* Patient details card */}
-                <div className={styles.patientCard}>
+                <div className={`${styles.patientCard} no-print`}>
                     <div className={styles.patientHeaderLabel}>Patient Details</div>
                     <div className={styles.patientGrid}>
                         <div className={styles.patientField}>

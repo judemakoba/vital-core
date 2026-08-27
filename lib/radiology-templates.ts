@@ -32,9 +32,13 @@ export async function resolveRadFooter(): Promise<string> {
 /** GMC-style patient demographic header. */
 export const GMC_RAD_HEADER_HTML = `
 <div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; color: #000;">
-  <h1 style="text-align:center; font-size: 22px; margin: 0 0 4px 0; font-weight: 700;">Radiology Report</h1>
-  <div style="text-align:center; font-size: 11px; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">{{clinic_name}} — Imaging Department</div>
-  <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 12px;">
+  {{#if clinic_logo}}<div style="text-align: center; margin-bottom: 4px;">{{clinic_logo}}</div>{{/if}}
+  <h1 style="text-align: center; margin: 0; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">{{clinic_name}}</h1>
+  {{#if clinic_subheader}}<p style="text-align: center; margin: 4px 0 0; font-size: 12px; color: #555;">{{clinic_subheader}}</p>{{/if}}
+  {{#if clinic_email}}<p style="text-align: center; margin: 2px 0 0; font-size: 12px; color: #555;">{{clinic_email}}</p>{{/if}}
+  {{#if clinic_regulatory_text}}<p style="text-align: center; margin: 2px 0 8px; font-size: 11px; color: #888;">{{clinic_regulatory_text}}</p>{{/if}}
+  <h2 style="text-align: center; margin: 16px 0 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">Radiology Report</h2>
+  <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 12px; margin-bottom: 12px;">
     <tr>
       <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700; width: 12%;">Date :</td>
       <td style="border: 1px solid #000; padding: 5px 8px; width: 38%;">{{reported_at}}</td>
@@ -112,26 +116,21 @@ export function gmcRadiologyBody(examName: string, modality: string, category: s
 
 /** GMC-style footer with report approval signatures. */
 export const GMC_RAD_FOOTER_HTML = `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 32px auto 0; padding-top: 16px;">
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 32px auto 0; padding-top: 12px;">
   <table style="width: 100%; font-size: 12px;">
     <tr>
       <td style="width: 50%; vertical-align: top;">
-        <div style="font-weight: 700; margin-bottom: 4px;">Report Approved By :</div>
-        <div style="padding-top: 28px; border-top: 1px solid #999;">{{radiologist}}</div>
-        <div style="font-size: 10px; color: #666;">{{clinic_name}} Imaging</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Reported By:</div>
+        <div style="padding-top: 22px; border-top: 1px solid #999;">{{radiologist}}</div>
       </td>
       <td style="width: 50%; vertical-align: top; text-align: right;">
-        <div style="font-weight: 700; margin-bottom: 4px;">Report Verified By :</div>
-        <div>{{radiologist}}</div>
-        <div style="font-size: 10px; color: #666;">{{clinic_name}} Imaging</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Verified By:</div>
+        <div style="padding-top: 22px; border-top: 1px solid #999;">{{radiologist}}</div>
       </td>
     </tr>
   </table>
-  <div style="text-align: center; font-size: 10px; color: #666; margin-top: 16px; border-top: 1px solid #ccc; padding-top: 8px;">
-    <div style="font-weight: 600; color: #333; margin-bottom: 2px;">{{clinic_name}}</div>
-    <div>{{clinic_address}}{{#if clinic_phone}} · {{clinic_phone}}{{/if}}</div>
-    <div style="margin-top: 2px; color: #888;">{{clinic_regulatory_text}}</div>
-    <div style="margin-top: 4px;">Report generated electronically</div>
+  <div style="text-align: center; font-size: 10px; color: #888; margin-top: 12px; padding-top: 6px; border-top: 1px solid #ddd;">
+    <em>Report generated electronically · {{reported_at}}</em>
   </div>
 </div>
 `.trim();

@@ -110,6 +110,12 @@ export async function POST(request: Request) {
         const clinicRegulatoryText = tenant?.registrationNumber
             ? `Reg. No: ${tenant.registrationNumber}${tenant?.taxId ? `  ·  TIN: ${tenant.taxId}` : ''}`
             : (tenant?.taxId ? `TIN: ${tenant.taxId}` : '');
+        // Letterhead subheader: "Address · Tel: … · TIN: …" (omits empty parts).
+        const clinicSubheader = [
+            clinicAddress,
+            tenant?.phone ? `Tel: ${tenant.phone}` : "",
+            tenant?.taxId ? `TIN: ${tenant.taxId}` : "",
+        ].filter(Boolean).join(" · ");
 
         const ctx = {
             exam_name: exam.name,
@@ -135,7 +141,12 @@ export async function POST(request: Request) {
             clinic_address: clinicAddress,
             clinic_phone: tenant?.phone || '',
             clinic_email: tenant?.email || '',
-            clinic_logo: tenant?.logoUrl || '',
+            // Match the lab: clinic_logo is the rendered <img> tag (so the
+            // GMC_RAD_HEADER template can use {{clinic_logo}} directly).
+            clinic_logo: tenant?.logoUrl
+                ? `<img src="${tenant.logoUrl}" alt="${tenant.name}" style="max-height: 60px;" />`
+                : '',
+            clinic_subheader: clinicSubheader,
             clinic_tin: tenant?.taxId || '',
             clinic_license: tenant?.registrationNumber || '',
             clinic_regulatory_text: clinicRegulatoryText,
