@@ -36,7 +36,6 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string>('');
     const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
-    const [isPrinting, setIsPrinting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const [formData, setFormData] = useState({
@@ -187,43 +186,25 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
         }
     };
 
-    const handlePrint = async () => {
-        if (!order) return;
-        setIsPrinting(true);
-        try {
-            // Server-rendered PDF. The vitalcore-app builds the same report
-            // HTML it used to write to a popup, but now it hands that HTML to
-            // a headless-Chromium sidecar with `displayHeaderFooter: false`.
-            // The popup is no longer needed — the PDF is the printout, with
-            // no browser-added date/title/URL/page-number header/footer.
-            const res = await fetch(`/api/radiology/orders/${order.id}/pdf`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-            });
-            if (!res.ok) {
-                const errBody = await res.json().catch(() => ({}));
-                throw new Error(errBody.error || `PDF request failed (${res.status})`);
-            }
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const w = window.open(url, '_blank');
-            if (!w) {
-                // Pop-up blocked: fall back to triggering a download so the
-                // user can open the PDF manually.
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `radiology-report-${order.id.slice(-8)}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            }
-            setTimeout(() => URL.revokeObjectURL(url), 60_000);
-        } catch (e: any) {
-            console.error('PDF print failed', e);
-            alert(`Failed to generate PDF: ${e.message || e}`);
-        } finally {
-            setIsPrinting(false);
-        }
+    // Print the report using the browser's native print dialog on the
+    // CURRENT page (no popup). Same approach as Invoice printing: the
+    // page already has `.no-print` on the form fields, the Nextcloud
+    // upload card, the patient banner, etc. — so only the rendered
+    // report (the Final Report block) shows up in the print output.
+    // CSS in globals.css (@media print + @page) hides the dashboard
+    // sidebar/header and sets the page margin.
+    //
+    // Caveat: the browser's own print-engine headers/footers (date in
+    // top-left, document title in top-center, URL in bottom-left, page
+    // count in bottom-right) are NOT in the DOM. The user unchecks
+    // "Headers and footers" in the print dialog to suppress them —
+    // there's no CSS or JS way around it without a server-side PDF
+    // renderer. The benefit of using the current page is that the URL
+    // shown is the real vitalcore.tailfd1512.ts.net URL (not
+    // 'about:blank' from a popup), and the document title is the page
+    // title (not a custom 'Radiology Report - Abdomen X-Ray' string).
+    const handlePrint = () => {
+        window.print();
     };
 
     // ----- Nextcloud image upload -----
@@ -492,8 +473,8 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
                         Cancel
                     </button>
                     {renderedHtml && formData.status === "Completed" && (
-                        <button type="button" onClick={handlePrint} disabled={isPrinting} className={styles.btnSecondary} style={{ opacity: isPrinting ? 0.6 : 1 }}>
-                            <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print Report'}
+                        <button type="button" onClick={handlePrint} className={styles.btnSecondary}>
+                            <Printer size={16} /> Print Report
                         </button>
                     )}
                     <button
@@ -624,15 +605,17 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
 
             {/* Read-only print view for completed orders */}
             {formData.status === "Completed" && !submitting && view === 'render' && renderedHtml && (
-                <div className={`${styles.formCard} ${styles.noPrint}`}>
+                <div className={styles.formCard}>
                     <div className={styles.reportHeader}>
                         <h3 className={styles.reportTitle}>Final Report</h3>
-                        <div className={styles.reportActions}>
+                        {/* Buttons are noPrint (hidden during print). The .reportBody
+                            below carries the actual report — that's what we want to print. */}
+                        <div className={`${styles.reportActions} ${styles.noPrint}`}>
                             <button onClick={() => setView('edit')} className={styles.btnSecondary}>
                                 <Edit3 size={14} /> Edit
                             </button>
-                            <button onClick={handlePrint} disabled={isPrinting} className={styles.btnPublish} style={{ opacity: isPrinting ? 0.6 : 1 }}>
-                                <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print'}
+                            <button onClick={handlePrint} className={styles.btnPublish}>
+                                <Printer size={16} /> Print
                             </button>
                         </div>
                     </div>

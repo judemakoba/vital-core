@@ -258,9 +258,6 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
     const [rows, setRows] = useState<ResultRow[]>([]);
     // Guard so the schema-init in lookupTest doesn't run after fetchOrder hydrates saved rows
     const rowsInitializedRef = useRef(false);
-    // True while the print→PDF request is in flight (used to disable the
-    // Print button so users don't double-click and queue multiple PDF jobs).
-    const [isPrinting, setIsPrinting] = useState(false);
 
     // Initial load
     useEffect(() => {
@@ -498,48 +495,25 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
         }
     };
 
-    const handlePrint = async () => {
-        if (!order) return;
-        setIsPrinting(true);
-        try {
-            // Server-rendered PDF. The vitalcore-app builds the same report
-            // HTML it used to write to a popup, but now it hands that HTML to
-            // a headless-Chromium sidecar with `displayHeaderFooter: false`.
-            // The popup is no longer needed — the PDF is the printout, with
-            // no browser-added date/title/URL/page-number header/footer.
-            const res = await fetch(`/api/lab/orders/${order.id}/pdf`, {
-                method: 'POST',
-                headers: { 'content-type': 'application/json' },
-            });
-            if (!res.ok) {
-                const errBody = await res.json().catch(() => ({}));
-                throw new Error(errBody.error || `PDF request failed (${res.status})`);
-            }
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            // Open in a new tab — the browser's built-in PDF viewer renders it
-            // with NO extra headers/footers of its own (Chrome's print dialog
-            // is only invoked when the user actually prints, and even then the
-            // sidecar already stripped the engine-level ones).
-            const w = window.open(url, '_blank');
-            if (!w) {
-                // Pop-up blocked: fall back to triggering a download so the
-                // user can open the PDF manually.
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `lab-report-${order.id.slice(-8)}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            }
-            // Revoke after a delay so the new tab has time to load the blob.
-            setTimeout(() => URL.revokeObjectURL(url), 60_000);
-        } catch (e: any) {
-            console.error('PDF print failed', e);
-            alert(`Failed to generate PDF: ${e.message || e}`);
-        } finally {
-            setIsPrinting(false);
-        }
+    // Print the report using the browser's native print dialog on the
+    // CURRENT page (no popup). This is the same approach the Invoice
+    // printing uses: the page already has `.no-print` on the form fields,
+    // patient details, back button, and patient header — so only the
+    // rendered report (the Final Report block) shows up in the print
+    // output. CSS in globals.css (@media print + @page) hides the
+    // dashboard sidebar/header and sets the page margin.
+    //
+    // Caveat: the browser's own print-engine headers/footers (date in
+    // top-left, document title in top-center, URL in bottom-left, page
+    // count in bottom-right) are NOT in the DOM. The user unchecks
+    // "Headers and footers" in the print dialog to suppress them —
+    // there's no CSS or JS way around it without a server-side PDF
+    // renderer. The benefit of using the current page is that the URL
+    // shown is the real vitalcore.tailfd1512.ts.net URL (not
+    // 'about:blank' from a popup), and the document title is the page
+    // title (not a custom 'Lab Report - Full Blood Count' string).
+    const handlePrint = () => {
+        window.print();
     };
 
     /**
@@ -877,8 +851,8 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                             Cancel
                         </button>
                         {renderedHtml && formData.status === "Completed" && (
-                            <button type="button" onClick={handlePrint} disabled={isPrinting} className="btn-secondary" style={{ padding: "0.75rem 1.5rem", display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: isPrinting ? 0.6 : 1 }}>
-                                <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print Report'}
+                            <button type="button" onClick={handlePrint} className="btn-secondary" style={{ padding: "0.75rem 1.5rem", display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <Printer size={16} /> Print Report
                             </button>
                         )}
                         <button
@@ -908,12 +882,12 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                     <div style={{ padding: "1.5rem", borderTop: "1px solid var(--border-color)" }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Final Report</h3>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div className="no-print" style={{ display: 'flex', gap: '0.5rem' }}>
                                 <button onClick={() => setView('edit')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                     <Edit3 size={14} /> Edit
                                 </button>
-                                <button onClick={handlePrint} disabled={isPrinting} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: isPrinting ? 0.6 : 1 }}>
-                                    <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print'}
+                                <button onClick={handlePrint} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <Printer size={16} /> Print
                                 </button>
                             </div>
                         </div>
