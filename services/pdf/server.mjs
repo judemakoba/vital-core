@@ -16,7 +16,7 @@
 // authenticates the user and only forwards requests after auth.
 
 import express from 'express';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 
 const app = express();
 
@@ -33,14 +33,9 @@ async function getBrowser() {
     if (browser && browser.connected) return browser;
     if (launching) return launching;
     launching = (async () => {
-        // In Docker, puppeteer is `puppeteer` (bundles Chromium). On the dev
-        // machine, we use puppeteer-core + the system Chrome (no need to
-        // download Chromium). The Dockerfile installs Chromium; locally
-        // we point at the system install via PUPPETEER_EXECUTABLE_PATH.
-        const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
-            || (process.env.NODE_ENV === 'production'
-                ? undefined  // let puppeteer (full) find its bundled Chromium
-                : 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe');
+        // PUPPETEER_EXECUTABLE_PATH overrides the bundled Chromium — useful
+        // when running the dev machine without the full puppeteer download.
+        const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
         const b = await puppeteer.launch({
             headless: true,
             executablePath,
