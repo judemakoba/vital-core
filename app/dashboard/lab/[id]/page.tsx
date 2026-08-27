@@ -258,6 +258,9 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
     const [rows, setRows] = useState<ResultRow[]>([]);
     // Guard so the schema-init in lookupTest doesn't run after fetchOrder hydrates saved rows
     const rowsInitializedRef = useRef(false);
+    // True while the print→PDF request is in flight (used to disable the
+    // Print button so users don't double-click and queue multiple PDF jobs).
+    const [isPrinting, setIsPrinting] = useState(false);
 
     // Initial load
     useEffect(() => {
@@ -495,25 +498,48 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
         }
     };
 
-    const handlePrint = () => {
-        const printWindow = window.open('', '_blank', 'width=900,height=1100');
-        if (!printWindow) {
-            alert('Pop-up blocked. Please allow pop-ups to print.');
-            return;
+    const handlePrint = async () => {
+        if (!order) return;
+        setIsPrinting(true);
+        try {
+            // Server-rendered PDF. The vitalcore-app builds the same report
+            // HTML it used to write to a popup, but now it hands that HTML to
+            // a headless-Chromium sidecar with `displayHeaderFooter: false`.
+            // The popup is no longer needed — the PDF is the printout, with
+            // no browser-added date/title/URL/page-number header/footer.
+            const res = await fetch(`/api/lab/orders/${order.id}/pdf`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+            });
+            if (!res.ok) {
+                const errBody = await res.json().catch(() => ({}));
+                throw new Error(errBody.error || `PDF request failed (${res.status})`);
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            // Open in a new tab — the browser's built-in PDF viewer renders it
+            // with NO extra headers/footers of its own (Chrome's print dialog
+            // is only invoked when the user actually prints, and even then the
+            // sidecar already stripped the engine-level ones).
+            const w = window.open(url, '_blank');
+            if (!w) {
+                // Pop-up blocked: fall back to triggering a download so the
+                // user can open the PDF manually.
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `lab-report-${order.id.slice(-8)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }
+            // Revoke after a delay so the new tab has time to load the blob.
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        } catch (e: any) {
+            console.error('PDF print failed', e);
+            alert(`Failed to generate PDF: ${e.message || e}`);
+        } finally {
+            setIsPrinting(false);
         }
-        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lab Report - ${order?.testName || ''}</title>
-            <style>
-                @page { size: A4; margin: 10mm; }
-                body { font-family: 'Times New Roman', Georgia, serif; margin: 0; padding: 0; color: #000; }
-                @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-            </style>
-            </head><body>${renderedHtml}</body></html>`;
-        printWindow.document.write(html);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-            printWindow.print();
-        }, 300);
     };
 
     /**
@@ -851,8 +877,8 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                             Cancel
                         </button>
                         {renderedHtml && formData.status === "Completed" && (
-                            <button type="button" onClick={handlePrint} className="btn-secondary" style={{ padding: "0.75rem 1.5rem", display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                <Printer size={16} /> Print Report
+                            <button type="button" onClick={handlePrint} disabled={isPrinting} className="btn-secondary" style={{ padding: "0.75rem 1.5rem", display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: isPrinting ? 0.6 : 1 }}>
+                                <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print Report'}
                             </button>
                         )}
                         <button
@@ -886,8 +912,8 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                                 <button onClick={() => setView('edit')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                     <Edit3 size={14} /> Edit
                                 </button>
-                                <button onClick={handlePrint} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                    <Printer size={16} /> Print
+                                <button onClick={handlePrint} disabled={isPrinting} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: isPrinting ? 0.6 : 1 }}>
+                                    <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print'}
                                 </button>
                             </div>
                         </div>

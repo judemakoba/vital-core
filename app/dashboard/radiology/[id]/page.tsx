@@ -36,6 +36,7 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string>('');
     const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const [formData, setFormData] = useState({
@@ -186,22 +187,43 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
         }
     };
 
-    const handlePrint = () => {
-        const printWindow = window.open('', '_blank', 'width=900,height=1100');
-        if (!printWindow) {
-            alert('Pop-up blocked. Please allow pop-ups to print.');
-            return;
+    const handlePrint = async () => {
+        if (!order) return;
+        setIsPrinting(true);
+        try {
+            // Server-rendered PDF. The vitalcore-app builds the same report
+            // HTML it used to write to a popup, but now it hands that HTML to
+            // a headless-Chromium sidecar with `displayHeaderFooter: false`.
+            // The popup is no longer needed — the PDF is the printout, with
+            // no browser-added date/title/URL/page-number header/footer.
+            const res = await fetch(`/api/radiology/orders/${order.id}/pdf`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+            });
+            if (!res.ok) {
+                const errBody = await res.json().catch(() => ({}));
+                throw new Error(errBody.error || `PDF request failed (${res.status})`);
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const w = window.open(url, '_blank');
+            if (!w) {
+                // Pop-up blocked: fall back to triggering a download so the
+                // user can open the PDF manually.
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `radiology-report-${order.id.slice(-8)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        } catch (e: any) {
+            console.error('PDF print failed', e);
+            alert(`Failed to generate PDF: ${e.message || e}`);
+        } finally {
+            setIsPrinting(false);
         }
-        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Radiology Report - ${order?.examName || ''}</title>
-            <style>
-                @page { size: A4; margin: 10mm; }
-                body { font-family: 'Times New Roman', Georgia, serif; background: white; margin: 0; padding: 16px; }
-                @media print { body { padding: 0; } }
-            </style>
-        </head><body>${renderedHtml}</body></html>`;
-        printWindow.document.write(html);
-        printWindow.document.close();
-        setTimeout(() => { printWindow.print(); }, 350);
     };
 
     // ----- Nextcloud image upload -----
@@ -470,8 +492,8 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
                         Cancel
                     </button>
                     {renderedHtml && formData.status === "Completed" && (
-                        <button type="button" onClick={handlePrint} className={styles.btnSecondary}>
-                            <Printer size={16} /> Print Report
+                        <button type="button" onClick={handlePrint} disabled={isPrinting} className={styles.btnSecondary} style={{ opacity: isPrinting ? 0.6 : 1 }}>
+                            <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print Report'}
                         </button>
                     )}
                     <button
@@ -609,8 +631,8 @@ export default function RadiologyOrderDetails({ params }: { params: { id: string
                             <button onClick={() => setView('edit')} className={styles.btnSecondary}>
                                 <Edit3 size={14} /> Edit
                             </button>
-                            <button onClick={handlePrint} className={styles.btnPublish}>
-                                <Printer size={16} /> Print
+                            <button onClick={handlePrint} disabled={isPrinting} className={styles.btnPublish} style={{ opacity: isPrinting ? 0.6 : 1 }}>
+                                <Printer size={16} /> {isPrinting ? 'Building PDF…' : 'Print'}
                             </button>
                         </div>
                     </div>
