@@ -31,9 +31,12 @@ export async function resolveRadFooter(): Promise<string> {
 
 /** GMC-style patient demographic header. Same 3-column label-value-label-value
  * layout as the lab report (no barcode column) so both reports look like
- * siblings of the same letterhead family. */
+ * siblings of the same letterhead family. The 4mm padding inside the
+ * outer div gives the printed report a small breathing margin from the
+ * page edge on all sides (consistent with how the invoice paper pads
+ * itself in print). */
 export const GMC_RAD_HEADER_HTML = `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; color: #000;">
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; padding: 4mm; box-sizing: border-box; color: #000;">
   {{#if clinic_logo}}<div style="text-align: center; margin-bottom: 4px;">{{clinic_logo}}</div>{{/if}}
   <h1 style="text-align: center; margin: 0; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">{{clinic_name}}</h1>
   {{#if clinic_subheader}}<p style="text-align: center; margin: 4px 0 0; font-size: 12px; color: #555;">{{clinic_subheader}}</p>{{/if}}
@@ -70,10 +73,12 @@ export const GMC_RAD_HEADER_HTML = `
 /** GMC-style standard Radiology report body. Same bordered table layout as
  * the lab's results table — label cells with light-gray background, value
  * cells with the report content. No min-height rows (the previous version
- * had min-heights that pushed the report over one printed page). */
+ * had min-heights that pushed the report over one printed page). The 4mm
+ * padding matches the header so the whole report has a consistent
+ * margin from the page edge. */
 export function gmcRadiologyBody(examName: string, modality: string, category: string): string {
     return `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; color: #000;">
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; padding: 0 4mm; box-sizing: border-box; color: #000;">
   <h3 style="text-align: center; margin: 0 0 8px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 1px;">${escapeHtml(modality || category || 'Imaging')} — ${escapeHtml(examName)}</h3>
 
   <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 0;">
@@ -108,9 +113,11 @@ export function gmcRadiologyBody(examName: string, modality: string, category: s
  * the lab's footer — "Performed By" / "Verified By" — so the two reports
  * read as siblings of the same letterhead family. The radiologist's name
  * fills both rows (one person typically both performs and verifies a
- * radiology exam in this clinic's workflow). */
+ * radiology exam in this clinic's workflow). 4mm horizontal padding
+ * matches the header/body so the signature line and "Report generated
+ * electronically" footer align with the rest of the report. */
 export const GMC_RAD_FOOTER_HTML = `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 12px auto 0; padding-top: 12px;">
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 12px auto 0; padding: 0 4mm; box-sizing: border-box;">
   <table style="width: 100%; font-size: 12px;">
     <tr>
       <td style="width: 50%; vertical-align: top;">
