@@ -29,7 +29,9 @@ export async function resolveRadFooter(): Promise<string> {
     return custom || GMC_RAD_FOOTER_HTML;
 }
 
-/** GMC-style patient demographic header. */
+/** GMC-style patient demographic header. Same 3-column label-value-label-value
+ * layout as the lab report (no barcode column) so both reports look like
+ * siblings of the same letterhead family. */
 export const GMC_RAD_HEADER_HTML = `
 <div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; color: #000;">
   {{#if clinic_logo}}<div style="text-align: center; margin-bottom: 4px;">{{clinic_logo}}</div>{{/if}}
@@ -40,87 +42,79 @@ export const GMC_RAD_HEADER_HTML = `
   <h2 style="text-align: center; margin: 16px 0 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">Radiology Report</h2>
   <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 12px; margin-bottom: 12px;">
     <tr>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700; width: 12%;">Date :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; width: 38%;">{{reported_at}}</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700; width: 12%;">Report ID :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; width: 23%;">{{report_id}}</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; width: 15%; text-align: center; font-family: monospace; font-size: 14px; letter-spacing: 1px;" rowspan="4">{{barcode}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%; font-weight: 700; background: #f4f4f4;">Patient Name</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%;">{{patient_name}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%; font-weight: 700; background: #f4f4f4;">Patient #</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%;">{{patient_number}}</td>
     </tr>
     <tr>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700;">Name :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; font-weight: 700;">{{patient_name}}</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700;">Patient ID :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px;">{{patient_number}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Age / Sex</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{patient_age}} / {{patient_gender}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Visit #</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{visit_number}}</td>
     </tr>
     <tr>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700;">Gender :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px;">{{patient_gender}}</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700;">Age :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px;">{{patient_age}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Referred By</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{doctor_name}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Reported</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{reported_at}}</td>
     </tr>
     <tr>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700;">Ref. Doctor :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px;">{{doctor_name}}</td>
-      <td style="border: 1px solid #000; padding: 5px 8px; background: #f3f4f6; font-weight: 700;">Visit No. :</td>
-      <td style="border: 1px solid #000; padding: 5px 8px;">{{visit_number}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Exam</td>
+      <td colspan="3" style="border: 1px solid #000; padding: 4px 8px; font-weight: 600;">{{exam_name}}</td>
     </tr>
   </table>
 </div>
 `.trim();
 
-/** GMC-style standard Radiology report body — Technique + Findings + Impression + Recommendations. */
+/** GMC-style standard Radiology report body. Same bordered table layout as
+ * the lab's results table — label cells with light-gray background, value
+ * cells with the report content. No min-height rows (the previous version
+ * had min-heights that pushed the report over one printed page). */
 export function gmcRadiologyBody(examName: string, modality: string, category: string): string {
     return `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 16px auto 0; color: #000;">
-  <h2 style="text-align: center; font-size: 16px; margin: 0 0 4px 0; font-weight: 700; text-transform: uppercase; color: #1e3a8a;">${escapeHtml(modality || category || 'Imaging')}</h2>
-  <h3 style="text-align: center; font-size: 14px; margin: 0 0 12px 0; font-weight: 700;">${escapeHtml(examName)}</h3>
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; color: #000;">
+  <h3 style="text-align: center; margin: 0 0 8px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 1px;">${escapeHtml(modality || category || 'Imaging')} — ${escapeHtml(examName)}</h3>
 
-  {{#if clinical_notes}}
-  <div style="margin: 0 0 14px 0; padding: 8px 12px; background: #fef2f2; border-left: 3px solid #dc2626; font-size: 12px;">
-    <div style="font-weight: 700; color: #991b1b; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Clinical Notes</div>
-    <div style="color: #000;">{{clinical_notes}}</div>
-  </div>
-  {{/if}}
-
-  <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 0;">
-    <tbody>
-      <tr>
-        <td style="border-bottom: 1.5px solid #1e3a8a; padding: 6px 0 4px 0; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; width: 22%; vertical-align: top;">TECHNIQUE</td>
-        <td style="border-bottom: 1.5px solid #1e3a8a; padding: 6px 0 4px 0; width: 78%; vertical-align: top;">
-          <div style="white-space: pre-wrap; min-height: 28px;">{{technique}}</div>
-        </td>
-      </tr>
-      <tr>
-        <td style="border-bottom: 1.5px solid #1e3a8a; padding: 8px 0 6px 0; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; vertical-align: top;">FINDINGS</td>
-        <td style="border-bottom: 1.5px solid #1e3a8a; padding: 8px 0 6px 0; vertical-align: top;">
-          <div style="white-space: pre-wrap; line-height: 1.55; min-height: 120px;">{{findings}}</div>
-        </td>
-      </tr>
-      <tr>
-        <td style="border-bottom: 1.5px solid #1e3a8a; padding: 8px 0 6px 0; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; vertical-align: top;">IMPRESSION</td>
-        <td style="border-bottom: 1.5px solid #1e3a8a; padding: 8px 0 6px 0; vertical-align: top;">
-          <div style="white-space: pre-wrap; line-height: 1.55; min-height: 60px; font-weight: 600;">{{impression}}</div>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding: 8px 0 0 0; font-weight: 700; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; vertical-align: top;">RECOMMENDATION</td>
-        <td style="padding: 8px 0 0 0; vertical-align: top;">
-          <div style="white-space: pre-wrap; line-height: 1.55; min-height: 30px;">{{recommendations}}</div>
-        </td>
-      </tr>
-    </tbody>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 0;">
+    {{#if clinical_notes}}
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%; font-weight: 700; background: #f4f4f4; vertical-align: top;">Clinical Notes</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap;">{{clinical_notes}}</td>
+    </tr>
+    {{/if}}
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Technique</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5;">{{technique}}</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Findings</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5;">{{findings}}</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Impression</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5; font-weight: 600;">{{impression}}</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Recommendation</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5;">{{recommendations}}</td>
+    </tr>
   </table>
 </div>
 `.trim();
 }
 
-/** GMC-style footer with report approval signatures. */
+/** GMC-style footer with report approval signatures. Same label layout as
+ * the lab's footer — "Performed By" / "Verified By" — so the two reports
+ * read as siblings of the same letterhead family. The radiologist's name
+ * fills both rows (one person typically both performs and verifies a
+ * radiology exam in this clinic's workflow). */
 export const GMC_RAD_FOOTER_HTML = `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 32px auto 0; padding-top: 12px;">
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 12px auto 0; padding-top: 12px;">
   <table style="width: 100%; font-size: 12px;">
     <tr>
       <td style="width: 50%; vertical-align: top;">
-        <div style="font-weight: 700; margin-bottom: 4px;">Reported By:</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Performed By:</div>
         <div style="padding-top: 22px; border-top: 1px solid #999;">{{radiologist}}</div>
       </td>
       <td style="width: 50%; vertical-align: top; text-align: right;">

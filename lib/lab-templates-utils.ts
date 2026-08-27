@@ -428,7 +428,7 @@ export const GMC_HEADER_HTML = `
 </div>`.trim();
 
 export const GMC_FOOTER_HTML = `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 32px auto 0; padding-top: 12px;">
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 12px auto 0; padding-top: 12px;">
   <table style="width: 100%; font-size: 12px;">
     <tr>
       <td style="width: 50%; vertical-align: top;">
