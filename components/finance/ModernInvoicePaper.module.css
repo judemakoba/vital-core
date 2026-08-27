@@ -180,35 +180,30 @@
     line-height: 1.6;
 }
 
-/* Top-level @page rule — outside @media so it actually applies. The
- * previous placement was inside @media print which is poorly supported. */
-@page {
-    margin: 0;
-    size: A4;
-}
-
 /* Print Overrides */
 @media print {
     /* Fill the page edge-to-edge with the invoice paper. The paper
      * already has internal padding via the .paper rule below. */
+    @page {
+        margin: 0;
+        size: A4;
+    }
+
     .paper {
         box-shadow: none;
         max-width: none;
         width: 100%;
         min-height: 100vh;
         margin: 0;
-        padding: 10mm 12mm;
+        padding: 15mm;
         border-radius: 0;
         page-break-inside: avoid;
         print-color-adjust: exact;
         -webkit-print-color-adjust: exact;
     }
 
-    /* The decorative blue wave at the top of the invoice paper is for
-     * the on-screen view only — it's pure decoration and doesn't belong
-     * on a printed invoice. Same treatment as the lab/radiology
-     * "Final Report" heading: hide in print. */
-    .headerBackground { display: none !important; }
-
-    .content { padding-top: 0 !important; }
+    .headerBackground svg {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
 }
