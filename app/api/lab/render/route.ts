@@ -205,6 +205,33 @@ export async function POST(request: Request) {
             }
         }
 
+        // Fallback: tests whose template is `resultMode = "table"` (or
+        // `"qualitative"`) but whose `LabOrder.resultRows` is empty AND whose
+        // test name isn't in the in-code TEST_SCHEMAS map would otherwise
+        // produce an empty <tbody> in the GMC report. The form falls back to
+        // the SingleModeResultInput textarea for exactly this case and stores
+        // the value in `LabOrder.result`, not `resultRows`. Synthesize a
+        // single row from the `result` so the report shows what was entered
+        // instead of an empty table.
+        if (
+            (resultMode === 'table' || resultMode === 'qualitative') &&
+            rows.length === 0 &&
+            result != null &&
+            String(result).trim() !== ''
+        ) {
+            rows = [{
+                section: undefined,
+                investigation: test.name,
+                result: String(result),
+                unit: '',
+                normal_range: '',
+                flag: '',
+                flag_label: '',
+                comment: undefined,
+                isSection: false,
+            }];
+        }
+
         // Patient context
         const patient = order?.patient;
         const age = patient?.dateOfBirth
