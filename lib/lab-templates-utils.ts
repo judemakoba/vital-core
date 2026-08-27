@@ -395,8 +395,13 @@ TEST_SCHEMAS["Brucella Agglutination Test (BAT)"] = TEST_SCHEMAS["Brucella Agglu
 
 export const GMC_HEADER_HTML = `
 <div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; color: #000;">
-  <h1 style="text-align:center; font-size: 22px; margin: 0 0 12px 0; font-weight: 700;">Investigation Report</h1>
-  <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 12px;">
+  {{#if clinic_logo}}<div style="text-align: center; margin-bottom: 4px;">{{clinic_logo}}</div>{{/if}}
+  <h1 style="text-align: center; margin: 0; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">{{clinic_name}}</h1>
+  {{#if clinic_subheader}}<p style="text-align: center; margin: 4px 0 0; font-size: 12px; color: #555;">{{clinic_subheader}}</p>{{/if}}
+  {{#if clinic_email}}<p style="text-align: center; margin: 2px 0 0; font-size: 12px; color: #555;">{{clinic_email}}</p>{{/if}}
+  {{#if clinic_regulatory_text}}<p style="text-align: center; margin: 2px 0 8px; font-size: 11px; color: #888;">{{clinic_regulatory_text}}</p>{{/if}}
+  <h2 style="text-align: center; margin: 16px 0 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">Laboratory Report</h2>
+  <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 12px; margin-bottom: 12px;">
     <tr>
       <td style="border: 1px solid #000; padding: 4px 8px; width: 25%; font-weight: 700; background: #f4f4f4;">Patient Name</td>
       <td style="border: 1px solid #000; padding: 4px 8px; width: 25%;">{{patient_name}}</td>
@@ -412,8 +417,8 @@ export const GMC_HEADER_HTML = `
     <tr>
       <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Referred By</td>
       <td style="border: 1px solid #000; padding: 4px 8px;">{{doctor_name}}</td>
-      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Date</td>
-      <td style="border: 1px solid #000; padding: 4px 8px;">{{order_date}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Reported</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{reported_at}}</td>
     </tr>
     <tr>
       <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Test</td>
@@ -423,26 +428,21 @@ export const GMC_HEADER_HTML = `
 </div>`.trim();
 
 export const GMC_FOOTER_HTML = `
-<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 32px auto 0; padding-top: 16px;">
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 32px auto 0; padding-top: 12px;">
   <table style="width: 100%; font-size: 12px;">
     <tr>
       <td style="width: 50%; vertical-align: top;">
-        <div style="font-weight: 700; margin-bottom: 4px;">Report Approved By :</div>
-        <div style="padding-top: 28px; border-top: 1px solid #999;">{{technician}}</div>
-        <div style="font-size: 10px; color: #666;">{{clinic_name}} Laboratory</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Performed By:</div>
+        <div style="padding-top: 22px; border-top: 1px solid #999;">{{technician}}</div>
       </td>
       <td style="width: 50%; vertical-align: top; text-align: right;">
-        <div style="font-weight: 700; margin-bottom: 4px;">Report Verified By :</div>
-        <div>{{verified_by}}</div>
-        <div style="font-size: 10px; color: #666;">{{clinic_name}} Laboratory</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Verified By:</div>
+        <div style="padding-top: 22px; border-top: 1px solid #999;">{{verified_by}}</div>
       </td>
     </tr>
   </table>
-  <div style="text-align: center; font-size: 10px; color: #666; margin-top: 16px; border-top: 1px solid #ccc; padding-top: 8px;">
-    <div style="font-weight: 600; color: #333; margin-bottom: 2px;">{{clinic_name}}</div>
-    <div>{{clinic_address}}{{#if clinic_phone}} · {{clinic_phone}}{{/if}}</div>
-    <div style="margin-top: 2px; color: #888;">{{clinic_regulatory_text}}</div>
-    <div style="margin-top: 4px;">Report generated electronically</div>
+  <div style="text-align: center; font-size: 10px; color: #888; margin-top: 12px; padding-top: 6px; border-top: 1px solid #ddd;">
+    <em>Report generated electronically · {{reported_at}}</em>
   </div>
 </div>`.trim();
 
@@ -667,10 +667,17 @@ export function renderTemplate(template: string, ctx: RenderContext): string {
         clinic_name: ctx.clinic?.name || "",
         clinic_address: ctx.clinic?.address || "",
         clinic_phone: ctx.clinic?.phone || "",
+        clinic_email: ctx.clinic?.email || "",
         clinic_logo: ctx.clinic?.logoUrl ? `<img src="${ctx.clinic.logoUrl}" alt="${ctx.clinic.name}" style="max-height: 60px;" />` : "",
         clinic_tin: ctx.clinic?.taxId || "",
         clinic_license: ctx.clinic?.registrationNumber || "",
         clinic_regulatory_text: ctx.clinic?.regulatoryText || "",
+        // Letterhead subheader: "Address · Tel: … · TIN: …" (omits empty parts).
+        clinic_subheader: [
+            ctx.clinic?.address,
+            ctx.clinic?.phone ? `Tel: ${ctx.clinic.phone}` : "",
+            ctx.clinic?.taxId ? `TIN: ${ctx.clinic.taxId}` : "",
+        ].filter(Boolean).join(" · "),
         report_font: ctx.clinic?.reportFont || "Times New Roman",
         // Report identifiers
         report_id: ctx.reportId || "",

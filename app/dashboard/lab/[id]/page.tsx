@@ -634,7 +634,7 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
             </div>
 
             <div className={`glass-card ${styles.formCard}`}>
-                <div className={styles.patientHeader} style={{ background: "rgba(99, 102, 241, 0.05)", borderBottom: "1px solid rgba(99, 102, 241, 0.1)" }}>
+                <div className={`${styles.patientHeader} no-print`} style={{ background: "rgba(99, 102, 241, 0.05)", borderBottom: "1px solid rgba(99, 102, 241, 0.1)" }}>
                     <div className={styles.patientInfo}>
                         <h2>{order.testName}</h2>
                         <span style={{ color: "var(--text-muted)", fontSize: "0.875rem", display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: 'wrap' }}>
