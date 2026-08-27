@@ -185,11 +185,16 @@
  * payment date in red below. Slightly rotated to look like a real stamp.
  * print-color-adjust keeps the ink visible in print even when the
  * browser strips background colors. The .paper rule has position:relative
- * so this absolute-positioned stamp anchors to the paper. */
+ * so this absolute-positioned stamp anchors to the paper.
+ *
+ * Position: ~75% down the paper on the right side, so it sits in the
+ * empty space between the Total Due row and the Terms & Conditions
+ * block at the bottom. Using a percentage keeps the placement stable
+ * when the invoice has more/fewer line items. */
 .paidStamp {
     position: absolute;
-    top: 56px;
-    right: 32px;
+    top: 75%;
+    right: 50px;
     width: 110px;
     height: 110px;
     border: 4px solid #16a34a;
