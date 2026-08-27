@@ -393,9 +393,58 @@ TEST_SCHEMAS["Brucella Agglutination Test (BAT)"] = TEST_SCHEMAS["Brucella Agglu
 // (kept here so the client can render previews without a server roundtrip)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const GMC_HEADER_HTML = ``.trim();
+export const GMC_HEADER_HTML = `
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; color: #000;">
+  {{#if clinic_logo}}<div style="text-align: center; margin-bottom: 4px;">{{clinic_logo}}</div>{{/if}}
+  <h1 style="text-align: center; margin: 0; font-size: 22px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">{{clinic_name}}</h1>
+  {{#if clinic_subheader}}<p style="text-align: center; margin: 4px 0 0; font-size: 12px; color: #555;">{{clinic_subheader}}</p>{{/if}}
+  {{#if clinic_email}}<p style="text-align: center; margin: 2px 0 0; font-size: 12px; color: #555;">{{clinic_email}}</p>{{/if}}
+  {{#if clinic_regulatory_text}}<p style="text-align: center; margin: 2px 0 8px; font-size: 11px; color: #888;">{{clinic_regulatory_text}}</p>{{/if}}
+  <h2 style="text-align: center; margin: 16px 0 12px; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">Laboratory Report</h2>
+  <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 12px; margin-bottom: 12px;">
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%; font-weight: 700; background: #f4f4f4;">Patient Name</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%;">{{patient_name}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%; font-weight: 700; background: #f4f4f4;">Patient #</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%;">{{patient_number}}</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Age / Sex</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{patient_age}} / {{patient_gender}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Visit #</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{visit_number}}</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Referred By</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{doctor_name}}</td>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Reported</td>
+      <td style="border: 1px solid #000; padding: 4px 8px;">{{reported_at}}</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4;">Test</td>
+      <td colspan="3" style="border: 1px solid #000; padding: 4px 8px; font-weight: 600;">{{test_name}}</td>
+    </tr>
+  </table>
+</div>`.trim();
 
-export const GMC_FOOTER_HTML = ``.trim();
+export const GMC_FOOTER_HTML = `
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 32px auto 0; padding-top: 12px;">
+  <table style="width: 100%; font-size: 12px;">
+    <tr>
+      <td style="width: 50%; vertical-align: top;">
+        <div style="font-weight: 700; margin-bottom: 4px;">Performed By:</div>
+        <div style="padding-top: 22px; border-top: 1px solid #999;">{{technician}}</div>
+      </td>
+      <td style="width: 50%; vertical-align: top; text-align: right;">
+        <div style="font-weight: 700; margin-bottom: 4px;">Verified By:</div>
+        <div style="padding-top: 22px; border-top: 1px solid #999;">{{verified_by}}</div>
+      </td>
+    </tr>
+  </table>
+  <div style="text-align: center; font-size: 10px; color: #888; margin-top: 12px; padding-top: 6px; border-top: 1px solid #ddd;">
+    <em>Report generated electronically · {{reported_at}}</em>
+  </div>
+</div>`.trim();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Template rendering engine
