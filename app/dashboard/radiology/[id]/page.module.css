@@ -740,4 +740,12 @@
        (and CSS modules reject bare `body` selectors without
        :global() anyway). */
     .noPrint { display: none !important; }
+
+    /* Strip the "Final Report" heading + the card frame/padding that
+       exist only for the on-screen view. The rendered report should
+       fill the printed page edge-to-edge. */
+    .reportTitle { display: none !important; }
+    .formCard { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+    .reportHeader { display: none !important; }
+    .reportBody { background: transparent !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; }
 }

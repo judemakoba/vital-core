@@ -606,6 +606,12 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                 @media print {
                     body { background: white !important; }
                     .no-print { display: none !important; }
+                    /* Drop the "Final Report" heading and the card frame/padding
+                       that exist only for the on-screen view. The rendered
+                       report should fill the printed page edge-to-edge. */
+                    .print-report-section { padding: 0 !important; border: 0 !important; }
+                    .print-report-card { background: transparent !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; }
+                    .print-report-title { display: none !important; }
                 }
             `}</style>
 
@@ -879,9 +885,9 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
 
                 {/* Read-only print view for completed orders */}
                 {formData.status === "Completed" && !submitting && view === 'render' && renderedHtml && (
-                    <div style={{ padding: "1.5rem", borderTop: "1px solid var(--border-color)" }}>
+                    <div className="print-report-section" style={{ padding: "1.5rem", borderTop: "1px solid var(--border-color)" }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Final Report</h3>
+                            <h3 className="print-report-title" style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Final Report</h3>
                             <div className="no-print" style={{ display: 'flex', gap: '0.5rem' }}>
                                 <button onClick={() => setView('edit')} className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                     <Edit3 size={14} /> Edit
@@ -891,7 +897,7 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                                 </button>
                             </div>
                         </div>
-                        <div style={{ background: 'white', borderRadius: '8px', padding: '1.5rem', border: '1px solid var(--border-color)' }} dangerouslySetInnerHTML={{ __html: renderedHtml }} />
+                        <div className="print-report-card" style={{ background: 'white', borderRadius: '8px', padding: '1.5rem', border: '1px solid var(--border-color)' }} dangerouslySetInnerHTML={{ __html: renderedHtml }} />
                     </div>
                 )}
             </div>
