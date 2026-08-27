@@ -282,4 +282,19 @@ select {
     margin: 0;
     size: A4;
   }
+
+  /* The dashboard layout's .mainWrapper has `margin-left: 260px` to
+   * leave space for the sidebar. The sidebar is hidden in print, but
+   * the margin-left was leaking through, leaving a big left gutter
+   * in the printed output. The .mainContent has `padding: 2rem` which
+   * also leaks. Zero both out for print. CSS module class names are
+   * hashed, so we target them via :global() and the data-attribute
+   * fingerprint printed by the layout component — simpler is to use
+   * a generic rule that catches the layout containers by their CSS
+   * module class names. */
+  [class*="mainWrapper"],
+  [class*="mainContent"] {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
 }
