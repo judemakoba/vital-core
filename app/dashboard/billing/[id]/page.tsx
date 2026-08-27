@@ -125,7 +125,15 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             <div className={styles.invoicePaperContainer}>
                 <ModernInvoicePaper
                     clinicInfo={clinicInfo}
-                    invoice={invoice}
+                    invoice={{
+                        ...invoice,
+                        // The most recent payment's createdAt is when the invoice
+                        // was paid. For partial / unpaid invoices, paidAt stays
+                        // undefined and the stamp is hidden.
+                        paidAt: invoice.status === 'Paid' && invoice.payments?.[0]?.createdAt
+                            ? invoice.payments[0].createdAt
+                            : null,
+                    }}
                     patient={invoice.patient}
                     visit={invoice.visit}
                 />

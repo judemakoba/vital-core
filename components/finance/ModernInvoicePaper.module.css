@@ -180,6 +180,49 @@
     line-height: 1.6;
 }
 
+/* ── PAID stamp ───────────────────────────────────────────────
+ * Round rubber-stamp style overlay — green ring + "PAID" text, with the
+ * payment date in red below. Slightly rotated to look like a real stamp.
+ * print-color-adjust keeps the ink visible in print even when the
+ * browser strips background colors. The .paper rule has position:relative
+ * so this absolute-positioned stamp anchors to the paper. */
+.paidStamp {
+    position: absolute;
+    top: 56px;
+    right: 32px;
+    width: 110px;
+    height: 110px;
+    border: 4px solid #16a34a;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transform: rotate(-12deg);
+    background: rgba(255, 255, 255, 0.55);
+    color: #16a34a;
+    font-weight: 900;
+    z-index: 10;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4) inset;
+}
+
+.paidStampText {
+    font-size: 26px;
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.paidStampDate {
+    font-size: 10px;
+    color: #dc2626;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
 /* Print Overrides */
 @media print {
     /* Fill the page edge-to-edge with the invoice paper. The paper

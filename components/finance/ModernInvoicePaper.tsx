@@ -27,6 +27,12 @@ interface ModernInvoicePaperProps {
         totalAmount: number;
         balanceDue: number;
         items: InvoiceItem[];
+        /**
+         * Date the invoice was fully paid (most-recent payment that
+         * zeroed the balance). When present, the PAID stamp is rendered
+         * over the invoice. Pass null/undefined for unpaid invoices.
+         */
+        paidAt?: string | Date | null;
     };
     patient: {
         firstName: string;
@@ -48,6 +54,20 @@ const ModernInvoicePaper: React.FC<ModernInvoicePaperProps> = ({
 }) => {
     return (
         <div className={styles.paper}>
+            {/* PAID stamp — round green ring with the word PAID in green and the
+                payment date in red, slightly rotated like a real rubber stamp.
+                Only rendered when the invoice is fully paid (paidAt set). The
+                print-color-adjust keeps the green/red ink visible in print
+                even if the user's browser strips background colors. */}
+            {invoice.paidAt && (
+                <div className={styles.paidStamp} aria-label="Paid">
+                    <div className={styles.paidStampText}>PAID</div>
+                    <div className={styles.paidStampDate}>
+                        {new Date(invoice.paidAt).toLocaleDateString()}
+                    </div>
+                </div>
+            )}
+
             {/* Background Waves */}
             <div className={styles.headerBackground}>
                 <svg width="100%" height="180" viewBox="0 0 800 180" preserveAspectRatio="none">
