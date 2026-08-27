@@ -70,41 +70,43 @@ export const GMC_RAD_HEADER_HTML = `
 </div>
 `.trim();
 
-/** GMC-style standard Radiology report body. Same bordered table layout as
- * the lab's results table — label cells with light-gray background, value
- * cells with the report content. No min-height rows (the previous version
- * had min-heights that pushed the report over one printed page). The 4mm
- * padding matches the header so the whole report has a consistent
- * margin from the page edge. */
+/** GMC-style standard Radiology report body. Traditional radiology report
+ * format: a centered exam heading, then each section rendered as a bold
+ * uppercase label followed by its content as a paragraph. No tables, no
+ * borders, no background colors — this matches the standard X-ray report
+ * layout (Indication → Technique → Findings → Impression → Recommendation)
+ * that radiologists are used to signing. */
 export function gmcRadiologyBody(examName: string, modality: string, category: string): string {
     return `
 <div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 0 auto; padding: 0 4mm; box-sizing: border-box; color: #000;">
-  <h3 style="text-align: center; margin: 0 0 8px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 1px;">${escapeHtml(modality || category || 'Imaging')} — ${escapeHtml(examName)}</h3>
+  <h3 style="text-align: center; margin: 0 0 12px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 1px;">${escapeHtml(modality || category || 'Imaging')} — ${escapeHtml(examName)}</h3>
 
-  <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 0;">
-    {{#if clinical_notes}}
-    <tr>
-      <td style="border: 1px solid #000; padding: 4px 8px; width: 25%; font-weight: 700; background: #f4f4f4; vertical-align: top;">Clinical Notes</td>
-      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap;">{{clinical_notes}}</td>
-    </tr>
-    {{/if}}
-    <tr>
-      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Technique</td>
-      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5;">{{technique}}</td>
-    </tr>
-    <tr>
-      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Findings</td>
-      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5;">{{findings}}</td>
-    </tr>
-    <tr>
-      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Impression</td>
-      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5; font-weight: 600;">{{impression}}</td>
-    </tr>
-    <tr>
-      <td style="border: 1px solid #000; padding: 4px 8px; font-weight: 700; background: #f4f4f4; vertical-align: top;">Recommendation</td>
-      <td style="border: 1px solid #000; padding: 4px 8px; white-space: pre-wrap; line-height: 1.5;">{{recommendations}}</td>
-    </tr>
-  </table>
+  {{#if clinical_notes}}
+  <div style="margin: 0 0 10px 0; padding: 6px 10px; background: #fef2f2; border-left: 3px solid #dc2626; font-size: 12px; line-height: 1.5;">
+    <div style="font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; font-size: 11px;">Clinical Indication</div>
+    <div style="white-space: pre-wrap;">{{clinical_notes}}</div>
+  </div>
+  {{/if}}
+
+  <div style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.55;">
+    <div style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1e3a8a; border-bottom: 1px solid #1e3a8a; padding-bottom: 2px; margin-bottom: 4px; font-size: 12px;">Technique</div>
+    <div style="white-space: pre-wrap;">{{technique}}</div>
+  </div>
+
+  <div style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.55;">
+    <div style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1e3a8a; border-bottom: 1px solid #1e3a8a; padding-bottom: 2px; margin-bottom: 4px; font-size: 12px;">Findings</div>
+    <div style="white-space: pre-wrap;">{{findings}}</div>
+  </div>
+
+  <div style="margin: 0 0 10px 0; font-size: 12px; line-height: 1.55;">
+    <div style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1e3a8a; border-bottom: 1px solid #1e3a8a; padding-bottom: 2px; margin-bottom: 4px; font-size: 12px;">Impression</div>
+    <div style="white-space: pre-wrap; font-weight: 600;">{{impression}}</div>
+  </div>
+
+  <div style="margin: 0 0 0 0; font-size: 12px; line-height: 1.55;">
+    <div style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #1e3a8a; border-bottom: 1px solid #1e3a8a; padding-bottom: 2px; margin-bottom: 4px; font-size: 12px;">Recommendation</div>
+    <div style="white-space: pre-wrap;">{{recommendations}}</div>
+  </div>
 </div>
 `.trim();
 }
