@@ -144,20 +144,25 @@ export async function maybeAdvanceVisitAfterItemStatusChange(
     const previousStatus = visit.status;
     let currentStatus = visit.status;
 
-    // Step 1: PendingOrders → FinalBilling if all orders terminal
+    // PendingOrders → Completed (or stay in PendingOrders) once every order
+    // is terminal AND every visit invoice is paid. decideNextStatusForPendingVisit
+    // now factors in invoices, so a single call decides the next state.
     if (currentStatus === VISIT_STATUS.PendingOrders) {
         const next = await decideNextStatusForPendingVisit(tx, visitId);
-        if (next !== currentStatus) {
-            await tx.visit.update({ where: { id: visitId }, data: { status: next } });
-            currentStatus = next;
+        if (next === VISIT_STATUS.Completed) {
+            await tx.visit.update({
+                where: { id: visitId },
+                data: { status: VISIT_STATUS.Completed, completedTime: new Date() },
+            });
+            return { previousStatus, newStatus: VISIT_STATUS.Completed, advanced: true };
         }
+        // else: still has pending items; stay in PendingOrders
     }
 
-    // Step 2: FinalBilling → Completed if all visit invoices are paid.
-    // Mirrors the areAllVisitInvoicesPaid check in the payment route —
-    // order fulfillment can also drive this transition because the FINAL-
-    // invoice is paid BEFORE the orders are fulfilled (pay first, then
-    // service).
+    // Legacy FinalBilling → Completed transition (for visits that were
+    // routed through FinalBilling before the spec was simplified). Only
+    // invoice payment drives this; order fulfillment no longer promotes
+    // visits to FinalBilling.
     if (currentStatus === VISIT_STATUS.FinalBilling) {
         const invoices = await tx.invoice.findMany({
             where: { visitId },

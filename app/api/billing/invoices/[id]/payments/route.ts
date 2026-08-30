@@ -180,13 +180,22 @@ export async function POST(
 
             // If invoice is fully paid and linked to a visit, advance the visit to
             // the next stage based on which billing state it was in:
-            //   ConsultationBilling → Triage   (consultation fee cleared, ready for triage)
-            //   FinalBilling        → Completed (only when ALL visit invoices are paid)
+            //   ConsultationBilling → Triage      (consultation fee cleared, ready for triage)
+            //   PendingOrders       → Completed    (when ALL visit invoices are paid AND
+            //                                      all orders are terminal — per the user's rule:
+            //                                      "the visit is completed unless there are
+            //                                      pending invoices or pending lab or radiology
+            //                                      orders; when all are completed the visit
+            //                                      should be completed")
+            //   FinalBilling        → Completed    (legacy path for visits that were
+            //                                      routed through FinalBilling before the
+            //                                      spec was simplified; same condition: all
+            //                                      visit invoices must be paid)
             //
             // BUGFIX 2026-08-04: a visit has multiple invoices (Consultation +
             // Lab + Radiology + Pharmacy), so paying any ONE of them must NOT
-            // close the visit. We only flip FinalBilling → Completed when
-            // every other invoice linked to this visit is also Paid.
+            // close the visit. We only flip PendingOrders/FinalBilling → Completed
+            // when every other invoice linked to this visit is also Paid.
             if (newStatus === "Paid" && invoice.visitId && invoice.visit) {
                 const visitStatus = invoice.visit.status;
                 if (visitStatus === "ConsultationBilling") {
@@ -194,20 +203,45 @@ export async function POST(
                         where: { id: invoice.visitId },
                         data: { status: "Triage" }
                     });
-                } else if (visitStatus === "FinalBilling") {
+                } else if (visitStatus === "PendingOrders" || visitStatus === "FinalBilling") {
                     const allPaid = await areAllVisitInvoicesPaid(
                         invoice.visitId,
                         invoice.id // exclude the invoice we just paid
                     );
                     if (allPaid.paid) {
-                        await tx.visit.update({
-                            where: { id: invoice.visitId },
-                            data: { status: "Completed" }
-                        });
+                        // Per the revised spec: the visit goes to Completed when
+                        // every order is terminal AND every invoice is paid.
+                        // Check orders too so we don't close while a lab/rad
+                        // result is still pending fulfillment.
+                        const [openLab, openRad, openRx] = await Promise.all([
+                            tx.labOrder.count({
+                                where: { visitId: invoice.visitId,
+                                         subStatus: { in: ['AwaitingPayment', 'InProgress'] } }
+                            }),
+                            tx.radiologyOrder.count({
+                                where: { visitId: invoice.visitId,
+                                         subStatus: { in: ['AwaitingPayment', 'InProgress'] } }
+                            }),
+                            tx.prescription.count({
+                                where: { visitId: invoice.visitId,
+                                         subStatus: { in: ['AwaitingPayment', 'InProgress'] } }
+                            }),
+                        ]);
+                        if (openLab + openRad + openRx === 0) {
+                            await tx.visit.update({
+                                where: { id: invoice.visitId },
+                                data: { status: "Completed", completedTime: new Date() }
+                            });
+                        } else {
+                            console.log(
+                                `[Payments] Visit ${invoice.visitId} all invoices paid but ` +
+                                `${openLab} lab, ${openRad} rad, ${openRx} rx orders still open — staying in ${visitStatus}`
+                            );
+                        }
                     } else {
                         console.log(
                             `[Payments] Visit ${invoice.visitId} still has ${allPaid.unpaidCount} unpaid invoice(s) ` +
-                            `(UGX ${allPaid.remaining.toFixed(2)} remaining) — staying in FinalBilling`
+                            `(UGX ${allPaid.remaining.toFixed(2)} remaining) — staying in ${visitStatus}`
                         );
                     }
                 }

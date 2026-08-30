@@ -10,15 +10,12 @@
  *     │ (triage form submitted)
  *     ▼
  *   InConsultation               ← doctor is in progress
- *     │ (doctor clicks "Complete Consultation")
- *     │  ┌─ 1+ orders queued  → PendingOrders (orders carry their own SubStatus)
- *     │  └─ 0 orders queued  → FinalBilling
+ *     │ (doctor clicks "Finish Consultation")
+ *     │  ┌─ pending orders OR unpaid invoices  → PendingOrders
+ *     │  └─ nothing pending                     → Completed (TERMINAL)
  *     ▼
  *   PendingOrders                ← orders dispatched; each has its own SubStatus lifecycle
- *     │ (every order is Fulfilled OR Unfulfilled)
- *     ▼
- *   FinalBilling                  ← final bill ready (auto-paid if zero balance → Completed)
- *     │ (final invoice fully paid)
+ *     │ (every order is Fulfilled/Unfulfilled AND every invoice is Paid/Cancelled)
  *     ▼
  *   Completed                    ← TERMINAL, archived
  *
@@ -26,7 +23,7 @@
  *     │ (service fulfilled)
  *     ▼
  *   FinalBilling                  ← bill generated on fulfillment
- *     │ (final invoice paid)
+ *     │ (final invoice paid → visit becomes Completed)
  *     ▼
  *   Completed
  *
@@ -46,10 +43,10 @@
  *  - InProgress → Unfulfilled:        on explicit cancel (e.g. drug not in stock)
  *
  * Visit transition rules:
- *  - InConsultation → PendingOrders:  if 1+ orders exist after doctor closes consultation
- *  - InConsultation → FinalBilling:   if 0 orders exist
- *  - PendingOrders → FinalBilling:    when ALL orders are terminal (Fulfilled or Unfulfilled)
- *  - FinalBilling → Completed:        when all visit invoices are paid (auto-completion)
+ *  - InConsultation → PendingOrders:  if 1+ orders OR unpaid invoices exist when doctor closes
+ *  - InConsultation → Completed:      if nothing pending when doctor closes consultation
+ *  - PendingOrders → Completed:       when ALL orders are terminal AND all invoices are paid
+ *                                     (auto-completion; no intermediate FinalBilling stage)
  *  - [Any Active] → Discontinued:     admin action with mandatory note
  *
  * "ConsultationBilling" and "FinalBilling" remain distinct so the payment route
@@ -164,49 +161,67 @@ export function normalizeVisitStatus(raw: string | null | undefined): VisitStatu
 /**
  * Decide the next visit status when a doctor finishes their consultation.
  *
- * Per the consolidated spec:
- *   - 1+ orders queued  → PendingOrders
- *   - 0 orders queued   → FinalBilling
+ * Per the user's revised rule: the visit goes directly to Completed
+ * (terminal) when nothing is pending, otherwise it stays non-terminal
+ * in PendingOrders until the last order is fulfilled and the last
+ * invoice is paid. The intermediate FinalBilling stage is removed.
+ *
+ *   - 1+ pending items (orders OR unpaid invoices) → PendingOrders
+ *   - 0 pending items                                → Completed
+ *
+ * "Pending orders" = lab/radiology/prescription rows whose subStatus is
+ * not yet Fulfilled or Unfulfilled (i.e. AwaitingPayment, InProgress,
+ * or any other non-terminal sub-status).
+ *
+ * "Pending invoices" = invoices for this visit whose status is not Paid
+ * or Cancelled (typically Unpaid or Partial) and whose balanceDue > 0.
  *
  * IMPORTANT: only called DOWNSTREAM from InConsultation. If the visit is
- * currently in PendingOrders (came back for results review), don't override
- * the status — let the order-completion logic drive PendingOrders → FinalBilling.
+ * currently in PendingOrders (came back for results review), don't
+ * override the status — let decideNextStatusForPendingVisit drive the
+ * transition to Completed when everything is done.
  */
 export async function decideNextStatusAfterConsultation(prisma: any, visitId: string): Promise<string> {
-    // Count orders that are NOT in a terminal sub-status. A "queued" order
-    // is one that's still pending fulfillment (AwaitingPayment, InProgress,
-    // or Fulfilled but not yet auto-cleared).
-    const [pendingLab, pendingRad, pendingRx] = await Promise.all([
+    const [pendingLab, pendingRad, pendingRx, pendingInvoices] = await Promise.all([
         prisma.labOrder.count({
             where: {
                 visitId,
-                subStatus: { in: ['AwaitingPayment', 'InProgress', 'Fulfilled'] }
+                subStatus: { in: ['AwaitingPayment', 'InProgress'] }
             }
         }),
         prisma.radiologyOrder.count({
             where: {
                 visitId,
-                subStatus: { in: ['AwaitingPayment', 'InProgress', 'Fulfilled'] }
+                subStatus: { in: ['AwaitingPayment', 'InProgress'] }
             }
         }),
         prisma.prescription.count({
             where: {
                 visitId,
-                subStatus: { in: ['AwaitingPayment', 'InProgress', 'Fulfilled'] }
+                subStatus: { in: ['AwaitingPayment', 'InProgress'] }
+            }
+        }),
+        prisma.invoice.count({
+            where: {
+                visitId,
+                status: { in: ['Unpaid', 'Partial', 'Open'] },
+                balanceDue: { gt: 0 }
             }
         }),
     ]);
 
-    if (pendingLab + pendingRad + pendingRx > 0) return VISIT_STATUS.PendingOrders;
-    return VISIT_STATUS.FinalBilling;
+    if (pendingLab + pendingRad + pendingRx + pendingInvoices > 0) return VISIT_STATUS.PendingOrders;
+    return VISIT_STATUS.Completed;
 }
 
 /**
  * Decide the next visit status when ANY order changes its sub-status.
  *
- * Per the spec: a visit in PendingOrders transitions to FinalBilling when
- * every order is terminal (Fulfilled or Unfulfilled). If ANY order is
- * still AwaitingPayment or InProgress, the visit stays in PendingOrders.
+ * Per the user's revised rule: a visit in PendingOrders transitions
+ * directly to Completed when every order is terminal (Fulfilled or
+ * Unfulfilled) AND every visit invoice is paid/cancelled. If any
+ * order is still AwaitingPayment or InProgress OR any invoice has a
+ * balance, the visit stays in PendingOrders.
  *
  * Called from:
  *  - Lab result submission (Fulfilled)
@@ -216,7 +231,7 @@ export async function decideNextStatusAfterConsultation(prisma: any, visitId: st
  *  - Explicit order cancel (Unfulfilled)
  */
 export async function decideNextStatusForPendingVisit(prisma: any, visitId: string): Promise<string> {
-    const [openLab, openRad, openRx] = await Promise.all([
+    const [openLab, openRad, openRx, openInvoices] = await Promise.all([
         prisma.labOrder.count({
             where: {
                 visitId,
@@ -235,10 +250,17 @@ export async function decideNextStatusForPendingVisit(prisma: any, visitId: stri
                 subStatus: { in: ['AwaitingPayment', 'InProgress'] }
             }
         }),
+        prisma.invoice.count({
+            where: {
+                visitId,
+                status: { in: ['Unpaid', 'Partial', 'Open'] },
+                balanceDue: { gt: 0 }
+            }
+        }),
     ]);
 
-    if (openLab + openRad + openRx > 0) return VISIT_STATUS.PendingOrders;
-    return VISIT_STATUS.FinalBilling;
+    if (openLab + openRad + openRx + openInvoices > 0) return VISIT_STATUS.PendingOrders;
+    return VISIT_STATUS.Completed;
 }
 
 /**
