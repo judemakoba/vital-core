@@ -984,7 +984,7 @@ export function defaultTemplateFor(opts: { testName: string; categoryName?: stri
         // schema is keyed by the same lookup rules (test name or canonical
         // name) used in getTestSchema.
         const schema = TEST_SCHEMAS[name] || TEST_SCHEMAS[canonicalName] || null;
-        const titleText = (testName || name).trim();
+        const titleText = (opts.testName || name).trim();
         return {
             resultMode: "table",
             // Stash the schema on the returned object so the seed-defaults
