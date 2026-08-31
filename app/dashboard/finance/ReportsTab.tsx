@@ -19,7 +19,17 @@ interface TrialBalance {
     totals: { totalDebits: number; totalCredits: number; isBalanced: boolean };
 }
 
-type ReportType = 'income-statement' | 'trial-balance';
+interface BalanceSheet {
+    asOf: string;
+    assets: { rows: any[]; total: number; subTotal: number };
+    liabilities: { rows: any[]; total: number };
+    equity: { rows: any[]; total: number; retainedEarnings: number };
+    totalLiabilitiesAndEquity: number;
+    isBalanced: boolean;
+    difference: number;
+}
+
+type ReportType = 'income-statement' | 'balance-sheet' | 'trial-balance';
 
 const CATEGORY_LABELS: Record<string, string> = {
     OPERATING_EXPENSE: 'Operating Expenses',
@@ -35,9 +45,10 @@ export default function ReportsTab({ initialReportType }: { initialReportType?: 
         const d = new Date(); d.setMonth(0); d.setDate(1);
         return d.toISOString().split('T')[0];
     });
-    const [toDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [toDate, setToDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [incomeData, setIncomeData] = useState<IncomeStatement | null>(null);
     const [trialData, setTrialData] = useState<TrialBalance | null>(null);
+    const [balanceData, setBalanceData] = useState<BalanceSheet | null>(null);
     const [loading, setLoading] = useState(false);
 
     const fmt = (n: number) => `UGX ${Math.abs(n).toLocaleString('en-UG', { minimumFractionDigits: 0 })}`;
@@ -48,6 +59,11 @@ export default function ReportsTab({ initialReportType }: { initialReportType?: 
             fetch(`/api/finance/reports/income-statement?from=${fromDate}&to=${toDate}`)
                 .then(r => r.json()).then(d => { setIncomeData(d); setLoading(false); })
                 .catch(() => setLoading(false));
+        } else if (reportType === 'balance-sheet') {
+            // Balance sheet is point-in-time, so we only pass `asOf`
+            fetch(`/api/finance/reports/balance-sheet?asOf=${toDate}`)
+                .then(r => r.json()).then(d => { setBalanceData(d); setLoading(false); })
+                .catch(() => setLoading(false));
         } else {
             fetch(`/api/finance/reports/trial-balance?asOf=${toDate}`)
                 .then(r => r.json()).then(d => { setTrialData(d); setLoading(false); })
@@ -55,24 +71,56 @@ export default function ReportsTab({ initialReportType }: { initialReportType?: 
         }
     };
 
-    useEffect(() => { loadReport(); }, [reportType]);
+    // Re-load whenever any of the inputs that change the result set change.
+    // (Date-only changes used to require clicking 🔄 Refresh — that was a UX trap.)
+    useEffect(() => { loadReport(); }, [reportType, fromDate, toDate]);
+
+    // Quick-range shortcuts (1M, 3M, YTD, 1Y, All)
+    const applyRange = (kind: '1m' | '3m' | 'ytd' | '1y' | 'all') => {
+        const today = new Date();
+        let from = new Date(today);
+        if (kind === '1m') from.setMonth(today.getMonth() - 1);
+        else if (kind === '3m') from.setMonth(today.getMonth() - 3);
+        else if (kind === '1y') from.setFullYear(today.getFullYear() - 1);
+        else if (kind === 'ytd') from = new Date(today.getFullYear(), 0, 1);
+        else if (kind === 'all') from = new Date(2000, 0, 1);
+        setFromDate(from.toISOString().split('T')[0]);
+        setToDate(today.toISOString().split('T')[0]);
+    };
 
     return (
         <div>
             <div className={styles.toolbarRow}>
                 <div className={styles.reportTypeTabs}>
-                    {(['income-statement', 'trial-balance'] as ReportType[]).map(t => (
+                    {(['income-statement', 'balance-sheet', 'trial-balance'] as ReportType[]).map(t => (
                         <button key={t} className={`${styles.reportTypeBtn} ${reportType === t ? styles.reportTypeBtnActive : ''}`}
                             onClick={() => setReportType(t)}>
-                            {t === 'income-statement' ? '📊 Income Statement (P&L)' : '⚖️ Trial Balance'}
+                            {t === 'income-statement' ? '📊 Income Statement (P&L)'
+                                : t === 'balance-sheet' ? '🧮 Balance Sheet'
+                                : '⚖️ Trial Balance'}
                         </button>
                     ))}
                 </div>
                 <div className={styles.dateRange}>
                     {reportType === 'income-statement' && (
-                        <><label>From: <input type="date" className={styles.dateInput} value={fromDate} onChange={e => setFromDate(e.target.value)} /></label></>
+                        <>
+                            <label>From: <input type="date" className={styles.dateInput} value={fromDate} onChange={e => setFromDate(e.target.value)} /></label>
+                            <label>To: <input type="date" className={styles.dateInput} value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+                            <div className={styles.quickRanges}>
+                                <button type="button" onClick={() => applyRange('1m')}>1M</button>
+                                <button type="button" onClick={() => applyRange('3m')}>3M</button>
+                                <button type="button" onClick={() => applyRange('ytd')}>YTD</button>
+                                <button type="button" onClick={() => applyRange('1y')}>1Y</button>
+                                <button type="button" onClick={() => applyRange('all')}>All</button>
+                            </div>
+                        </>
                     )}
-                    <label>To: <span className={styles.datePlain}>{new Date(toDate).toLocaleDateString()}</span></label>
+                    {reportType === 'balance-sheet' && (
+                        <label>As of: <input type="date" className={styles.dateInput} value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+                    )}
+                    {reportType === 'trial-balance' && (
+                        <label>As of: <input type="date" className={styles.dateInput} value={toDate} onChange={e => setToDate(e.target.value)} /></label>
+                    )}
                 </div>
                 <button className={styles.btnPrimary} onClick={loadReport}>🔄 Refresh</button>
                 <button className={styles.btnSecondary}>📥 Export</button>
@@ -82,6 +130,8 @@ export default function ReportsTab({ initialReportType }: { initialReportType?: 
                 <div className={styles.loading}><div className={styles.spinner} /></div>
             ) : reportType === 'income-statement' && incomeData ? (
                 <IncomeStatementView data={incomeData} fmt={fmt} />
+            ) : reportType === 'balance-sheet' && balanceData ? (
+                <BalanceSheetView data={balanceData} fmt={fmt} />
             ) : reportType === 'trial-balance' && trialData ? (
                 <TrialBalanceView data={trialData} fmt={fmt} />
             ) : (
@@ -277,6 +327,136 @@ function TrialBalanceView({ data, fmt }: { data: TrialBalance; fmt: (n: number) 
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+        </div>
+    );
+}
+
+function BalanceSheetView({ data, fmt }: { data: BalanceSheet; fmt: (n: number) => string }) {
+    // Group rows by category for sub-totals
+    const groupRows = (rows: any[]) => {
+        const grouped: Record<string, any[]> = {};
+        for (const r of rows) {
+            const cat = r.category || 'OTHER';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(r);
+        }
+        return grouped;
+    };
+    const assetGroups = groupRows(data.assets.rows);
+    const liabGroups = groupRows(data.liabilities.rows);
+    const equityGroups = groupRows(data.equity.rows);
+
+    return (
+        <div className={styles.reportContainer}>
+            <div className={styles.reportHeader}>
+                <h2>Balance Sheet</h2>
+                <p>As of {new Date(data.asOf).toLocaleDateString()}</p>
+                <span className={`${styles.statusPill} ${data.isBalanced ? styles.statusPOSTED : styles.statusREVERSED}`}>
+                    {data.isBalanced ? '✅ Balanced' : `⚠️ Off by ${fmt(data.difference)}`}
+                </span>
+            </div>
+
+            {/* Two-column layout: Assets | Liabilities & Equity */}
+            <div className={styles.balanceSheetGrid}>
+                {/* ASSETS column */}
+                <div>
+                    <div className={styles.reportSectionHeader}>
+                        <span className={styles.reportSectionTitle}>💼 ASSETS</span>
+                        <span className={`${styles.reportTotal} ${styles.revenueColor}`}>{fmt(data.assets.total)}</span>
+                    </div>
+                    {Object.keys(assetGroups).length === 0 ? (
+                        <p className={styles.reportEmpty}>No asset balances.</p>
+                    ) : Object.entries(assetGroups).map(([cat, rows]) => (
+                        <div key={cat} className={styles.expenseGroup}>
+                            <div className={styles.expenseGroupHeader}>{cat.replace(/_/g, ' ')}</div>
+                            <table className={styles.reportTable}>
+                                <tbody>
+                                    {rows.map((r: any) => (
+                                        <tr key={r.id}>
+                                            <td className={styles.reportAccCode}>{r.accountCode}</td>
+                                            <td>{r.accountName}</td>
+                                            <td className={`${styles.reportAmt} ${styles.revenueColor}`}>{fmt(r.balance)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))}
+                    <div className={styles.grossProfitBar}>
+                        <span>💼 TOTAL ASSETS</span>
+                        <span className={styles.grossProfitValue}>{fmt(data.assets.total)}</span>
+                    </div>
+                </div>
+
+                {/* LIABILITIES & EQUITY column */}
+                <div>
+                    <div className={styles.reportSectionHeader}>
+                        <span className={styles.reportSectionTitle}>📌 LIABILITIES</span>
+                        <span className={`${styles.reportTotal} ${styles.expenseColor}`}>{fmt(data.liabilities.total)}</span>
+                    </div>
+                    {Object.keys(liabGroups).length === 0 ? (
+                        <p className={styles.reportEmpty}>No liability balances.</p>
+                    ) : Object.entries(liabGroups).map(([cat, rows]) => (
+                        <div key={cat} className={styles.expenseGroup}>
+                            <div className={styles.expenseGroupHeader}>{cat.replace(/_/g, ' ')}</div>
+                            <table className={styles.reportTable}>
+                                <tbody>
+                                    {rows.map((r: any) => (
+                                        <tr key={r.id}>
+                                            <td className={styles.reportAccCode}>{r.accountCode}</td>
+                                            <td>{r.accountName}</td>
+                                            <td className={`${styles.reportAmt} ${styles.expenseColor}`}>{fmt(r.balance)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))}
+
+                    <div className={styles.reportSectionHeader} style={{ marginTop: 18 }}>
+                        <span className={styles.reportSectionTitle}>🏛️ EQUITY</span>
+                        <span className={`${styles.reportTotal} ${styles.revenueColor}`}>{fmt(data.equity.total)}</span>
+                    </div>
+                    {Object.keys(equityGroups).length === 0 ? (
+                        <p className={styles.reportEmpty}>No equity balances.</p>
+                    ) : Object.entries(equityGroups).map(([cat, rows]) => (
+                        <div key={cat} className={styles.expenseGroup}>
+                            <div className={styles.expenseGroupHeader}>{cat.replace(/_/g, ' ')}</div>
+                            <table className={styles.reportTable}>
+                                <tbody>
+                                    {rows.map((r: any) => (
+                                        <tr key={r.id}>
+                                            <td className={styles.reportAccCode}>{r.accountCode}</td>
+                                            <td>{r.accountName}</td>
+                                            <td className={`${styles.reportAmt} ${styles.revenueColor}`}>{fmt(r.balance)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))}
+
+                    {/* Retained earnings row — current-period net income flowing to equity */}
+                    {data.equity.retainedEarnings !== 0 && (
+                        <table className={styles.reportTable}>
+                            <tbody>
+                                <tr>
+                                    <td className={styles.reportAccCode}>—</td>
+                                    <td>Retained Earnings (current period)</td>
+                                    <td className={`${styles.reportAmt} ${data.equity.retainedEarnings >= 0 ? styles.revenueColor : styles.expenseColor}`}>
+                                        {fmt(data.equity.retainedEarnings)}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    )}
+
+                    <div className={styles.grossProfitBar}>
+                        <span>📌 TOTAL LIABILITIES + EQUITY</span>
+                        <span className={styles.grossProfitValue}>{fmt(data.totalLiabilitiesAndEquity)}</span>
+                    </div>
+                </div>
             </div>
         </div>
     );

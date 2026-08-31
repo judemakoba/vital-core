@@ -1,20 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { DollarSign, ArrowDownCircle, ArrowUpCircle, TrendingUp, TrendingDown } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { DollarSign, ArrowDownCircle, ArrowUpCircle, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import styles from "./page.module.css";
 import { DonutChart, SimpleBarChart, StackedBarChart, formatUGX, formatUGXFull } from "../../finance/FinanceCharts";
+
+// Build YYYY-MM-DD from a Date (using local time so the picker shows what the user picked)
+function toISODate(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+}
 
 export default function FinancialReportsPage() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [range, setRange] = useState<{ from: string; to: string; preset: string }>(() => {
+        // Default: 1M (last 30 days) — closest match to the legacy hardcoded 30-day cash flow
+        const today = new Date();
+        const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+        return { from: toISODate(monthAgo), to: toISODate(today), preset: "1m" };
+    });
 
-    useEffect(() => {
-        fetch("/api/reports/financial").then(res => res.json()).then(d => setData(d.data ?? d)).finally(() => setLoading(false));
-    }, []);
+    const loadData = useCallback(() => {
+        setLoading(true);
+        const qs = new URLSearchParams({
+            from: range.from,
+            to: range.to,
+            preset: range.preset,
+        });
+        fetch(`/api/reports/financial?${qs.toString()}`)
+            .then(res => res.json())
+            .then(d => setData(d.data ?? d))
+            .finally(() => setLoading(false));
+    }, [range]);
+
+    useEffect(() => { loadData(); }, [loadData]);
+
+    const applyPreset = (preset: string) => {
+        const today = new Date();
+        let from = new Date(today);
+        if (preset === "1m") from.setMonth(today.getMonth() - 1);
+        else if (preset === "3m") from.setMonth(today.getMonth() - 3);
+        else if (preset === "1y") from.setFullYear(today.getFullYear() - 1);
+        else if (preset === "ytd") from = new Date(today.getFullYear(), 0, 1);
+        else if (preset === "all") from = new Date(2000, 0, 1);
+        else if (preset === "custom") return; // user is editing the date fields
+        setRange({ from: toISODate(from), to: toISODate(today), preset });
+    };
 
     if (loading) return <div style={{ padding: "2rem" }}>Calculating financial data...</div>;
     if (!data) return <div style={{ padding: "2rem" }}>No data available.</div>;
+
+    const rangeActive = data?.metadata?.range?.active;
+    const rangeFrom = data?.metadata?.range?.from ? new Date(data.metadata.range.from).toLocaleDateString() : null;
+    const rangeTo = data?.metadata?.range?.to ? new Date(data.metadata.range.to).toLocaleDateString() : null;
 
     const { summary = {}, trends = {}, breakdowns = {}, cashFlow = {}, keyPerformanceIndicators = {} } = data;
 
@@ -58,7 +99,52 @@ export default function FinancialReportsPage() {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.title}>Financial Performance</h1>
+            <div className={styles.toolbar}>
+                <h1 className={styles.title}>Financial Performance</h1>
+                <div className={styles.rangeBar}>
+                    <div className={styles.presetGroup}>
+                        {(["1m", "3m", "ytd", "1y", "all"] as const).map(p => (
+                            <button
+                                key={p}
+                                type="button"
+                                className={`${styles.presetBtn} ${range.preset === p ? styles.presetBtnActive : ""}`}
+                                onClick={() => applyPreset(p)}
+                            >
+                                {p === "1m" ? "1M" : p === "3m" ? "3M" : p === "ytd" ? "YTD" : p === "1y" ? "1Y" : "All"}
+                            </button>
+                        ))}
+                    </div>
+                    <div className={styles.dateFieldGroup}>
+                        <label>
+                            From
+                            <input
+                                type="date"
+                                value={range.from}
+                                max={range.to}
+                                onChange={e => setRange(r => ({ ...r, from: e.target.value, preset: "custom" }))}
+                            />
+                        </label>
+                        <label>
+                            To
+                            <input
+                                type="date"
+                                value={range.to}
+                                min={range.from}
+                                max={toISODate(new Date())}
+                                onChange={e => setRange(r => ({ ...r, to: e.target.value, preset: "custom" }))}
+                            />
+                        </label>
+                    </div>
+                    <button type="button" className={styles.refreshBtn} onClick={loadData} title="Refresh">
+                        <RefreshCw size={16} />
+                    </button>
+                </div>
+            </div>
+            {rangeActive && rangeFrom && rangeTo && (
+                <div className={styles.rangeBanner}>
+                    Showing data from <strong>{rangeFrom}</strong> to <strong>{rangeTo}</strong>
+                </div>
+            )}
 
             {/* Top KPI cards */}
             <div className={styles.topCards}>

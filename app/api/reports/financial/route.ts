@@ -4,13 +4,66 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+// Parse a YYYY-MM-DD query param into a Date. Falls back to `fallback` if missing/invalid.
+function parseDateParam(value: string | null, fallback: Date): Date {
+    if (!value) return fallback;
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return fallback;
+    return d;
+}
+
+// ISO date string for the first instant of a date (used as `gte` for inclusive lower bound)
+function startOfDay(d: Date): Date {
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+}
+
+// Last instant of a date (used as `lte` so the chosen day is fully included)
+function endOfDay(d: Date): Date {
+    const x = new Date(d);
+    x.setHours(23, 59, 59, 999);
+    return x;
+}
+
 export async function GET(request: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        // Cutoff dates
+        // ── Date range (optional, all three are query params) ─────────────────────
+        // ?from=YYYY-MM-DD&?to=YYYY-MM-DD  → inclusive
+        // ?preset=1m|3m|ytd|1y|all          → ignored if from/to also present
+        // Default: last 30 days for cash flow, all-time for cumulative KPIs (preserves
+        // old behaviour for callers that don't pass dates).
+        const { searchParams } = new URL(request.url);
+        const fromParam = searchParams.get("from");
+        const toParam = searchParams.get("to");
+        const preset = searchParams.get("preset");
+
         const now = new Date();
+        let fromDate: Date | null = fromParam ? parseDateParam(fromParam, now) : null;
+        let toDate: Date | null = toParam ? parseDateParam(toParam, now) : null;
+        if (!fromDate && !toDate && preset) {
+            toDate = new Date(now);
+            if (preset === "1m") fromDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            else if (preset === "3m") fromDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+            else if (preset === "1y") fromDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+            else if (preset === "ytd") fromDate = new Date(now.getFullYear(), 0, 1);
+            else if (preset === "all") fromDate = new Date(2000, 0, 1);
+        }
+
+        // Effective range objects — null means "no lower/upper bound"
+        const fromBound = fromDate ? startOfDay(fromDate) : null;
+        const toBound = toDate ? endOfDay(toDate) : null;
+        const dateRangeActive = !!fromBound || !!toBound;
+        const dateWhere = (key: "createdAt" | "date") => ({
+            ...(fromBound || toBound ? { [key]: { ...(fromBound ? { gte: fromBound } : {}), ...(toBound ? { lte: toBound } : {}) } } : {}),
+        });
+
+        // Backwards-compat cutoffs (used for the 30d/60d/12mo KPIs that don't yet
+        // honour the range — kept so the existing dashboard charts stay sensible when
+        // the user just clicks Refresh without picking a range).
         const cutoff30 = new Date(now); cutoff30.setDate(cutoff30.getDate() - 30);
         const cutoff60 = new Date(now); cutoff60.setDate(cutoff60.getDate() - 60);
         const cutoff12mo = new Date(now); cutoff12mo.setMonth(cutoff12mo.getMonth() - 12);
@@ -25,15 +78,17 @@ export async function GET(request: Request) {
             invoicesByStatus,
             itemsGroup,
         ] = await Promise.all([
-            prisma.payment.aggregate({ _sum: { amount: true }, _count: true }),
+            prisma.payment.aggregate({ where: dateWhere("createdAt"), _sum: { amount: true }, _count: true }),
             prisma.payment.groupBy({
                 by: ['paymentMethod'],
+                where: dateWhere("createdAt"),
                 _sum: { amount: true },
                 _count: true,
             }),
-            prisma.expense.aggregate({ _sum: { amount: true }, _count: true }),
+            prisma.expense.aggregate({ where: dateWhere("date"), _sum: { amount: true }, _count: true }),
             prisma.expense.groupBy({
                 by: ['category'],
+                where: dateWhere("date"),
                 _sum: { amount: true },
                 _count: true,
             }),
@@ -55,14 +110,16 @@ export async function GET(request: Request) {
             }),
         ]);
 
-        // Monthly revenue (last 12 months) — PostgreSQL-compatible
+        // Monthly revenue (last 12 months from `fromDate` if set, else now-12mo)
+        // PostgreSQL-compatible
+        const monthlyFrom = fromBound ?? cutoff12mo;
         const monthlyRevenue = await prisma.$queryRaw<Array<{ month: string; revenue: number | null; transaction_count: bigint | number }>>`
             SELECT
                 TO_CHAR("createdAt", 'YYYY-MM') AS month,
                 SUM("amount")::float AS revenue,
                 COUNT(*)::int AS transaction_count
             FROM "Payment"
-            WHERE "createdAt" >= ${cutoff12mo}
+            WHERE "createdAt" >= ${monthlyFrom}
             GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
             ORDER BY month
         `;
@@ -74,12 +131,13 @@ export async function GET(request: Request) {
                 SUM("amount")::float AS expenses,
                 COUNT(*)::int AS transaction_count
             FROM "Expense"
-            WHERE "date" >= ${cutoff12mo}
+            WHERE "date" >= ${monthlyFrom}
             GROUP BY TO_CHAR("date", 'YYYY-MM')
             ORDER BY month
         `;
 
-        // Aging buckets — PostgreSQL syntax (EXTRACT(DAY FROM now() - "createdAt"))
+        // Aging buckets — point-in-time snapshot of all outstanding invoices
+        // (independent of the user-supplied date range — aging is a now-snapshot by definition)
         const invoicesAging = await prisma.$queryRaw<Array<{ age_bucket: string; invoice_count: number; amount_due: number; avg_amount_due: number; sort_order: number }>>`
             SELECT
                 age_bucket,
@@ -110,7 +168,7 @@ export async function GET(request: Request) {
             ORDER BY sort_order
         `;
 
-        // Cash flow summary (last 30 days)
+        // Cash flow summary (last 30 days, fixed window — independent of user range)
         const cashInflow30d = await prisma.payment.aggregate({
             _sum: { amount: true },
             where: { createdAt: { gte: cutoff30 } },
@@ -120,7 +178,7 @@ export async function GET(request: Request) {
             where: { date: { gte: cutoff30 } },
         });
 
-        // Revenue last month vs previous month (for MoM growth)
+        // Revenue last month vs previous month (for MoM growth) — uses fixed 30d/60d cutoffs
         const cutoff2mo = new Date(now); cutoff2mo.setMonth(cutoff2mo.getMonth() - 2);
         const revenueLastMonthAgg = await prisma.payment.aggregate({
             _sum: { amount: true },
@@ -259,6 +317,12 @@ export async function GET(request: Request) {
                 metadata: {
                     reportGenerated: new Date().toISOString(),
                     dataFreshness: 'real-time',
+                    range: {
+                        from: fromBound?.toISOString() ?? null,
+                        to: toBound?.toISOString() ?? null,
+                        preset: preset ?? null,
+                        active: dateRangeActive,
+                    },
                 },
             },
         });

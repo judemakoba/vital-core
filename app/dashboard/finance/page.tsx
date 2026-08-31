@@ -35,8 +35,8 @@ export default function FinancePage() {
     const [newJournalSignal, setNewJournalSignal] = useState(0);
     const [newInvoiceSignal, setNewInvoiceSignal] = useState(0);
     const [newExpenseSignal, setNewExpenseSignal] = useState(0);
-    // Track the desired initial report (income-statement | trial-balance)
-    const [initialReportType, setInitialReportType] = useState<'income-statement' | 'trial-balance'>('income-statement');
+    // Track the desired initial report (income-statement | balance-sheet | trial-balance)
+    const [initialReportType, setInitialReportType] = useState<'income-statement' | 'balance-sheet' | 'trial-balance'>('income-statement');
 
     useEffect(() => {
         fetch('/api/finance/summary', { credentials: "include" })
