@@ -696,8 +696,14 @@ export default function LabOrderDetails({ params }: { params: { id: string } }) 
                         </div>
                     )}
 
-                    {/* Single-mode input (GMC template-aware) */}
-                    {(!isTableMode && !isQualitativeMode) || (rows.length === 0 && testInfo?.hasTemplate) && (
+                    {/* Single-mode input (GMC template-aware).
+                        IMPORTANT: the parens around `(A || B)` are required.
+                        Without them, JS operator precedence makes this parse as
+                        `A || (B && <Component />)`, which evaluates to `A` (a
+                        boolean) when A is truthy — so the component never
+                        renders. With parens it parses as `(A || B) && <Component />`,
+                        which is the intended short-circuit. */}
+                    {((!isTableMode && !isQualitativeMode) || (rows.length === 0 && testInfo?.hasTemplate)) && (
                         <SingleModeResultInput
                             result={formData.result}
                             onChange={(v) => setFormData({ ...formData, result: v })}
