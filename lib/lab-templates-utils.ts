@@ -27,6 +27,21 @@
 
 export type ResultFlag = "N" | "L" | "H" | "HH" | "LL" | "";
 
+/**
+ * Tiny HTML escaper used when splicing controlled strings (test names, etc.)
+ * into the template HTML that defaultTemplateFor builds. Catalog data is
+ * considered trusted, but defense-in-depth prevents accidental markup from
+ * breaking the surrounding layout.
+ */
+function escapeHtml(s: string): string {
+    return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
 export const FLAG_LABELS: Record<ResultFlag, string> = {
     N: "Normal",
     L: "Low",
@@ -344,6 +359,14 @@ const TEST_SCHEMAS: Record<string, SchemaRow[]> = {
         { investigation: "Brucella Melitensis Titre", unit: "titer", normalMin: null, normalMax: 80, criticalMin: null, criticalMax: null },
     ],
     "Brucella Agglutination Test (BAT)": [],
+    // ── Blood Grouping & Crossmatch (label-value layout, not a numeric table) ──
+    // Three free-text fields rendered as italic-bold label : value rows under a
+    // centered title block. No units, no reference ranges, no flags.
+    "Blood Grouping & Crossmatch": [
+        { investigation: "Patient's Blood Grouping & Rh Factor" },
+        { investigation: "Donor's Blood Grouping & Rh Factor" },
+        { investigation: "Cross Match" },
+    ],
     "Stool Analysis": [
         { isSection: true, section: "Macroscopic" },
         { investigation: "Consistency",       unit: "" },
@@ -915,6 +938,19 @@ const QUALITATIVE_TESTS = new Set([
     "Mantoux Test", "TB Skin Test",
 ]);
 
+/**
+ * Tests that need a label:value layout rather than the standard numeric table
+ * or single-value "Result: X" box. Each row in the schema is rendered as a
+ * left-aligned italic-bold label and a right-aligned value, with no unit /
+ * reference-range / flag columns. Used for the blood-bank panel where the
+ * three fields (patient group, donor group, cross match) are free text.
+ */
+const LABEL_VALUE_TESTS = new Set<string>([
+    "Blood Grouping & Crossmatch",
+    "Blood Group & Cross Matching",
+    "Blood Group & Rh Factor With Cross Matching",
+]);
+
 export function defaultTemplateFor(opts: { testName: string; categoryName?: string; unit?: string; referenceRange?: string }): { resultMode: "single" | "table" | "qualitative"; templateHtml: string; resultSchema?: any } {
     const name = (opts.testName || "").trim();
 
@@ -936,6 +972,36 @@ export function defaultTemplateFor(opts: { testName: string; categoryName?: stri
   <div style="padding: 16px; background: #fafafa; border: 1px solid #ddd; font-size: 14px;">
     <strong>{{qualitative_result}}</strong>
     {{#if qualitative_description}}<div style="margin-top: 8px; font-size: 12px; color: #555;">{{qualitative_description}}</div>{{/if}}
+  </div>
+  {{#if has_notes}}<h3 style="font-size: 14px; margin: 16px 0 8px; border-bottom: 1px solid #000; padding-bottom: 4px;">Notes</h3><div style="font-size: 12px;">{{notes}}</div>{{/if}}
+</div>`.trim(),
+        };
+    }
+
+    if (LABEL_VALUE_TESTS.has(name) || LABEL_VALUE_TESTS.has(canonicalName)) {
+        // Pull the schema for this test so we can surface the canonical title
+        // and per-row labels without forcing the caller to pass them in. The
+        // schema is keyed by the same lookup rules (test name or canonical
+        // name) used in getTestSchema.
+        const schema = TEST_SCHEMAS[name] || TEST_SCHEMAS[canonicalName] || null;
+        const titleText = (testName || name).trim();
+        return {
+            resultMode: "table",
+            // Stash the schema on the returned object so the seed-defaults
+            // route can persist it as resultSchema on the template row.
+            resultSchema: schema ?? undefined,
+            templateHtml: `
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 16px auto; color: #000;">
+  <div style="text-align: center; margin: 0 0 24px;">
+    <span style="display: inline-block; border: 2px solid #000; padding: 6px 18px; font-size: 15px; font-weight: 700;">${escapeHtml(titleText)}</span>
+  </div>
+  <div style="margin: 8px 24px;">
+    {{#each rows}}
+    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; font-size: 14px; border-bottom: 1px dotted #ddd;">
+      <div style="font-style: italic; font-weight: 700;">{{investigation}} :</div>
+      <div style="font-weight: 600; text-align: right;">{{result}}</div>
+    </div>
+    {{/each}}
   </div>
   {{#if has_notes}}<h3 style="font-size: 14px; margin: 16px 0 8px; border-bottom: 1px solid #000; padding-bottom: 4px;">Notes</h3><div style="font-size: 12px;">{{notes}}</div>{{/if}}
 </div>`.trim(),
