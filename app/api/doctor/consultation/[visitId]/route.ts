@@ -134,9 +134,18 @@ export async function PUT(
                 assessment,
                 treatmentPlan,
                 status: nextStatus,
-                // Stamp completedTime for any closing transition (Lab/Rad/Pharmacy/FinalBilling).
-                // The doctor finished the consultation; from there, downstream services or billing handle the rest.
-                completedTime: isClosing ? new Date() : undefined,
+                // Stamp completedTime ONLY when the visit actually reaches
+                // `Completed`. Stamping it on any closing transition
+                // (PendingOrders, FinalBilling) made the timestamp an
+                // unreliable "is this visit done?" signal — a visit could
+                // have a completedTime and still be PendingOrders. The
+                // auto-advance logic in `decideNextStatusAfterConsultation`
+                // returns `Completed` when there are no pending items, so
+                // for the all-done case the stamp lands in the same place
+                // it used to; for the still-pending case, the stamp waits
+                // for the payment/order-completion hooks to move the visit
+                // forward.
+                completedTime: isClosing && nextStatus === VISIT_STATUS.Completed ? new Date() : undefined,
             },
         });
 
