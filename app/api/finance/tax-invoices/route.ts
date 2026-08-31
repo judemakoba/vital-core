@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { AccountingService } from '@/lib/finance/accounting-service';
 import { ServiceType } from '@/lib/generated-prisma';
+import { logLedgerError } from '@/lib/finance/ledger-logger';
 
 // GET /api/finance/tax-invoices
 export async function GET(req: Request) {
@@ -165,16 +166,25 @@ export async function POST(req: Request) {
             });
         });
 
-        // Automatically post to ledger (best-effort; logged on failure)
+        // Automatically post to ledger (best-effort; logged on failure to a
+        // persistent log AND surfaced in the response so failures aren't silent).
+        let ledgerError: { message: string; operation: string } | null = null;
         try {
             await AccountingService.postInvoiceToLedger(invoice.id, createdById);
-        } catch (postError) {
-            console.error('Failed to post invoice to ledger:', postError);
-            // We don't fail the whole request, but we log it.
-            // In a production system, this might be handled via a background queue.
+        } catch (err) {
+            const structured = await logLedgerError(err, {
+                operation: 'postInvoiceToLedger',
+                referenceId: invoice.id,
+                referenceLabel: invoice.invoiceNumber,
+                extra: { totalAmount: invoice.totalAmount, invoiceType: invoice.invoiceType },
+            });
+            ledgerError = { message: structured.message, operation: structured.context.operation };
         }
 
-        return NextResponse.json(invoice, { status: 201 });
+        return NextResponse.json(
+            ledgerError ? { ...invoice, ledgerError } : invoice,
+            { status: 201 }
+        );
     } catch (error) {
         console.error('Create tax invoice error:', error);
         return NextResponse.json({ error: 'Failed to create invoice' }, { status: 500 });

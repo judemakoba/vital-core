@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { transitionInvoiceItemsToInProgress } from "@/lib/visits/substatus";
 import { recordAudit, AUDIT_ACTION, ENTITY } from "@/lib/audit";
+import { logLedgerError } from "@/lib/finance/ledger-logger";
 
 /**
  * Returns true when the visit's billing is fully settled — every invoice
@@ -250,11 +251,22 @@ export async function POST(
             return { payment, updatedInvoice };
         });
 
-        // Automatically post to ledger
+        // Automatically post to ledger. Failures are logged to the persistent
+        // ledger-error log AND surfaced in the response so they're not silent.
+        let ledgerError: { message: string; operation: string } | null = null;
         try {
             await AccountingService.postPaymentToLedger(result.payment.id, session.user.id);
-        } catch (postError) {
-            console.error('Failed to post payment to ledger:', postError);
+        } catch (err) {
+            const structured = await logLedgerError(err, {
+                operation: 'postPaymentToLedger',
+                referenceId: result.payment.id,
+                referenceLabel: invoice.invoiceNumber,
+                extra: {
+                    paymentAmount: paymentAmount,
+                    paymentMethod: paymentMethod,
+                },
+            });
+            ledgerError = { message: structured.message, operation: structured.context.operation };
         }
 
         // Sync the related TaxInvoice (URA-compliant) payment status so the dual
@@ -317,7 +329,11 @@ export async function POST(
             },
         });
 
-        return NextResponse.json(result);
+        return NextResponse.json(
+            ledgerError
+                ? { ...result, ledgerError }
+                : result
+        );
     } catch (error) {
         console.error("Payment recording error:", error);
         return NextResponse.json({ error: "Failed to record payment" }, { status: 500 });

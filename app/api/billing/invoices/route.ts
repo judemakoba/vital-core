@@ -5,6 +5,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { BillingValidationService } from "@/lib/finance/billing-validation-service";
 import { ServiceType } from "@/lib/generated-prisma";
+import { AccountingService } from "@/lib/finance/accounting-service";
+import { logLedgerError } from "@/lib/finance/ledger-logger";
 
 export async function GET(request: Request) {
     try {
@@ -116,15 +118,34 @@ export async function POST(request: Request) {
             console.warn('Post-creation invoice validation issues:', postValidation);
         }
 
-        // Automatically post to ledger (DR AR, CR Revenue)
+        // Automatically post to ledger (DR AR, CR Revenue).
+        // Failures are logged to the persistent ledger-error log and surfaced
+        // in the response so they can be debugged, but the invoice creation
+        // itself is NOT rolled back — the user gets a working invoice and
+        // an admin can backfill the journal entry later.
+        let ledgerError: { message: string; operation: string } | null = null;
         try {
             await AccountingService.postInvoiceToLedger(invoice.id, session.user.id);
-        } catch (ledgerError) {
-            console.error('Failed to post invoice to ledger:', ledgerError);
-            // Don't fail invoice creation if ledger post fails — admin can backfill later
+        } catch (err) {
+            const structured = await logLedgerError(err, {
+                operation: 'postInvoiceToLedger',
+                referenceId: invoice.id,
+                referenceLabel: invoice.invoiceNumber,
+                extra: {
+                    totalAmount: invoice.totalAmount,
+                    itemCount: processedItems.length,
+                    itemTypes: processedItems.map(i => i.itemType).filter(Boolean),
+                },
+            });
+            ledgerError = { message: structured.message, operation: structured.context.operation };
         }
 
-        return NextResponse.json(invoice, { status: 201 });
+        return NextResponse.json(
+            ledgerError
+                ? { ...invoice, ledgerError }
+                : invoice,
+            { status: 201 }
+        );
     } catch (error) {
         console.error("Invoice creation error:", error);
         return NextResponse.json({ error: "Failed to create invoice" }, { status: 500 });

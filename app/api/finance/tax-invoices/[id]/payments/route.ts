@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { AccountingService } from '@/lib/finance/accounting-service';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { logLedgerError } from '@/lib/finance/ledger-logger';
 
 // POST /api/finance/tax-invoices/[id]/payments
 // Record a payment against a TaxInvoice. Auto-posts to ledger.
@@ -71,11 +72,19 @@ export async function POST(
             return payment;
         });
 
-        // Auto-post to ledger
+        // Auto-post to ledger. Failures are logged to the persistent ledger-error
+        // log AND surfaced in the response so they're not silent.
+        let ledgerError: { message: string; operation: string } | null = null;
         try {
             await AccountingService.postPaymentToLedger(result.id, session.user.id);
-        } catch (postError) {
-            console.error('Failed to post tax invoice payment to ledger:', postError);
+        } catch (err) {
+            const structured = await logLedgerError(err, {
+                operation: 'postPaymentToLedger',
+                referenceId: result.id,
+                referenceLabel: invoice.invoiceNumber,
+                extra: { paymentAmount, paymentMethod },
+            });
+            ledgerError = { message: structured.message, operation: structured.context.operation };
         }
 
         return NextResponse.json({
@@ -86,6 +95,7 @@ export async function POST(
                 balanceDue: newBalanceDue,
                 paymentStatus: newStatus,
             },
+            ...(ledgerError ? { ledgerError } : {}),
         });
     } catch (error) {
         console.error('TaxInvoice payment error:', error);
