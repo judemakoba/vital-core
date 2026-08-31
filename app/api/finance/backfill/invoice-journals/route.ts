@@ -50,22 +50,27 @@ export async function POST(request: Request) {
         // 1) Find invoices missing INVOICE journals
         // Two passes — legacy Invoice and TaxInvoice — because they live in
         // separate tables. We union the result and dedupe by id+source.
+        //
+        // IMPORTANT: TaxInvoices with a non-null `parentInvoiceId` are
+        // sub-bills — they re-invoice a portion of an existing legacy
+        // Invoice's items (typically pharmacy). Backfilling their journal
+        // would double-count the same revenue (the parent legacy Invoice
+        // already has its own INVOICE journal). Skip them here; the
+        // parent's INVOICE journal already covers the underlying revenue.
         const [missingLegacy, missingTax] = await Promise.all([
             prisma.invoice.findMany({
                 where: requestedIds
                     ? { id: { in: requestedIds } }
-                    : {
-                        NOT: {
-                            id: { in: [] }, // placeholder — the actual filter uses a subquery
-                        },
-                    },
+                    : {},
                 select: { id: true, invoiceNumber: true, totalAmount: true },
             }),
             prisma.taxInvoice.findMany({
-                where: requestedIds
-                    ? { id: { in: requestedIds } }
-                    : {},
-                select: { id: true, invoiceNumber: true, totalAmount: true },
+                where: {
+                    ...(requestedIds ? { id: { in: requestedIds } } : {}),
+                    // Skip sub-bills — parent legacy Invoice already covers the revenue.
+                    parentInvoiceId: null,
+                },
+                select: { id: true, invoiceNumber: true, totalAmount: true, parentInvoiceId: true },
             }),
         ]);
 
