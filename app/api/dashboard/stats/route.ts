@@ -20,7 +20,9 @@ export async function GET() {
         appointmentsToday,
         pendingPrescriptions,
         pendingLabs,
+        pendingLabsInProgress,
         pendingRadiology,
+        pendingRadiologyInProgress,
         todaysPayments,
     ] = await Promise.all([
         prisma.patient.count({ where: { isActive: true } }),
@@ -31,12 +33,20 @@ export async function GET() {
             where: { date: { gte: startOfDay, lte: endOfDay } },
         }),
         prisma.prescription.count({ where: { status: "Pending" } }),
-        prisma.labOrder.count({ where: { status: "Ordered" } }),
+        // Count lab orders that still need attention: Ordered (cashier hasn't
+        // collected yet) + InProgress (paid, lab tech hasn't entered results).
+        // Excludes Completed (results published) and Cancelled. This is the
+        // work the dashboard should surface to the lab/ops team.
+        prisma.labOrder.count({ where: { status: { in: ["Ordered", "InProgress"] } } }),
+        // Subset of pendingLabs: only those that are paid (InProgress) and
+        // waiting for the lab tech to enter results. Useful as a "results
+        // to publish" indicator on the dashboard.
+        prisma.labOrder.count({ where: { status: "InProgress" } }),
         // R59: pending radiology orders — mirrors the lab count above so the
-        // dashboard's "Pending Radiology" card has live data. RadiologyOrder
-        // defaults to status "Ordered" (see schema.prisma line ~410), same
-        // as LabOrder, so we filter on the same value.
-        prisma.radiologyOrder.count({ where: { status: "Ordered" } }),
+        // dashboard's "Pending Radiology" card has live data. Same Ordered +
+        // InProgress semantics as the lab count.
+        prisma.radiologyOrder.count({ where: { status: { in: ["Ordered", "InProgress"] } } }),
+        prisma.radiologyOrder.count({ where: { status: "InProgress" } }),
         prisma.payment.findMany({
             where: { createdAt: { gte: startOfDay, lte: endOfDay } },
             select: { amount: true },
@@ -51,7 +61,9 @@ export async function GET() {
         appointmentsToday,
         pendingPrescriptions,
         pendingLabs,
+        pendingLabsInProgress,
         pendingRadiology,
+        pendingRadiologyInProgress,
         todaysRevenue,
         canSeeRevenue,
     });

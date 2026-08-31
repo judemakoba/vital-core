@@ -12,7 +12,9 @@ interface LiveStats {
     appointmentsToday: number;
     pendingPrescriptions: number;
     pendingLabs: number;
+    pendingLabsInProgress: number;
     pendingRadiology: number;
+    pendingRadiologyInProgress: number;
     todaysRevenue: number;
     canSeeRevenue: boolean;
 }
@@ -99,20 +101,26 @@ export default function DashboardLiveStats() {
             icon: FlaskConical,
             color: "#a855f7",
             href: "/dashboard/lab",
-            sublabel: stats.pendingLabs > 0 ? "⚠ Awaiting processing" : "All clear",
+            // Two-level sublabel: if any are already paid (InProgress) and
+            // waiting for the lab tech to enter results, surface that as
+            // the action-needed hint. Otherwise the broader "awaiting
+            // processing" copy catches Ordered + AwaitingPayment.
+            sublabel: stats.pendingLabsInProgress > 0
+                ? `⚠ ${stats.pendingLabsInProgress} awaiting result entry`
+                : (stats.pendingLabs > 0 ? "⚠ Awaiting processing" : "All clear"),
             attention: stats.pendingLabs > 0,
         },
-        // R59: Radiology card — mirrors the Lab card above. Same "ordered"
-        // count semantics (RadiologyOrder.status defaults to "Ordered",
-        // same as LabOrder), same attention/sublabel copy, distinct icon
-        // and colour so the two adjacent cards read as a pair.
+        // R59: Radiology card — mirrors the Lab card above. Same Ordered +
+        // InProgress semantics as the lab count.
         {
             name: "Pending Radiology",
             value: stats.pendingRadiology.toString(),
             icon: Scan,
             color: "#06b6d4",
             href: "/dashboard/radiology",
-            sublabel: stats.pendingRadiology > 0 ? "⚠ Awaiting processing" : "All clear",
+            sublabel: stats.pendingRadiologyInProgress > 0
+                ? `⚠ ${stats.pendingRadiologyInProgress} awaiting result entry`
+                : (stats.pendingRadiology > 0 ? "⚠ Awaiting processing" : "All clear"),
             attention: stats.pendingRadiology > 0,
         },
         ...(stats.canSeeRevenue ? [{
