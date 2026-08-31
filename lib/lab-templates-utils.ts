@@ -951,6 +951,24 @@ const LABEL_VALUE_TESTS = new Set<string>([
     "Blood Group & Rh Factor With Cross Matching",
 ]);
 
+/**
+ * Serology panel reports (VDRL/RPR for Syphilis) that need a custom
+ * multi-section layout: category header, a TEST | VALUE | UNIT | REFERENCE
+ * row for the entered result, a Result→Remarks interpretation table
+ * (Reactive / Non-Reactive), a numbered clinical "Note" block, a
+ * numbered "Uses" block, and a "End of report" footer. The result is
+ * a single qualitative value (Reactive / Non-Reactive / titres), so
+ * the resultMode is "single" — the layout is the custom part.
+ */
+const SEROLOGY_TESTS = new Set<string>([
+    "Syphilis (VDRL/RPR)",
+    "VDRL",
+    "RPR",
+    "VDRL/RPR",
+    "Syphilis Serology (VDRL)",
+    "Syphilis Serology (RPR)",
+]);
+
 export function defaultTemplateFor(opts: { testName: string; categoryName?: string; unit?: string; referenceRange?: string }): { resultMode: "single" | "table" | "qualitative"; templateHtml: string; resultSchema?: any } {
     const name = (opts.testName || "").trim();
 
@@ -1004,6 +1022,84 @@ export function defaultTemplateFor(opts: { testName: string; categoryName?: stri
     {{/each}}
   </div>
   {{#if has_notes}}<h3 style="font-size: 14px; margin: 16px 0 8px; border-bottom: 1px solid #000; padding-bottom: 4px;">Notes</h3><div style="font-size: 12px;">{{notes}}</div>{{/if}}
+</div>`.trim(),
+        };
+    }
+
+    if (SEROLOGY_TESTS.has(name) || SEROLOGY_TESTS.has(canonicalName)) {
+        // Serology panel report (e.g. VDRL/RPR for Syphilis). The result
+        // is a single qualitative value (Reactive / Non-Reactive / titres)
+        // so resultMode is "single" — the value comes through {{result}}
+        // (from LabOrder.result). The custom templateHtml renders it in
+        // a multi-section layout: category header, TEST|VALUE|UNIT|REF
+        // row, interpretation table, clinical notes, uses, and an
+        // "End of report" footer.
+        const categoryLabel = (opts.categoryName || "Serology").toUpperCase();
+        return {
+            resultMode: "single",
+            templateHtml: `
+<div style="font-family: 'Times New Roman', Georgia, serif; max-width: 820px; margin: 16px auto; color: #000;">
+  <h2 style="text-align: center; margin: 0 0 12px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">${escapeHtml(categoryLabel)}</h2>
+
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px;">
+    <thead>
+      <tr style="background: #f4f4f4;">
+        <th style="border: 1px solid #000; padding: 6px; text-align: left;">Test</th>
+        <th style="border: 1px solid #000; padding: 6px; text-align: left;">Value</th>
+        <th style="border: 1px solid #000; padding: 6px; text-align: left;">Unit</th>
+        <th style="border: 1px solid #000; padding: 6px; text-align: left;">Reference</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="border: 1px solid #000; padding: 6px; font-weight: 700;">{{test_name}}</td>
+        <td style="border: 1px solid #000; padding: 6px; font-weight: 600;">{{result}}</td>
+        <td style="border: 1px solid #000; padding: 6px;">{{test_unit}}</td>
+        <td style="border: 1px solid #000; padding: 6px;">{{test_reference}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px;">
+    <thead>
+      <tr style="background: #f4f4f4;">
+        <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 30%;">Result</th>
+        <th style="border: 1px solid #000; padding: 6px; text-align: left;">Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="border: 1px solid #000; padding: 6px; font-weight: 600;">Reactive</td>
+        <td style="border: 1px solid #000; padding: 6px;">Indicates the presence of IgM &amp; IgG antibodies against non-treponemal antigens</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #000; padding: 6px; font-weight: 600;">Non-Reactive</td>
+        <td style="border: 1px solid #000; padding: 6px;">Indicates absence of IgM &amp; IgG antibodies against non-treponemal antigens</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-bottom: 12px;">
+    <div style="font-weight: 700; margin-bottom: 4px;">Note:</div>
+    <ol style="font-size: 12px; margin: 0; padding-left: 24px;">
+      <li>Titres of &ge;1: 8 and rising titres are significant.</li>
+      <li>Positive result indicates ongoing or recent infection and the diagnosis should be confirmed by specific Treponemal tests such as TPHA &amp; FTA- AbS.</li>
+      <li>The reactivity will vary with the Primary (60-86%), Secondary (99%) and Tertiary (98%) stage of Syphilis.</li>
+      <li>False positive results may be observed in patients of Malaria, Hepatitis, Mumps, Leprosy, Infectious Mononucleosis, Rheumatoid Arthritis and Collagen disease.</li>
+      <li>False negative reaction may be due to processing of sample collected early in the course of disease, immunosuppression and due to prozone effect.</li>
+    </ol>
+  </div>
+
+  <div style="margin-bottom: 12px;">
+    <div style="font-weight: 700; margin-bottom: 4px;">Uses :</div>
+    <ol style="font-size: 12px; margin: 0; padding-left: 24px;">
+      <li>To screen for presence and monitor the progression of Syphilis infection.</li>
+      <li>To assess the response to therapy (decreasing titres) in patients being treated for Syphilis.</li>
+    </ol>
+  </div>
+
+  <div style="text-align: right; font-style: italic; font-size: 11px; margin-top: 12px;">~~ End of report ~~</div>
+  {{#if has_notes}}<div style="margin-top: 12px; font-size: 12px;"><strong>Notes:</strong> {{notes}}</div>{{/if}}
 </div>`.trim(),
         };
     }
