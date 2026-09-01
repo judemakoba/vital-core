@@ -166,9 +166,9 @@ export async function GET(req: Request) {
         // We display only accounts with non-zero movement or opening.
         const visible = sorted.filter(a => a.debit !== 0 || a.credit !== 0 || a.openingBalance !== 0);
 
-        const rawAccCol = `'${rawSheetName}'!H`;
-        const rawDrCol = `'${rawSheetName}'!J`;
-        const rawCrCol = `'${rawSheetName}'!K`;
+        const rawAccCol = `'${rawSheetName}'!H:H`;
+        const rawDrCol = `'${rawSheetName}'!J:J`;
+        const rawCrCol = `'${rawSheetName}'!K:K`;
 
         let cursor = 7;
         let lastType: string | null = null;
@@ -190,9 +190,11 @@ export async function GET(req: Request) {
             row.getCell(3).value = acc.accountType;
             row.getCell(4).value = acc.openingBalance;
             styleInput(row.getCell(4));
-            // Period debit/credit via SUMIF (green)
-            row.getCell(5).value = { formula: `SUMIF(${rawAccCol}:${rawAccCol},A${r},${rawDrCol}:${rawDrCol})` };
-            row.getCell(6).value = { formula: `SUMIF(${rawAccCol}:${rawAccCol},A${r},${rawCrCol}:${rawCrCol})` };
+            // Period debit/credit via SUMIF (green). Range must be a single
+            // contiguous range like 'Raw Data'!H:H — NOT a range union
+            // ('Raw Data'!H:'Raw Data'!H) which Excel evaluates as #NAME?.
+            row.getCell(5).value = { formula: `SUMIF(${rawAccCol},A${r},${rawDrCol})` };
+            row.getCell(6).value = { formula: `SUMIF(${rawAccCol},A${r},${rawCrCol})` };
             styleCrossSheet(row.getCell(5));
             styleCrossSheet(row.getCell(6));
             // Closing = opening + debit - credit

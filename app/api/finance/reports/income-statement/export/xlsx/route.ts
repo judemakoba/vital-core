@@ -190,9 +190,9 @@ export async function GET(req: Request) {
         const cogs = expenses.filter(isCOGS);
         const opex = expenses.filter(a => !isCOGS(a));
 
-        const rawAccCol = `'${rawSheetName}'!H`;
-        const rawDrCol = `'${rawSheetName}'!J`;
-        const rawCrCol = `'${rawSheetName}'!K`;
+        const rawAccCol = `'${rawSheetName}'!H:H`;
+        const rawDrCol = `'${rawSheetName}'!J:J`;
+        const rawCrCol = `'${rawSheetName}'!K:K`;
 
         const writeSection = (
             title: string,
@@ -216,8 +216,8 @@ export async function GET(req: Request) {
                 row.getCell(2).value = acc.accountName;
                 row.getCell(3).value = acc.category;
                 // Debit/Credit come from Raw Data via SUMIF (green)
-                row.getCell(4).value = { formula: `SUMIF(${rawAccCol}:${rawAccCol},A${r},${rawDrCol}:${rawDrCol})` };
-                row.getCell(5).value = { formula: `SUMIF(${rawAccCol}:${rawAccCol},A${r},${rawCrCol}:${rawCrCol})` };
+                row.getCell(4).value = { formula: `SUMIF(${rawAccCol},A${r},${rawDrCol})` };
+                row.getCell(5).value = { formula: `SUMIF(${rawAccCol},A${r},${rawCrCol})` };
                 // Balance = credit - debit (revenue) or debit - credit (expense)
                 // We use a sign parameter to keep the formula general
                 row.getCell(6).value = { formula: sign === 'credit' ? `E${r}-D${r}` : `D${r}-E${r}` };

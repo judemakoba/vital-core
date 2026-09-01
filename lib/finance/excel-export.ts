@@ -290,9 +290,13 @@ export function addByAccountSheet(
     // formula over the Raw Data sheet. That way editing a journal line
     // auto-updates the by-account roll-up. Opening balance is a primary
     // input (from the chart of accounts).
-    const rawAccCol = `'${rawSheetName}'!H`;   // account code column
-    const rawDrCol = `'${rawSheetName}'!J`;
-    const rawCrCol = `'${rawSheetName}'!K`;
+    //
+    // IMPORTANT: the SUMIF range argument MUST be a single contiguous range
+    // (e.g. `'Raw Data'!H:H`), NOT a range union. The earlier implementation
+    // produced `'Raw Data'!H:'Raw Data'!H` (a union of two identical ranges)
+    // which Excel evaluates as `#NAME?` because the union syntax isn't valid
+    // for SUMIF. Constructed here as `'${sheet}'!${col}:${col}` so the colon
+    // sits inside the sheet ref.
     const lastDataRow = ctx.journalLines.length + 1; // +1 for header
 
     sortedAccounts.forEach((acc, idx) => {
@@ -308,12 +312,14 @@ export function addByAccountSheet(
         row.getCell(5).value = acc.openingBalance;
         styleInput(row.getCell(5));
 
-        // Period debit = SUMIF over raw data (cross-sheet link → green)
-        row.getCell(6).value = { formula: `SUMIF(${rawAccCol}:${rawAccCol},A${r},${rawDrCol}:${rawDrCol})` };
+        // Period debit = SUMIF over raw data (cross-sheet link → green).
+        // Wrap sheet name in single quotes so it handles spaces correctly.
+        const accRange = `'${rawSheetName}'!H:H`;
+        const drRange = `'${rawSheetName}'!J:J`;
+        const crRange = `'${rawSheetName}'!K:K`;
+        row.getCell(6).value = { formula: `SUMIF(${accRange},A${r},${drRange})` };
         styleCrossSheet(row.getCell(6));
-
-        // Period credit = SUMIF
-        row.getCell(7).value = { formula: `SUMIF(${rawAccCol}:${rawAccCol},A${r},${rawCrCol}:${rawCrCol})` };
+        row.getCell(7).value = { formula: `SUMIF(${accRange},A${r},${crRange})` };
         styleCrossSheet(row.getCell(7));
 
         // Net movement = period credit - period debit

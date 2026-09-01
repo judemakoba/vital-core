@@ -232,9 +232,9 @@ export async function GET(req: Request) {
         const liabilities = accountRows.filter(a => a.accountType === 'LIABILITY' && a.endingBalance !== 0);
         const equity = accountRows.filter(a => a.accountType === 'EQUITY' && a.endingBalance !== 0);
 
-        const rawAccCol = `'${rawSheetName}'!H`;
-        const rawDrCol = `'${rawSheetName}'!J`;
-        const rawCrCol = `'${rawSheetName}'!K`;
+        const rawAccCol = `'${rawSheetName}'!H:H`;
+        const rawDrCol = `'${rawSheetName}'!J:J`;
+        const rawCrCol = `'${rawSheetName}'!K:K`;
 
         // We render the two columns side by side, starting at row 8.
         // Each "row" of the BS is one row in the worksheet.
@@ -243,26 +243,16 @@ export async function GET(req: Request) {
             const ws_row = ws.getRow(row);
             ws_row.getCell(col).value = acc.accountCode;
             ws_row.getCell(col + 1).value = acc.accountName;
-            // Period debit/credit via SUMIF
-            const drFormula = `SUMIF(${rawAccCol}:${rawAccCol},${String.fromCharCode(64 + col)}${row},${rawDrCol}:${rawDrCol})`;
-            const crFormula = `SUMIF(${rawAccCol}:${rawAccCol},${String.fromCharCode(64 + col)}${row},${rawCrCol}:${rawCrCol})`;
-            // For the BS ending balance: opening + (debit - credit) for debit-normal,
-            // opening + (credit - debit) for credit-normal.
-            // We embed opening balance as a primary value (blue).
-            // For simplicity we just hardcode openingBalance per-row but compute the
-            // movement and combine.
+            // Period debit/credit via SUMIF. The range argument must be a
+            // single contiguous range (e.g. 'Raw Data'!H:H), NOT a range
+            // union like 'Raw Data'!H:'Raw Data'!H which Excel evaluates as
+            // #NAME? because the union syntax isn't valid for SUMIF.
+            const drFormula = `SUMIF(${rawAccCol},${String.fromCharCode(64 + col)}${row},${rawDrCol})`;
+            const crFormula = `SUMIF(${rawAccCol},${String.fromCharCode(64 + col)}${row},${rawCrCol})`;
+            // Ending balance = opening + signed movement.
+            // ASSET/EXPENSE are debit-normal: opening + debit - credit.
+            // LIABILITY/EQUITY/REVENUE are credit-normal: opening + credit - debit.
             const isDebitNormal = acc.accountType === 'ASSET';
-            const opRef = `${String.fromCharCode(64 + col + 2)}${row}`; // we put opening balance next to balance? No — keep simple.
-            // Actually let's keep opening balance in a hidden helper column? No — let's
-            // put a SUMIF-based balance directly. We need to know whether to use
-            // credit-debit or debit-credit. Hardcode the sign based on the type.
-            // (The balance is opening + signed movement.)
-            const sign = isDebitNormal ? '-' : '+';
-            // We don't have opening balance on the BS sheet. Compute it as a formula:
-            // =SUMIF of the Raw Data debit/credit gives period movement only, not the
-            // opening balance. So we hardcode the openingBalance + add the movement.
-            ws_row.getCell(col + 2).value = { formula: `${acc.openingBalance}${sign === '-' ? '-' : '+'}(${sign === '-' ? `(${drFormula})-(${crFormula})` : `(${crFormula})-(${drFormula})`})` };
-            // Cleaner approach: just write the formula
             if (isDebitNormal) {
                 ws_row.getCell(col + 2).value = { formula: `${acc.openingBalance}+(${drFormula})-(${crFormula})` };
             } else {
