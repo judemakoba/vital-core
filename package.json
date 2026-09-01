@@ -51,6 +51,7 @@
         "@prisma/client": "^5.22.0",
         "bcrypt": "^5.1.1",
         "bcryptjs": "^2.4.3",
+        "exceljs": "^4.4.0",
         "imapflow": "^1.6.5",
         "mailparser": "^3.9.14",
         "next": "^14.2.35",
