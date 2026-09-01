@@ -31,6 +31,11 @@
  * (typically a few thousand rows at most) are nowhere near the limit.
  */
 import ExcelJS from 'exceljs';
+// Static import so webpack traces JSZip through exceljs's chunk graph (exceljs
+// already bundles it). The previous createRequire + import.meta.url pattern did
+// a filesystem lookup at runtime that returned nothing because the standalone
+// build doesn't copy JSZip as a separate node_modules entry.
+import JSZip from 'jszip';
 
 // ─── Styling constants ────────────────────────────────────────────────
 // Cell font colors
@@ -419,13 +424,6 @@ export async function workbookToBuffer(wb: ExcelJS.Workbook): Promise<Buffer> {
  * Done with JSZip (already in node_modules as a transitive dep of exceljs).
  */
 async function postProcessXlsx(raw: Buffer): Promise<Buffer> {
-    // Lazy-load jszip via createRequire so this file is importable from
-    // both CommonJS (Next.js runtime) and ESM (tsx test runner) contexts.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { createRequire } = await import('module');
-    const nodeRequire = createRequire(import.meta.url ?? __filename);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const JSZip = nodeRequire('jszip');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const zip = await (JSZip as any).loadAsync(raw);
     const stylesFile = zip.file('xl/styles.xml');
