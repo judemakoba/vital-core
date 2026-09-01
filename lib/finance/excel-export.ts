@@ -398,5 +398,58 @@ export async function workbookToBuffer(wb: ExcelJS.Workbook): Promise<Buffer> {
     // exceljs writes to a Buffer when called without a filename/path.
     // We have to use the arrayBuffer form for Node.js streaming.
     const ab = await wb.xlsx.writeBuffer();
-    return Buffer.from(ab);
+    const raw = Buffer.from(ab);
+    return postProcessXlsx(raw);
+}
+
+/**
+ * Post-process the exceljs output to remove parts that cause Excel to
+ * silently auto-repair the file on open (showing a "We completed file
+ * level validation and repair" dialog the user must dismiss).
+ *
+ * The known offender in the exceljs styles output is the trailing
+ * `<extLst>...<x14:slicerStyles/><x15:timelineStyles/></extLst>` block
+ * that exceljs always writes even when the workbook has zero slicers or
+ * timelines. Excel sees the extension list and tries to validate the
+ * referenced features, but the data is "unreadable" because there's no
+ * actual content to back the extension — so it auto-repairs and
+ * surfaces a "Repaired Records: Format from /xl/styles.xml part (Styles)"
+ * message. Stripping the extLst makes the file open cleanly.
+ *
+ * Done with JSZip (already in node_modules as a transitive dep of exceljs).
+ */
+async function postProcessXlsx(raw: Buffer): Promise<Buffer> {
+    // Lazy-load jszip via createRequire so this file is importable from
+    // both CommonJS (Next.js runtime) and ESM (tsx test runner) contexts.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createRequire } = await import('module');
+    const nodeRequire = createRequire(import.meta.url ?? __filename);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const JSZip = nodeRequire('jszip');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const zip = await (JSZip as any).loadAsync(raw);
+    const stylesFile = zip.file('xl/styles.xml');
+    if (stylesFile) {
+        let xml = await stylesFile.async('string');
+        // Strip the extLst block. exceljs always emits it with
+        // <x14:slicerStyles/> and <x15:timelineStyles/> defaults,
+        // which Excel treats as corrupt when there are no actual
+        // slicers/timelines in the workbook.
+        xml = xml.replace(/<extLst>[\s\S]*?<\/extLst>/g, '');
+        // Add pivotButton="0" quotePrefix="0" to every <xf ...> that
+        // doesn't already have them. Excel accepts with/without, but
+        // their absence can trigger repair when combined with other
+        // quirks. Openpyxl writes them as defaults.
+        xml = xml.replace(/<xf\b((?:(?!pivotButton)[^>])*?)\/>/g, (m: string, attrs: string) => {
+            if (attrs.includes('pivotButton') || attrs.includes('quotePrefix')) return m;
+            return `<xf${attrs} pivotButton="0" quotePrefix="0"/>`;
+        });
+        zip.file('xl/styles.xml', xml);
+    }
+    const out = await zip.generateAsync({
+        type: 'nodebuffer',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 },
+    });
+    return out as Buffer;
 }
