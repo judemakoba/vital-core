@@ -12,6 +12,7 @@ import {
     styleTotal,
     styleFormula,
     styleCrossSheet,
+    styleInput,
     styleHeader,
     styleLabel,
     type AccountRow,
