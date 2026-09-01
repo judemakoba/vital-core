@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './finance.module.css';
 import { DonutChart, SimpleBarChart, formatUGX } from './FinanceCharts';
 
@@ -75,43 +75,23 @@ export default function ReportsTab({ initialReportType }: { initialReportType?: 
     // (Date-only changes used to require clicking 🔄 Refresh — that was a UX trap.)
     useEffect(() => { loadReport(); }, [reportType, fromDate, toDate]);
 
-    // Excel export — hit the same `/export/xlsx` route the report uses, with
-    // the current from/to/asOf in the query string. The browser streams the
-    // file back with Content-Disposition: attachment, so the Save dialog
-    // opens automatically.
-    const exportXlsx = useCallback(async () => {
-        let url = '';
-        if (reportType === 'income-statement') {
-            url = `/api/finance/reports/income-statement/export/xlsx?from=${fromDate}&to=${toDate}`;
-        } else if (reportType === 'balance-sheet') {
-            url = `/api/finance/reports/balance-sheet/export/xlsx?asOf=${toDate}`;
-        } else {
-            url = `/api/finance/reports/trial-balance/export/xlsx?asOf=${toDate}`;
-        }
-        // Use a hidden anchor with download attribute so the Save dialog opens.
-        // Fetching as blob so we can show a loading state and handle errors.
-        try {
-            const res = await fetch(url);
-            if (!res.ok) {
-                const detail = await res.json().catch(() => ({ error: 'Unknown error' }));
-                alert(`Export failed: ${detail.error || res.statusText}`);
-                return;
-            }
-            const blob = await res.blob();
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            // Filename comes from Content-Disposition if available
-            const cd = res.headers.get('Content-Disposition') ?? '';
-            const m = cd.match(/filename="([^"]+)"/);
-            a.download = m?.[1] ?? 'report.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        } catch (err: any) {
-            alert(`Export failed: ${err?.message ?? String(err)}`);
-        }
-    }, [reportType, fromDate, toDate]);
+    // Excel export — the server route already sets Content-Disposition:
+    // attachment, so a plain <a download> link is the most reliable way to
+    // trigger the Save dialog across all browsers. No JS, no blob URL, no
+    // popup-blocker risk — the browser does the right thing with the link
+    // href + the response headers.
+    const exportUrl =
+        reportType === 'income-statement'
+            ? `/api/finance/reports/income-statement/export/xlsx?from=${fromDate}&to=${toDate}`
+            : reportType === 'balance-sheet'
+            ? `/api/finance/reports/balance-sheet/export/xlsx?asOf=${toDate}`
+            : `/api/finance/reports/trial-balance/export/xlsx?asOf=${toDate}`;
+    const exportFilename =
+        reportType === 'income-statement'
+            ? `income-statement_${fromDate}_to_${toDate}.xlsx`
+            : reportType === 'balance-sheet'
+            ? `balance-sheet_as-of_${toDate}.xlsx`
+            : `trial-balance_as-of_${toDate}.xlsx`;
 
     // Quick-range shortcuts (1M, 3M, YTD, 1Y, All)
     const applyRange = (kind: '1m' | '3m' | 'ytd' | '1y' | 'all') => {
@@ -161,7 +141,13 @@ export default function ReportsTab({ initialReportType }: { initialReportType?: 
                     )}
                 </div>
                 <button className={styles.btnPrimary} onClick={loadReport}>🔄 Refresh</button>
-                <button className={styles.btnSecondary} onClick={exportXlsx}>📥 Export Excel</button>
+                <a
+                    className={styles.btnSecondary}
+                    href={exportUrl}
+                    download={exportFilename}
+                >
+                    📥 Export Excel
+                </a>
             </div>
 
             {loading ? (
