@@ -172,6 +172,14 @@ export function newReportWorkbook(): ExcelJS.Workbook {
     wb.lastModifiedBy = 'Vital Core HMS';
     wb.created = new Date();
     wb.modified = new Date();
+    // Force Excel to recompute every formula on open instead of trusting any
+    // cached values. exceljs doesn't compute formula values, so without this
+    // flag the file ships with formula cells that have NO cached value —
+    // some Excel versions flag that as "the file has a problem, do you
+    // want to repair?" and force the user through a recovery dialog.
+    // Setting `fullCalcOnLoad: true` makes Excel silently re-evaluate
+    // everything on first open, no prompt required.
+    wb.calcProperties.fullCalcOnLoad = true;
     return wb;
 }
 
