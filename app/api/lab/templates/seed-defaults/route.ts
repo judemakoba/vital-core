@@ -3,16 +3,22 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { defaultTemplateFor, resolveLabHeader, resolveLabFooter } from '@/lib/lab-templates';
+import { standardizedTemplateFor, getTestDefinition, definitionToSchemaRows, type AnalyteRange } from '@/lib/lab-standards';
 
 /**
  * POST /api/lab/templates/seed-defaults
- * Auto-creates a default GMC-style template for every test in the catalog that
- * doesn't already have one. For tests with a known schema (FBC, LFT, Urinalysis,
- * etc.) uses the table-mode layout. For others, uses the single-value layout.
- * All templates get the GMC-style patient header and signature footer.
+ *
+ * Auto-creates (or updates) a template for every test in the catalog.
  *
  * Body (optional):
- *   { onlyMissing?: boolean, overwrite?: boolean }
+ *   { onlyMissing?: boolean, overwrite?: boolean, useStandardized?: boolean }
+ *
+ * - `useStandardized` (default true): when true, prefers the
+ *   comprehensive IFCC/WHO/UCI standards map (lib/lab-standards.ts). When
+ *   false, falls back to the legacy GMC-style generator.
+ * - `onlyMissing` (default true): skip tests that already have a template.
+ * - `overwrite`: when true, replace the existing template. (Ignored when
+ *   onlyMissing is true.)
  */
 export async function POST(request: Request) {
     try {
@@ -30,6 +36,7 @@ export async function POST(request: Request) {
         }
         const onlyMissing = body.onlyMissing !== false;
         const overwrite = body.overwrite === true;
+        const useStandardized = body.useStandardized !== false; // default true
 
         const tests = await prisma.labTestCatalog.findMany({
             include: {
@@ -43,6 +50,8 @@ export async function POST(request: Request) {
         let updated = 0;
         let skipped = 0;
         const failed: Array<{ testId: string; name: string; reason: string }> = [];
+        const standardized = 0;
+        const fallback = 0;
 
         for (const test of tests) {
             if (test.resultTemplate && onlyMissing && !overwrite) {
@@ -51,18 +60,49 @@ export async function POST(request: Request) {
             }
 
             try {
-                const { normalMin, normalMax } = parseReferenceRange(test.referenceRange);
+                // Prefer the comprehensive IFCC/WHO/UCI standards when available.
+                const def = getTestDefinition(test.name);
+                let tpl: { resultMode: any; templateHtml: string; resultSchema?: any } | null = null;
+                if (useStandardized && def) {
+                    tpl = standardizedTemplateFor({
+                        testName: test.name,
+                        categoryName: test.category?.name,
+                        unit: test.unit || '',
+                        referenceRange: test.referenceRange || '',
+                    });
+                }
+                if (!tpl) {
+                    tpl = defaultTemplateFor({
+                        testName: test.name,
+                        categoryName: test.category?.name,
+                        unit: test.unit || '',
+                        referenceRange: test.referenceRange || '',
+                    });
+                }
 
-                const tpl = defaultTemplateFor({
-                    testName: test.name,
-                    categoryName: test.category?.name,
-                    unit: test.unit || '',
-                    referenceRange: test.referenceRange || '',
-                });
+                // Pick the normal-range bounds for single-value mode.
+                // For standardized tests we use the definition's own bounds so
+                // the flag computation matches the printed reference range.
+                let normalMin: number | null = null;
+                let normalMax: number | null = null;
+                let criticalMin: number | null = null;
+                let criticalMax: number | null = null;
+                if (def) {
+                    if (def.mode === "single") {
+                        normalMin = def.sexRanges?.F?.[0] ?? def.sexRanges?.M?.[0] ?? null;
+                        normalMax = def.sexRanges?.F?.[1] ?? def.sexRanges?.M?.[1] ?? null;
+                        criticalMin = def.criticalLow ?? null;
+                        criticalMax = def.criticalHigh ?? null;
+                    }
+                } else {
+                    const parsed = parseReferenceRange(test.referenceRange);
+                    normalMin = parsed.normalMin;
+                    normalMax = parsed.normalMax;
+                }
 
                 const data = {
                     labTestId: test.id,
-                    templateName: 'Standard Report',
+                    templateName: 'Standard Report (International)',
                     resultMode: tpl.resultMode,
                     resultSchema: tpl.resultSchema,
                     headerHtml: await resolveLabHeader(),
@@ -70,8 +110,8 @@ export async function POST(request: Request) {
                     footerHtml: await resolveLabFooter(),
                     normalRangeMin: normalMin,
                     normalRangeMax: normalMax,
-                    criticalRangeMin: null,
-                    criticalRangeMax: null,
+                    criticalRangeMin: criticalMin,
+                    criticalRangeMax: criticalMax,
                     resultUnit: test.unit || null,
                     isActive: true,
                     updatedById: user.id,
@@ -104,6 +144,7 @@ export async function POST(request: Request) {
             skipped,
             failed: failed.length,
             failures: failed,
+            note: 'useStandardized: true (IFCC/WHO/UCI standards map). Pass {useStandardized: false} to fall back to the legacy GMC template.',
         });
     } catch (error: any) {
         console.error('Seed defaults error:', error);
