@@ -86,7 +86,7 @@ export async function transitionInvoiceItemsToInProgress(
     // LabOrder.invoiceId → invoiceId
     const labRows = await tx.labOrder.findMany({
         where: { invoiceId, subStatus: ITEM_SUB_STATUS.AwaitingPayment },
-        select: { id: true, visitId: true },
+        select: { id: true, visitId: true, status: true, result: true, resultRows: true },
     });
     for (const r of labRows) {
         await tx.labOrder.update({ where: { id: r.id }, data: { subStatus: ITEM_SUB_STATUS.InProgress } });
@@ -97,7 +97,7 @@ export async function transitionInvoiceItemsToInProgress(
     // RadiologyOrder.invoiceId → invoiceId
     const radRows = await tx.radiologyOrder.findMany({
         where: { invoiceId, subStatus: ITEM_SUB_STATUS.AwaitingPayment },
-        select: { id: true, visitId: true },
+        select: { id: true, visitId: true, status: true, findings: true, impression: true },
     });
     for (const r of radRows) {
         await tx.radiologyOrder.update({ where: { id: r.id }, data: { subStatus: ITEM_SUB_STATUS.InProgress } });
@@ -108,12 +108,42 @@ export async function transitionInvoiceItemsToInProgress(
     // Prescription.pharmacyInvoiceId → invoiceId
     const rxRows = await tx.prescription.findMany({
         where: { pharmacyInvoiceId: invoiceId, subStatus: ITEM_SUB_STATUS.AwaitingPayment },
-        select: { id: true, visitId: true },
+        select: { id: true, visitId: true, status: true, dispensedAt: true },
     });
     for (const r of rxRows) {
         await tx.prescription.update({ where: { id: r.id }, data: { subStatus: ITEM_SUB_STATUS.InProgress } });
         visitIds.add(r.visitId);
         rxs++;
+    }
+
+    // Edge case: the technician/result was submitted BEFORE the cashier
+    // collected payment. The rad/lab/pharm PUT route's markOrderFulfilled
+    // call saw the illegal transition (AwaitingPayment → Fulfilled) and
+    // silently skipped. Without this post-payment sweep, the order would
+    // be stuck at InProgress forever (InProgress is NOT a terminal
+    // subStatus, so the visit can't close).
+    //
+    // Now that the orders are InProgress, immediately promote any whose
+    // result was already submitted (legacy status === "Completed" /
+    // "Dispensed") to Fulfilled. This mirrors what the lab/rad/pharm PUT
+    // routes do, just at a different point in the lifecycle.
+    for (const r of labRows) {
+        if (r.status === "Completed" || (r.result && r.result.trim().length > 0) || (r.resultRows && r.resultRows.length > 0)) {
+            const ok = await transitionOrderSubStatus(tx, "LAB", r.id, ITEM_SUB_STATUS.Fulfilled);
+            if (ok) visitIds.add(r.visitId);
+        }
+    }
+    for (const r of radRows) {
+        if (r.status === "Completed" || (r.findings && r.findings.trim().length > 0) || (r.impression && r.impression.trim().length > 0)) {
+            const ok = await transitionOrderSubStatus(tx, "RADIOLOGY", r.id, ITEM_SUB_STATUS.Fulfilled);
+            if (ok) visitIds.add(r.visitId);
+        }
+    }
+    for (const r of rxRows) {
+        if (r.status === "Dispensed" || r.dispensedAt) {
+            const ok = await transitionOrderSubStatus(tx, "PRESCRIPTION", r.id, ITEM_SUB_STATUS.Fulfilled);
+            if (ok) visitIds.add(r.visitId);
+        }
     }
 
     return { labs, rads, rxs, visitIds };
