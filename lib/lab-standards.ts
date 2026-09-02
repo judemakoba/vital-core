@@ -860,16 +860,29 @@ export function getTestDefinition(testName: string): TestDefinition | null {
  */
 export function definitionToSchemaRows(def: TestDefinition): SchemaRow[] {
     if (!def.analytes) return [];
-    return def.analytes.map((a) => ({
-        section: a.section,
-        investigation: a.investigation,
-        unit: a.unit,
-        normalRange: formatRangeFromAnalyte(a),
-        normalMin: a.low,
-        normalMax: a.high,
-        criticalMin: a.criticalLow ?? null,
-        criticalMax: a.criticalHigh ?? null,
-    }));
+    const out: SchemaRow[] = [];
+    let lastSection: string | undefined = undefined;
+    for (const a of def.analytes) {
+        // Insert a section-header row when the section changes. The template
+        // renders rows where isSection=true as a merged dark-grey cell
+        // spanning the whole table width.
+        if (a.section && a.section !== lastSection) {
+            out.push({ isSection: true, section: a.section });
+            lastSection = a.section;
+        }
+        out.push({
+            section: a.section,
+            investigation: a.investigation,
+            unit: a.unit,
+            normalRange: formatRangeFromAnalyte(a),
+            normalMin: a.low,
+            normalMax: a.high,
+            criticalMin: a.criticalLow ?? null,
+            criticalMax: a.criticalHigh ?? null,
+            isSection: false,
+        });
+    }
+    return out;
 }
 
 function formatRangeFromAnalyte(a: AnalyteRange): string {
