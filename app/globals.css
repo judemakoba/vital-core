@@ -179,6 +179,20 @@ select {
   box-shadow: var(--shadow-glass);
 }
 
+/* Card surface used by modals, login/register forms, filter bars, and
+ * any floating overlay. Unlike .glass-panel (large surfaces like sidebars),
+ * a card needs a strongly-opaque background so text inside it remains
+ * readable when content scrolls underneath. Without this class being
+ * defined, every page that uses <div className="glass-card"> renders
+ * the card transparent and the content overlaps. */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+}
+
 /* Micro-Animations hearth */
 @keyframes slideUpFade {
   from {
