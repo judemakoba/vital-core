@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, Plus, Eye, CalendarPlus, Trash2, X, Edit, Sparkles, Loader2, ArrowLeft } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+    Search, Plus, Eye, CalendarPlus, Trash2, X, Edit, Sparkles, Loader2, ArrowLeft,
+    Users, UserCheck, UserX, UserPlus, Filter, ArrowDownNarrowWide, ArrowUpNarrowWide,
+    ArrowDownAZ, ArrowUpAZ, Eraser, Inbox
+} from "lucide-react";
 import styles from "./page.module.css";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -55,15 +59,48 @@ interface VisitSuggestion {
     followUpWindowDays?: number;
 }
 
+type StatusFilter = "all" | "active" | "inactive";
+type SortKey = "newest" | "oldest" | "name_az" | "name_za";
+
+// Map UI sort keys to API sortBy/sortOrder. The API whitelists
+// `createdAt`, `firstName`, `lastName`, `patientNumber` so this is
+// safe to send verbatim.
+const SORT_TO_API: Record<SortKey, { sortBy: string; sortOrder: "asc" | "desc" }> = {
+    newest:    { sortBy: "createdAt", sortOrder: "desc" },
+    oldest:    { sortBy: "createdAt", sortOrder: "asc" },
+    name_az:   { sortBy: "firstName", sortOrder: "asc" },
+    name_za:   { sortBy: "firstName", sortOrder: "desc" },
+};
+
+const SORT_LABELS: Record<SortKey, string> = {
+    newest: "Newest first",
+    oldest: "Oldest first",
+    name_az: "Name A–Z",
+    name_za: "Name Z–A",
+};
+
+const formatRegistered = (iso: string) => {
+    if (!iso) return { day: "—", time: "" };
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return { day: "—", time: "" };
+    const day = `${String(d.getDate()).padStart(2, "0")} ${d.toLocaleString("en-GB", { month: "short" })} ${d.getFullYear()}`;
+    const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    return { day, time };
+};
+
 export default function PatientsPage() {
     const { data: session } = useSession();
     const canDelete = session?.user?.role === "SUPER_ADMIN" || session?.user?.role === "ADMIN";
 
     const [patients, setPatients] = useState<Patient[]>([]);
+    const [stats, setStats] = useState<{ total: number; active: number; inactive: number } | null>(null);
     const [search, setSearch] = useState("");
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+    const [sortKey, setSortKey] = useState<SortKey>("newest");
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
     // New Visit Modal
     const [showVisitModal, setShowVisitModal] = useState(false);
@@ -93,6 +130,11 @@ export default function PatientsPage() {
             try {
                 const params = new URLSearchParams();
                 if (search) params.set("search", search);
+                if (statusFilter !== "all") params.set("status", statusFilter);
+                const sortApi = SORT_TO_API[sortKey];
+                params.set("sortBy", sortApi.sortBy);
+                params.set("sortOrder", sortApi.sortOrder);
+                params.set("withStats", "true");
                 params.set("page", String(page));
                 const res = await fetch(`/api/patients?${params.toString()}`, {
                     credentials: "include",
@@ -101,6 +143,8 @@ export default function PatientsPage() {
                     const data = await res.json();
                     setPatients(data.data || []);
                     setTotalPages(data.totalPages || 1);
+                    setTotalCount(data.total || 0);
+                    if (data.stats) setStats(data.stats);
                 } else if (res.status === 401) {
                     window.location.href = "/login";
                 } else {
@@ -112,9 +156,11 @@ export default function PatientsPage() {
             }
             setLoading(false);
         };
+        // 300 ms debounce so we don't refetch on every keystroke but
+        // still feel responsive.
         const t = setTimeout(fetchPatients, 300);
         return () => clearTimeout(t);
-    }, [search, page]);
+    }, [search, page, statusFilter, sortKey]);
 
     useEffect(() => {
         if (showVisitModal) {
@@ -126,6 +172,13 @@ export default function PatientsPage() {
         }
     }, [showVisitModal]);
 
+    // Reset to page 1 whenever a filter or sort changes. Without
+    // this, paging past page 1 with a filter that has fewer results
+    // shows an empty table.
+    useEffect(() => {
+        setPage(1);
+    }, [search, statusFilter, sortKey]);
+
     const calculateAge = (dobString: string | null | undefined) => {
         if (!dobString) return "N/A";
         const dob = new Date(dobString);
@@ -135,6 +188,12 @@ export default function PatientsPage() {
         const m = today.getMonth() - dob.getMonth();
         if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
         return age;
+    };
+
+    const hasActiveFilters = !!search || statusFilter !== "all";
+    const clearFilters = () => {
+        setSearch("");
+        setStatusFilter("all");
     };
 
     const handleDelete = async (id: string, name: string) => {
@@ -249,6 +308,15 @@ export default function PatientsPage() {
         }
     };
 
+    // Choose the right SortIcon for the current sortKey so the
+    // dropdown preview hints at the direction.
+    const SortIcon = useMemo(() => {
+        if (sortKey === "oldest") return ArrowUpNarrowWide;
+        if (sortKey === "name_az") return ArrowDownAZ;
+        if (sortKey === "name_za") return ArrowUpAZ;
+        return ArrowDownNarrowWide;
+    }, [sortKey]);
+
     return (
         <div className={styles.container}>
             {/* R57: small back link to the dashboard home, matching the
@@ -259,24 +327,140 @@ export default function PatientsPage() {
             <Link href="/dashboard" className={styles.backLink}>
                 <ArrowLeft size={16} /> Back to Dashboard
             </Link>
+
+            {/* Page header */}
             <div className={styles.header}>
-                <h1 className={styles.title}>Patients Directory</h1>
+                <div>
+                    <h1 className={styles.title}>Patients Directory</h1>
+                    <p className={styles.subtitle}>
+                        All registered patients — search, filter, and start visits in one place.
+                    </p>
+                </div>
                 <Link href="/dashboard/patients/new" className={styles.addBtn}>
                     <Plus size={18} /> Register Patient
                 </Link>
             </div>
 
-            <div className={`glass-card ${styles.controls}`}>
-                <div className={styles.searchBox}>
-                    <Search size={18} className={styles.searchIcon} />
+            {/* Stats — over the directory as a whole (the API returns
+                the active/inactive/total breakdown alongside the page). */}
+            <div className={styles.statsGrid}>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>
+                        <Users size={14} color="var(--primary-color)" style={{ marginRight: "0.4rem" }} />
+                        Total Patients
+                    </div>
+                    <div className={styles.statValue}>
+                        {stats ? stats.total.toLocaleString() : "—"}
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>
+                        <UserCheck size={14} color="var(--success-color)" style={{ marginRight: "0.4rem" }} />
+                        Active
+                    </div>
+                    <div className={styles.statValue} style={{ color: "var(--success-color)" }}>
+                        {stats ? stats.active.toLocaleString() : "—"}
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>
+                        <UserX size={14} color="var(--text-muted)" style={{ marginRight: "0.4rem" }} />
+                        Inactive
+                    </div>
+                    <div className={styles.statValue} style={{ color: stats && stats.inactive > 0 ? "var(--text-primary)" : "var(--text-muted)" }}>
+                        {stats ? stats.inactive.toLocaleString() : "—"}
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>
+                        <UserPlus size={14} color="var(--info-color)" style={{ marginRight: "0.4rem" }} />
+                        {hasActiveFilters ? "Showing (filtered)" : "On this page"}
+                    </div>
+                    <div className={styles.statValue}>
+                        {patients.length}
+                        {!hasActiveFilters && stats && stats.total !== patients.length && (
+                            <span className={styles.statSubValue}>
+                                / {stats.total.toLocaleString()}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Filter bar — single row with labeled groups */}
+            <div className={`glass-card ${styles.filterBar}`}>
+                {/* Group 1: status */}
+                <div className={styles.filterGroup}>
+                    <label className={styles.filterLabel}>
+                        <Filter size={14} />
+                        Status
+                    </label>
+                    <select
+                        className={styles.filterSelect}
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                    >
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <span className={styles.filterDivider} aria-hidden="true" />
+
+                {/* Group 2: sort */}
+                <div className={styles.filterGroup}>
+                    <label className={styles.filterLabel}>
+                        <SortIcon size={14} />
+                        Sort
+                    </label>
+                    <select
+                        className={styles.filterSelect}
+                        value={sortKey}
+                        onChange={(e) => setSortKey(e.target.value as SortKey)}
+                        aria-label="Sort patients"
+                    >
+                        {(Object.keys(SORT_LABELS) as SortKey[]).map(k => (
+                            <option key={k} value={k}>{SORT_LABELS[k]}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <span className={styles.filterDivider} aria-hidden="true" />
+
+                {/* Group 3: search (flex-grows to fill the bar) */}
+                <div className={styles.searchWrap}>
+                    <Search size={16} className={styles.searchIcon} />
                     <input
                         type="text"
-                        placeholder="Search by name, ID, or phone number..."
+                        placeholder="Search by name, ID, or phone number…"
                         className={styles.searchInput}
                         value={search}
-                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
+
+                {/* Clear filters — only when something is active */}
+                {hasActiveFilters && (
+                    <button
+                        type="button"
+                        className={styles.clearBtn}
+                        onClick={clearFilters}
+                        title="Clear all filters"
+                    >
+                        <Eraser size={14} /> Clear
+                    </button>
+                )}
+            </div>
+
+            {/* Result-count strip — mirrors the billing page so the
+                user has context for the table below. */}
+            <div className={styles.resultCount}>
+                <span className={hasActiveFilters ? styles.resultCountActive : styles.resultCountInactive}>
+                    {loading
+                        ? "Loading…"
+                        : `Showing ${patients.length} of ${totalCount.toLocaleString()} patient${totalCount === 1 ? "" : "s"}${hasActiveFilters ? " (filtered)" : ""}`}
+                </span>
             </div>
 
             <div className={styles.tableContainer}>
@@ -287,80 +471,106 @@ export default function PatientsPage() {
                             <th className={styles.th}>Patient Number</th>
                             <th className={styles.th}>Contact</th>
                             <th className={styles.th}>Age / Gender</th>
+                            <th className={styles.th}>Registered</th>
                             <th className={styles.th}>Status</th>
-                            <th className={styles.th}>Actions</th>
+                            <th className={`${styles.th} ${styles.thRight}`}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={6} className={styles.td} style={{ textAlign: "center", padding: "2rem" }}>
-                                    Loading records...
+                                <td colSpan={7} className={`${styles.td} ${styles.tdCenter} ${styles.tdEmpty}`}>
+                                    <Loader2 size={20} className={styles.spin} style={{ marginRight: "0.5rem", verticalAlign: "middle" }} />
+                                    Loading records…
                                 </td>
                             </tr>
                         ) : patients.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className={styles.td} style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
-                                    No patients found matching your search.
+                                <td colSpan={7} className={`${styles.td} ${styles.tdCenter} ${styles.tdEmpty}`}>
+                                    <Inbox size={28} className={styles.emptyIcon} />
+                                    <div className={styles.emptyTitle}>
+                                        {hasActiveFilters ? "No patients match your filters" : "No patients yet"}
+                                    </div>
+                                    <div className={styles.emptyHint}>
+                                        {hasActiveFilters
+                                            ? "Try clearing the filters or registering a new patient."
+                                            : "Click \u201cRegister Patient\u201d to add the first one."}
+                                    </div>
                                 </td>
                             </tr>
                         ) : (
-                            patients.map(patient => (
-                                <tr key={patient.id} className={`${styles.tr} ${!patient.isActive ? styles.inactiveRow : ""}`}>
-                                    <td className={styles.td}>
-                                        <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                                            {patient.firstName} {patient.lastName}
-                                        </div>
-                                    </td>
-                                    <td className={styles.td}>
-                                        <span className={styles.patientId}>{patient.patientNumber}</span>
-                                    </td>
-                                    <td className={styles.td}>{patient.phone || "N/A"}</td>
-                                    <td className={styles.td}>
-                                        {calculateAge(patient.dateOfBirth)} yrs, {patient.gender ? patient.gender.substring(0, 1) : "N/A"}
-                                    </td>
-                                    <td className={styles.td}>
-                                        <span className={`${styles.statusBadge} ${patient.isActive ? styles.active : styles.inactive}`}>
-                                            {patient.isActive ? "Active" : "Inactive"}
-                                        </span>
-                                    </td>
-                                    <td className={styles.td}>
-                                        <Link
-                                            href={`/dashboard/patients/${patient.id}`}
-                                            className={styles.actionBtn}
-                                            title="View Profile"
-                                        >
-                                            <Eye size={18} />
-                                        </Link>
-                                        {canDelete && (
+                            patients.map(patient => {
+                                const reg = formatRegistered(patient.createdAt);
+                                return (
+                                    <tr
+                                        key={patient.id}
+                                        className={`${styles.tr} ${!patient.isActive ? styles.inactiveRow : ""}`}
+                                    >
+                                        <td className={styles.td}>
+                                            <div className={styles.patientName}>
+                                                {patient.firstName} {patient.lastName}
+                                            </div>
+                                        </td>
+                                        <td className={styles.td}>
+                                            <span className={styles.patientId}>{patient.patientNumber}</span>
+                                        </td>
+                                        <td className={styles.td}>{patient.phone || "N/A"}</td>
+                                        <td className={styles.td}>
+                                            {calculateAge(patient.dateOfBirth)} yrs, {patient.gender ? patient.gender.substring(0, 1) : "N/A"}
+                                        </td>
+                                        <td className={styles.td}>
+                                            <div className={styles.tdDate}>
+                                                <div className={styles.tdDateDay}>{reg.day}</div>
+                                                {reg.time && <div className={styles.tdDateTime}>{reg.time}</div>}
+                                            </div>
+                                        </td>
+                                        <td className={styles.td}>
+                                            <span className={`${styles.statusBadge} ${patient.isActive ? styles.active : styles.inactive}`}>
+                                                {patient.isActive ? "Active" : "Inactive"}
+                                            </span>
+                                        </td>
+                                        <td className={`${styles.td} ${styles.tdActions}`}>
                                             <Link
-                                                href={`/dashboard/patients/${patient.id}/edit`}
-                                                className={styles.actionBtn}
-                                                title="Edit Patient"
+                                                href={`/dashboard/patients/${patient.id}`}
+                                                className={styles.iconBtn}
+                                                title="View Profile"
+                                                aria-label="View patient profile"
                                             >
-                                                <Edit size={18} />
+                                                <Eye size={16} />
                                             </Link>
-                                        )}
-                                        <button
-                                            className={`${styles.actionBtn} ${styles.visitBtn}`}
-                                            title="New Visit"
-                                            onClick={() => openVisitModal(patient)}
-                                            disabled={!patient.isActive}
-                                        >
-                                            <CalendarPlus size={18} />
-                                        </button>
-                                        {canDelete && (
+                                            {canDelete && (
+                                                <Link
+                                                    href={`/dashboard/patients/${patient.id}/edit`}
+                                                    className={styles.iconBtn}
+                                                    title="Edit Patient"
+                                                    aria-label="Edit patient"
+                                                >
+                                                    <Edit size={16} />
+                                                </Link>
+                                            )}
                                             <button
-                                                className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                                                title="Delete Patient"
-                                                onClick={() => handleDelete(patient.id, `${patient.firstName} ${patient.lastName}`)}
+                                                className={`${styles.iconBtn} ${styles.iconBtnSuccess}`}
+                                                title="New Visit"
+                                                aria-label="Create new visit"
+                                                onClick={() => openVisitModal(patient)}
+                                                disabled={!patient.isActive}
                                             >
-                                                <Trash2 size={18} />
+                                                <CalendarPlus size={16} />
                                             </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))
+                                            {canDelete && (
+                                                <button
+                                                    className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                                                    title="Delete Patient"
+                                                    aria-label="Delete patient"
+                                                    onClick={() => handleDelete(patient.id, `${patient.firstName} ${patient.lastName}`)}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
@@ -374,7 +584,7 @@ export default function PatientsPage() {
                         >
                             Previous
                         </button>
-                        <span style={{ padding: "0.5rem", fontSize: "0.875rem" }}>
+                        <span className={styles.pageInfo}>
                             Page {page} of {totalPages}
                         </span>
                         <button
@@ -565,7 +775,7 @@ export default function PatientsPage() {
 
                                 {visitFeedback && (
                                     <div
-                                        className={visitFeedback.kind === "ok" ? styles.visitSuggestionBanner : styles.visitSuggestionBanner}
+                                        className={styles.visitSuggestionBanner}
                                         data-tone={visitFeedback.kind === "ok" ? "green" : "indigo"}
                                         style={visitFeedback.kind === "err" ? { borderColor: "var(--tint-danger-border)", background: "var(--tint-danger-soft)" } : undefined}
                                     >

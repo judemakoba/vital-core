@@ -1,19 +1,47 @@
+/* ═══════════════════════════════════════════════════════════════
+   Patients Directory
+   Polished to match the billing page design system (2026-09):
+     - Stats row over the directory as a whole
+     - Single-row filter bar (status + sort + search + clear)
+     - Result-count strip above the table
+     - Registered date column with stacked day/time
+     - Icon action buttons in bordered circles
+   ═══════════════════════════════════════════════════════════════ */
+
 .container {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
     animation: fadeIn var(--transition-normal) forwards;
 }
 
+/* ─── Page header ─────────────────────────────────────────────── */
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-/* R57: small back link to the dashboard home. Matches the visual style
-   used on /dashboard/patients/new so the directory and the new-patient
-   page feel like a pair. */
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0.25rem 0 0;
+    line-height: 1.4;
+}
+
+/* R57: small back link to the dashboard home. Matches the visual
+   style used on /dashboard/patients/new so the directory and the
+   new-patient page feel like a pair. */
 .backLink {
     display: inline-flex;
     align-items: center;
@@ -30,45 +58,8 @@
     color: var(--primary-color);
 }
 
-.title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.searchBox {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex: 1;
-    max-width: 400px;
-}
-
-.searchIcon {
-    position: absolute;
-    left: 0.75rem;
-    color: var(--text-muted);
-}
-
-.searchInput {
-    padding: 0.6rem 0.6rem 0.6rem 2.5rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    background: var(--bg-card);
-    color: var(--text-primary);
-    width: 100%;
-}
-
 .addBtn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem 1.25rem;
@@ -77,20 +68,198 @@
     border: none;
     border-radius: var(--radius-md);
     font-weight: 500;
+    font-size: 0.875rem;
     cursor: pointer;
+    text-decoration: none;
     transition: all var(--transition-fast);
 }
 
 .addBtn:hover {
     background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
 }
 
+/* ─── Stats row ───────────────────────────────────────────────── */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+}
+
+.statCard {
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 96px;
+}
+
+.statLabel {
+    display: flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.statValue {
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.statSubValue {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-left: 0.4rem;
+}
+
+/* ─── Filter bar ──────────────────────────────────────────────── */
+.filterBar {
+    padding: 0.875rem 1rem;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+}
+
+.filterGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.filterLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.filterLabel svg {
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.filterSelect {
+    height: 36px;
+    padding: 0 0.625rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+    min-width: 0;
+    width: 140px;
+}
+
+.filterSelect:focus,
+.searchInput:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.searchWrap {
+    flex: 1 1 200px;
+    min-width: 200px;
+    position: relative;
+}
+
+.searchInput {
+    width: 100%;
+    height: 36px;
+    padding: 0 0.625rem 0 2.1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.searchIcon {
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.clearBtn {
+    height: 36px;
+    padding: 0 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.clearBtn:hover {
+    background: var(--bg-color);
+    color: var(--text-primary);
+    border-color: var(--primary-color);
+}
+
+.filterDivider {
+    width: 1px;
+    height: 22px;
+    background: var(--border-color);
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+/* ─── Result-count strip above table ──────────────────────────── */
+.resultCount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.resultCountActive {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.resultCountInactive {
+    color: var(--text-muted);
+}
+
+/* ─── Table ───────────────────────────────────────────────────── */
 .tableContainer {
     background: var(--bg-card);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
 }
 
 .table {
@@ -100,84 +269,239 @@
 
 .th {
     text-align: left;
-    padding: 1rem;
+    padding: 0.875rem 1rem;
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.025em;
     background: rgba(0, 0, 0, 0.02);
     border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.thRight {
+    text-align: right;
 }
 
 .td {
-    padding: 1rem;
+    padding: 0.875rem 1rem;
     font-size: 0.875rem;
     color: var(--text-primary);
     border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.tdCenter {
+    text-align: center;
+}
+
+.tdEmpty {
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+
+.tdActions {
+    text-align: right;
+    white-space: nowrap;
 }
 
 .tr:last-child .td {
     border-bottom: none;
 }
 
+.tr {
+    transition: background var(--transition-fast);
+}
+
 .tr:hover .td {
-    background: rgba(0, 0, 0, 0.01);
+    background: rgba(79, 70, 229, 0.04);
+}
+
+.inactiveRow .td {
+    opacity: 0.65;
+    background: rgba(148, 163, 184, 0.04);
+}
+
+.inactiveRow:hover .td {
+    opacity: 0.85;
+}
+
+.patientName {
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
 }
 
 .patientId {
-    font-family: monospace;
-    background: rgba(15, 23, 42, 0.05);
-    padding: 0.2rem 0.4rem;
-    border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-}
-
-.actionBtn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 0.25rem;
-    transition: color var(--transition-fast);
-    margin-right: 0.5rem;
-}
-
-.actionBtn:hover {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    background: var(--tint-primary-soft);
     color: var(--primary-color);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--tint-primary-border);
 }
 
-.deleteBtn:hover {
-    color: var(--danger-color) !important;
+/* ─── Registered date column (matches billing's tdDate pattern) ─ */
+.tdDate {
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    color: var(--text-primary);
 }
 
-.visitBtn:hover {
-    color: var(--success-color) !important;
-}
-
-.inactiveRow {
-    opacity: 0.6;
-    background: #f9fafb;
-}
-
-.statusBadge {
-    font-size: 0.7rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 999px;
+.tdDateDay {
     font-weight: 600;
 }
 
+.tdDateTime {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.1rem;
+}
+
+/* ─── Status badges ───────────────────────────────────────────── */
+.statusBadge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
 .active {
-    background: rgba(34, 197, 94, 0.1);
-    color: var(--success-color);
+    background: var(--tint-success-soft);
+    color: var(--tint-success-text);
+    border: 1px solid var(--tint-success-border);
 }
 
 .inactive {
-    background: rgba(239, 68, 68, 0.1);
+    background: var(--tint-danger-soft);
+    color: var(--tint-danger-text);
+    border: 1px solid var(--tint-danger-border);
+}
+
+/* ─── Icon action buttons (bordered circles) ──────────────────── */
+.iconBtn {
+    background: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    margin-left: 0.25rem;
+    flex-shrink: 0;
+}
+
+.iconBtn:hover:not(:disabled) {
+    background: rgba(79, 70, 229, 0.08);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.iconBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.iconBtnSuccess {
+    color: var(--success-color);
+}
+
+.iconBtnSuccess:hover:not(:disabled) {
+    background: var(--tint-success-soft);
+    border-color: var(--success-color);
+    color: var(--tint-success-text);
+}
+
+.iconBtnDanger {
     color: var(--danger-color);
 }
 
-/* Modal Styles */
+.iconBtnDanger:hover:not(:disabled) {
+    background: var(--tint-danger-soft);
+    border-color: var(--danger-color);
+    color: var(--tint-danger-text);
+}
+
+/* ─── Empty / loading states ──────────────────────────────────── */
+.emptyIcon {
+    color: var(--text-muted);
+    opacity: 0.6;
+    margin-bottom: 0.75rem;
+}
+
+.emptyTitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.emptyHint {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.4;
+}
+
+/* ─── Pagination ──────────────────────────────────────────────── */
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.pageBtn {
+    padding: 0.4rem 0.875rem;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.pageBtn:hover:not(:disabled) {
+    background: var(--bg-card);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.pageBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pageInfo {
+    padding: 0 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Visit Creation Modal — Redesigned (R48d, kept intact)
+   Eye-friendly color palette: muted tints, soft borders, no
+   jarring glows. Works in both light and dark mode via the
+   project's CSS variables (--tint-* in globals.css).
+   ═══════════════════════════════════════════════════════════════ */
+
 .modalOverlay {
     position: fixed;
     inset: 0;
@@ -189,170 +513,6 @@
     z-index: 1000;
     animation: fadeIn var(--transition-fast) forwards;
 }
-
-@keyframes slideUp {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal {
-    width: 95%;
-    max-width: 460px;
-    /* Reduced from 580px to make it smaller and minimize blowout */
-    padding: 1.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    animation: slideUp 0.3s ease-out forwards;
-}
-
-.modalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modalTitle {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--primary-color);
-}
-
-.closeBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted);
-}
-
-.pagination {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    padding: 1rem;
-    border-top: 1px solid var(--border-color);
-}
-
-.pageBtn {
-    padding: 0.5rem 0.75rem;
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    color: var(--text-primary);
-    cursor: pointer;
-}
-
-.pageBtn:hover:not(:disabled) {
-    background: var(--bg-color);
-    color: var(--text-primary);
-}
-
-.pageBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Modal Form Specific Styles */
-.formGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-
-.label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.select,
-.input,
-.textarea {
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: var(--bg-color);
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    font-family: inherit;
-    transition: all var(--transition-fast);
-}
-
-.select:focus,
-.input:focus,
-.textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    background: var(--bg-card);
-    /* fixed dark mode contrast */
-}
-
-.textarea {
-    resize: vertical;
-}
-
-.formActions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-}
-
-.cancelBtn {
-    padding: 0.5rem 1rem;
-    background: var(--bg-color);
-    /* fixed from white for dark mode */
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    color: var(--text-primary);
-    /* enhanced visibility */
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.cancelBtn:hover {
-    background: var(--border-color);
-}
-
-.submitBtn {
-    padding: 0.5rem 1.25rem;
-    background: var(--primary-color);
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all var(--transition-fast);
-}
-
-.submitBtn:hover:not(:disabled) {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-}
-
-.submitBtn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Visit Creation Modal — Redesigned (R48d)
-   Eye-friendly color palette: muted tints, soft borders, no
-   jarring glows. Works in both light and dark mode via the
-   project's CSS variables (--tint-* in globals.css).
-   ═══════════════════════════════════════════════════════════════ */
 
 @keyframes visitModalIn {
     from { transform: translateY(12px) scale(0.985); opacity: 0; }
@@ -596,6 +756,87 @@
     font-weight: 600;
     font-size: 0.88rem;
     box-shadow: 0 1px 2px rgba(99, 102, 241, 0.2);
+}
+
+/* ── Form bits reused by the modal ── */
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.select,
+.input,
+.textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.select:focus,
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: var(--bg-card);
+    /* fixed dark mode contrast */
+}
+
+.textarea {
+    resize: vertical;
+}
+
+.cancelBtn {
+    padding: 0.5rem 1rem;
+    background: var(--bg-color);
+    /* fixed from white for dark mode */
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    color: var(--text-primary);
+    /* enhanced visibility */
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.cancelBtn:hover {
+    background: var(--border-color);
+}
+
+.submitBtn {
+    padding: 0.5rem 1.25rem;
+    background: var(--primary-color);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--transition-fast);
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.submitBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 @keyframes spin {
