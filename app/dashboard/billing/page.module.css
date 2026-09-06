@@ -55,10 +55,10 @@
 
 /* ─── Filter bar ────────────────────────────────────────────────── */
 .filterBar {
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1rem;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem 1rem;
+    flex-wrap: nowrap;
+    gap: 0.5rem 0.75rem;
     align-items: center;
 }
 
@@ -80,19 +80,19 @@
 }
 
 .filterLabel svg {
-    color: var(--text-muted);
+    color: var(--primary-color);
     flex-shrink: 0;
 }
 
 .filterSelect,
 .filterDate {
-    height: 38px;
-    padding: 0 0.75rem;
+    height: 36px;
+    padding: 0 0.625rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
     background: var(--bg-color);
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-family: inherit;
     transition: all var(--transition-fast);
     min-width: 0;
@@ -107,49 +107,49 @@
 }
 
 .filterSelect {
-    width: 140px;
+    width: 120px;
 }
 
 .filterDate {
-    width: 150px;
+    width: 130px;
 }
 
 .dateRange {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
     flex-shrink: 0;
 }
 
 .dateRangeConnector {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     font-weight: 500;
-    padding: 0 0.15rem;
+    padding: 0 0.1rem;
 }
 
 .searchWrap {
-    flex: 1 1 220px;
-    min-width: 200px;
+    flex: 1 1 180px;
+    min-width: 180px;
     position: relative;
 }
 
 .searchInput {
     width: 100%;
-    height: 38px;
-    padding: 0 0.75rem 0 2.25rem;
+    height: 36px;
+    padding: 0 0.625rem 0 2.1rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
     background: var(--bg-color);
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-family: inherit;
     transition: all var(--transition-fast);
 }
 
 .searchIcon {
     position: absolute;
-    left: 0.65rem;
+    left: 0.6rem;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
@@ -157,8 +157,8 @@
 }
 
 .clearBtn {
-    height: 38px;
-    padding: 0 0.875rem;
+    height: 36px;
+    padding: 0 0.75rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
     background: transparent;
@@ -171,6 +171,7 @@
     gap: 0.3rem;
     transition: all var(--transition-fast);
     flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .clearBtn:hover {
@@ -181,9 +182,10 @@
 
 .filterDivider {
     width: 1px;
-    height: 24px;
+    height: 22px;
     background: var(--border-color);
     flex-shrink: 0;
+    opacity: 0.7;
 }
 
 /* ─── Result-count strip above table ───────────────────────────── */
